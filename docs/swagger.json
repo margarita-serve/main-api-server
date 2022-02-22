@@ -1,0 +1,87 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "KoreServ Swagger API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:30000",
+    "basePath": "/api/v1",
+    "paths": {
+        "/project/{projectID}/models": {
+            "post": {
+                "description": "Create model's info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create model",
+                "parameters": [
+                    {
+                        "description": "name of the model",
+                        "name": "modelBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.PostModelsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PostModelsResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "http.PostModelsRequest": {
+            "type": "object",
+            "properties": {
+                "classLabels": {
+                    "description": "멀티클래스분류 일때 라벨",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "negativeClassLabel": {
+                    "description": "이진분류시 거짓값 라벨",
+                    "type": "string"
+                },
+                "positiveClassLabel": {
+                    "description": "이진분류시 참값 라벨",
+                    "type": "string"
+                },
+                "predictionThreshold": {
+                    "description": "이진분류 모델의 결과가 확률일 때 이진 범주에 매핑",
+                    "type": "string"
+                },
+                "targetType": {
+                    "description": "Required [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Anomaly’, ‘Transform’, ‘Unstructured’]",
+                    "type": "string"
+                }
+            }
+        },
+        "http.PostModelsResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
