@@ -1,33 +1,459 @@
 basePath: /api/v1
 definitions:
-  http.PostModelsRequest:
+  http.Credential:
     properties:
-      classLabels:
-        description: 멀티클래스분류 일때 라벨
+      awsaccesskeyID:
+        description: AWS 엑세스 키 ID. ID Location type이 'S3' 일때 사용
         type: string
-      description:
+      awssecretAccessKey:
+        description: AWS 시크릿 엑세스키. ID Location type이 'S3' 일때 사용
         type: string
-      language:
+      basicUserID:
+        description: 기본 유저인증. ID Location type이 'BasicAuth' 일때 사용
         type: string
-      name:
+      basicUserPassword:
+        description: 기본 유저인증 패스워드. ID Location type이 'BasicAuth' 일때 사용
         type: string
-      negativeClassLabel:
-        description: 이진분류시 거짓값 라벨
-        type: string
-      positiveClassLabel:
-        description: 이진분류시 참값 라벨
-        type: string
-      predictionThreshold:
-        description: 이진분류 모델의 결과가 확률일 때 이진 범주에 매핑
-        type: string
-      targetType:
-        description: Required [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Anomaly’, ‘Transform’,
-          ‘Unstructured’]
+      gcpkey:
+        description: GCP 키. ID Location type이 'GS' 일때 사용
         type: string
     type: object
-  http.PostModelsResponse:
+  http.GetAllDeployResponse:
     properties:
-      id:
+      count:
+        description: Optional. Number of items returned on this page.
+        type: integer
+        x-order: "0"
+      description:
+        description: 모델 패키지 설명
+        example: Description of this package
+        type: string
+        x-order: "2"
+      name:
+        description: 모델 패키지 명
+        example: ModelPackage Example
+        type: string
+        x-order: 1 x-nullable=false
+      next:
+        description: 'Required. URL pointing to the next page (if null, there is no
+          next page). nullable: True format: uri'
+        type: string
+        x-order: "1"
+      previous:
+        description: 'Required. URL pointing to the previous page (if null, there
+          is no previous page). nullable: True format: uri'
+        type: string
+        x-order: "2"
+      targetType:
+        description: 모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]
+        enum:
+        - Binary
+        - Regression
+        example: ‘Binary’
+        type: string
+        x-order: "4"
+    required:
+    - description
+    - name
+    type: object
+  http.GetAllModelPackageResponse:
+    properties:
+      count:
+        description: Optional. Number of items returned on this page.
+        type: integer
+        x-order: "0"
+      description:
+        description: 모델 패키지 설명
+        example: Description of this package
+        type: string
+        x-order: "2"
+      name:
+        description: 모델 패키지 명
+        example: ModelPackage Example
+        type: string
+        x-order: 1 x-nullable=false
+      next:
+        description: 'Required. URL pointing to the next page (if null, there is no
+          next page). nullable: True format: uri'
+        type: string
+        x-order: "1"
+      previous:
+        description: 'Required. URL pointing to the previous page (if null, there
+          is no previous page). nullable: True format: uri'
+        type: string
+        x-order: "2"
+      targetType:
+        description: 모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]
+        enum:
+        - Binary
+        - Regression
+        example: ‘Binary’
+        type: string
+        x-order: "4"
+    required:
+    - description
+    - name
+    type: object
+  http.GetDeployResponse:
+    properties:
+      associationID:
+        description: 예측 요청 데이터 중 업로드 할 실측값 데이터와 맵핑할 수 있는 연결ID
+        example: real_target
+        type: string
+        x-order: "2"
+      associationIDInRequests:
+        description: 연결ID가 예측요청 피쳐에 속해 있을 경우 true, 피쳐 외부 json데이터에 있을 경우 false
+        example: false
+        type: boolean
+        x-order: "2"
+      deployID:
+        description: 배포 ID
+        example: ID-1234
+        type: string
+        x-order: 0 x-nullable=false
+      description:
+        description: 배포 설명
+        example: deploy best model
+        type: string
+        x-order: "2"
+      enableAccurancyMonitoring:
+        description: 활성화할 시 실측 데이터가 업로드 될 때마다 연결ID로 맵핑해 예측값과 실측값을 비교하고 정확도를 측정한다(실측데이터
+          업로드 필수)
+        example: true
+        type: boolean
+        x-order: "2"
+      enableFeatureDriftTracking:
+        description: 활성화할 시 예측요청을 분석하여 피쳐의 분포도 변화를 추적한다 (훈련데이터 업로드 필수)
+        example: true
+        type: boolean
+        x-order: "2"
+      modelPackageID:
+        description: 모델패키지 ID
+        example: ID-1234
+        type: string
+        x-order: 0 x-nullable=false
+      name:
+        description: 배포 명
+        example: This Is a Test Deploy
+        type: string
+        x-order: 1 x-nullable=false
+      predictionEnvID:
+        description: 예측 환경
+        example: k8s-inference-staging
+        type: string
+        x-order: "2"
+      projectID:
+        description: 프로젝트 ID
+        example: ID-1234
+        type: string
+        x-order: 0 x-nullable=false
+    required:
+    - deployID
+    - modelPackageID
+    - name
+    - projectID
+    type: object
+  http.GetLocationType:
+    properties:
+      type:
+        description: '[''Local'', ''BasicAuth'', ''S3'' ,''GS'']'
+        example: '[''Local'',''BasicAuth'',''S3'', ''GS'']'
+        type: string
+    type: object
+  http.GetModelPackageResponse:
+    properties:
+      description:
+        description: 모델 패키지 설명
+        example: Description of this package
+        type: string
+        x-order: "2"
+      features:
+        example: feature_name1, feature_name2,....’
+        type: string
+        x-order: "5"
+      holdoutDataset:
+        $ref: '#/definitions/http.HoldoutDatasetInfo'
+        description: 홀드아웃 데이터셋
+      model:
+        $ref: '#/definitions/http.ModelInfo'
+        description: 패키지에 추가할 모델의 정보
+        x-order: "3"
+      name:
+        description: 모델 패키지 명
+        example: ModelPackage Example
+        type: string
+        x-order: 1 x-nullable=false
+      negativeClassLabel:
+        type: string
+      positiveClassLabel:
+        type: string
+      predictionTargetName:
+        description: 타켓컬럼 명칭
+        type: string
+      projectID:
+        description: 프로젝트 ID
+        type: string
+      projectName:
+        description: 프로젝트 명
+        type: string
+      runtimeFrameWork:
+        description: 서빙 런타임 프레임워크
+        type: string
+      targetType:
+        description: 모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]
+        enum:
+        - Binary
+        - Regression
+        example: ‘Binary’
+        type: string
+        x-order: "4"
+      threshold:
+        type: number
+      trainingDataset:
+        $ref: '#/definitions/http.TrainingDatasetInfo'
+        description: 훈련 데이터셋
+      transformer:
+        $ref: '#/definitions/http.TransformerInfo'
+        description: 모델 입력 전처리기
+    required:
+    - name
+    type: object
+  http.GetRuntimeFrameWork:
+    properties:
+      type:
+        description: 런타임 프레임워크 ['Tensorflow','PyTorch','Scikit-learn','XGBoost','PMML','Spark''Lightgbm','PaddleServer','Triton']
+        example: '[''Tensorflow'',''PyTorch'',''Scikit-learn'',''XGBoost'',''PMML'',''Spark''''Lightgbm'',''PaddleServer'',''Triton'']'
+        type: string
+    type: object
+  http.GetTargetType:
+    properties:
+      type:
+        description: 모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]
+        example: '[‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]'
+        type: string
+    type: object
+  http.HoldoutDatasetInfo:
+    properties:
+      URL:
+        description: 스토리지 URL
+        type: string
+      credential:
+        $ref: '#/definitions/http.Credential'
+        description: 스토리지 접근 인증정보
+      locationType:
+        description: 파일이 저장되어 있는 스토리지의 종류['Local', 'BasicAuth', 'S3' ,'GS']
+        type: string
+      targetName:
+        type: string
+    type: object
+  http.ModelInfo:
+    properties:
+      Description:
+        description: 설명
+        type: string
+      URL:
+        description: 스토리지 URL
+        type: string
+      Version:
+        description: 버전
+        example: V1
+        type: string
+      credential:
+        $ref: '#/definitions/http.Credential'
+        description: 스토리지 접근 인증정보
+      locationType:
+        description: 모델파일이 저장되어 있는 스토리지의 종류 ['Local', 'BasicAuth', 'S3' ,'GS']
+        type: string
+      name:
+        description: 모델명
+        example: Model Example
+        type: string
+    type: object
+  http.PatchDeploysRequest:
+    properties:
+      description:
+        description: 모델 패키지 설명
+        example: Description of this package
+        type: string
+        x-order: "1"
+      name:
+        description: 모델 패키지 명
+        example: Model Package Example
+        type: string
+        x-order: "0"
+    type: object
+  http.PatchModelPackagesRequest:
+    properties:
+      description:
+        description: 모델 패키지 설명
+        example: Description of this package
+        type: string
+        x-order: "1"
+      name:
+        description: 모델 패키지 명
+        example: Model Package Example
+        type: string
+        x-order: "0"
+    type: object
+  http.PostDeploysRequest:
+    properties:
+      associationID:
+        description: 예측 요청 데이터 중 업로드 할 실측값 데이터와 맵핑할 수 있는 연결ID
+        example: real_target
+        type: string
+        x-order: "2"
+      associationIDInRequests:
+        description: 연결ID가 예측요청 피쳐에 속해 있을 경우 true, 피쳐 외부 json데이터에 있을 경우 false
+        example: false
+        type: boolean
+        x-order: "2"
+      description:
+        description: 배포 설명
+        example: deploy best model
+        type: string
+        x-order: "2"
+      enableAccurancyMonitoring:
+        description: 활성화할 시 실측 데이터가 업로드 될 때마다 연결ID로 맵핑해 예측값과 실측값을 비교하고 정확도를 측정한다(실측데이터
+          업로드 필수)
+        example: true
+        type: boolean
+        x-order: "2"
+      enableFeatureDriftTracking:
+        description: 활성화할 시 예측요청을 분석하여 피쳐의 분포도 변화를 추적한다 (훈련데이터 업로드 필수)
+        example: true
+        type: boolean
+        x-order: "2"
+      modelPackageID:
+        description: 모델패키지 ID
+        example: ID-1234
+        type: string
+        x-order: 0 x-nullable=false
+      name:
+        description: 배포 명
+        example: This Is a Test Deploy
+        type: string
+        x-order: 1 x-nullable=false
+      predictionEnvID:
+        description: 예측 환경
+        example: k8s-inference-staging
+        type: string
+        x-order: "2"
+      projectID:
+        description: 프로젝트 ID
+        example: ID-1234
+        type: string
+        x-order: 0 x-nullable=false
+    required:
+    - modelPackageID
+    - name
+    - projectID
+    type: object
+  http.PostDeploysResponse:
+    properties:
+      message:
+        description: 상세 메세지
+        type: string
+    type: object
+  http.PostModelPackagesRequest:
+    properties:
+      description:
+        description: 모델 패키지 설명
+        example: Description of this package
+        type: string
+        x-order: "2"
+      features:
+        example: feature_name1, feature_name2,....’
+        type: string
+        x-order: "5"
+      holdoutDataset:
+        $ref: '#/definitions/http.HoldoutDatasetInfo'
+        description: 홀드아웃 데이터셋
+      model:
+        $ref: '#/definitions/http.ModelInfo'
+        description: 패키지에 추가할 모델의 정보
+        x-order: "3"
+      name:
+        description: 모델 패키지 명
+        example: ModelPackage Example
+        type: string
+        x-order: 1 x-nullable=false
+      negativeClassLabel:
+        description: 모델의 예측 타입이 'Binary' 일 때 Negative클래스 명
+        type: string
+      positiveClassLabel:
+        description: 모델의 예측 타입이 'Binary' 일 때 Positive클래스 명
+        type: string
+      predictionTargetName:
+        description: 예측 타켓컬럼 명칭
+        type: string
+      projectID:
+        description: 모델 패키지를 등록할 프로젝트 ID
+        example: ID-1234
+        type: string
+        x-order: 0 x-nullable=false
+      runtimeFrameWork:
+        $ref: '#/definitions/http.PostRuntimeFrameWork'
+        description: 서빙 런타임 프레임워크
+      targetType:
+        description: 모델의 예측타입 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]
+        enum:
+        - Binary
+        - Regression
+        example: ‘Binary’
+        type: string
+        x-order: "4"
+      threshold:
+        description: 모델의 예측 타입이 'Binary' 일 때 Threshold
+        type: number
+      trainingDataset:
+        $ref: '#/definitions/http.TrainingDatasetInfo'
+        description: 훈련 데이터셋
+      transformer:
+        $ref: '#/definitions/http.TransformerInfo'
+        description: 모델 입력 전처리기
+    required:
+    - name
+    - projectID
+    type: object
+  http.PostModelPackagesResponse:
+    properties:
+      message:
+        description: 상세 메세지
+        type: string
+    type: object
+  http.PostRuntimeFrameWork:
+    properties:
+      type:
+        description: 런타임 프레임워크 ['Tensorflow','PyTorch','Scikit-learn','XGBoost','PMML','Spark''Lightgbm','PaddleServer','Triton']
+        example: '[''Tensorflow'',''PyTorch'',''Scikit-learn'',''XGBoost'',''PMML'',''Spark''''Lightgbm'',''PaddleServer'',''Triton'']'
+        type: string
+      version:
+        description: 런타임 프레임워크 버전
+        example: "0.12"
+        type: string
+    type: object
+  http.TrainingDatasetInfo:
+    properties:
+      URL:
+        description: 스토리지 URL
+        type: string
+      credential:
+        $ref: '#/definitions/http.Credential'
+        description: 스토리지 접근 인증정보
+      locationType:
+        description: 파일이 저장되어 있는 스토리지의 종류['Local', 'BasicAuth', 'S3' ,'GS']
+        type: string
+      targetName:
+        type: string
+    type: object
+  http.TransformerInfo:
+    properties:
+      URL:
+        type: string
+      credential:
+        $ref: '#/definitions/http.Credential'
+      locationType:
+        description: 파일이 저장되어 있는 스토리지의 종류 ['Local', 'BasicAuth', 'S3' ,'GS']
         type: string
     type: object
 host: localhost:30000
@@ -36,24 +462,269 @@ info:
   title: KoreServ Swagger API
   version: "1.0"
 paths:
-  /project/{projectID}/models:
-    post:
+  /deploys:
+    get:
       consumes:
       - application/json
-      description: Create model's info
       parameters:
-      - description: name of the model
-        in: body
-        name: modelBody
-        required: true
-        schema:
-          $ref: '#/definitions/http.PostModelsRequest'
+      - description: 'Optional. This many results will be skipped. minimum: 0 default:
+          0'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Optional. At most this many results are returned. minimum: 1
+          maximum: 1000 default: 20'
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.PostModelsResponse'
-      summary: Create model
+            $ref: '#/definitions/http.GetAllDeployResponse'
+      summary: 배포 리스트 조회
+      tags:
+      - Deploy
+    post:
+      consumes:
+      - application/json
+      description: 배포 생성
+      parameters:
+      - description: Info of Deploy
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.PostDeploysRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PostDeploysResponse'
+      summary: Deploy Package
+      tags:
+      - Deploy
+  /deploys/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Required. '
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 배포 삭제
+      tags:
+      - Deploy
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Required. '
+        in: path
+        name: deployID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetDeployResponse'
+      summary: 배포 조회
+      tags:
+      - Deploy
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Required. '
+        in: query
+        name: modelPackageID
+        required: true
+        type: string
+      - description: Archive Package
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.PatchDeploysRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 배포 수정
+      tags:
+      - Deploy
+  /model/modelPackages:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Optional. This many results will be skipped. minimum: 0 default:
+          0'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Optional. At most this many results are returned. minimum: 1
+          maximum: 1000 default: 20'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetAllModelPackageResponse'
+      summary: 모델패키지 리스트 조회
+      tags:
+      - ModelPackage
+    post:
+      consumes:
+      - application/json
+      description: 모델을 배포하기 위한 패키지 등록
+      parameters:
+      - description: Info of Package
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.PostModelPackagesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PostModelPackagesResponse'
+      summary: Create Package
+      tags:
+      - ModelPackage
+  /model/modelPackages/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Required. '
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 모델패키지 아카이브
+      tags:
+      - ModelPackage
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Required. '
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetModelPackageResponse'
+      summary: 모델패키지 조회
+      tags:
+      - ModelPackage
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 'Required. '
+        in: query
+        name: modelPackageID
+        required: true
+        type: string
+      - description: Archive Package
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.PatchModelPackagesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: 모델패키지 수정
+      tags:
+      - ModelPackage
+  /model/modelPackages/locationType:
+    get:
+      consumes:
+      - application/json
+      description: 모델 패키지 등록을 위한 모델파일 위치 종류 선택 정보
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetLocationType'
+      summary: Model's Location Type List Request
+      tags:
+      - ModelPackage
+  /model/modelPackages/runtimeFrameWorkList:
+    get:
+      consumes:
+      - application/json
+      description: 모델 패키지 등록을 위한 모델이 서빙 될 프레임워크 리스트 정보
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetRuntimeFrameWork'
+      summary: Model's Runtime FrameWork List List Request
+      tags:
+      - ModelPackage
+  /model/modelPackages/targetType:
+    get:
+      consumes:
+      - application/json
+      description: 모델 패키지 등록을 위한 모델의 예측 종류 리스트
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetTargetType'
+      summary: Model's Target Type List Request
+      tags:
+      - ModelPackage
 swagger: "2.0"

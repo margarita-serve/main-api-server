@@ -16,24 +16,61 @@ const docTemplate_swagger = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/project/{projectID}/models": {
-            "post": {
-                "description": "Create model's info",
+        "/deploys": {
+            "get": {
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create model",
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "배포 리스트 조회",
                 "parameters": [
                     {
-                        "description": "name of the model",
-                        "name": "modelBody",
+                        "type": "integer",
+                        "description": "Optional. This many results will be skipped. minimum: 0 default: 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Optional. At most this many results are returned. minimum: 1 maximum: 1000 default: 20",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetAllDeployResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "배포 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "Deploy Package",
+                "parameters": [
+                    {
+                        "description": "Info of Deploy",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.PostModelsRequest"
+                            "$ref": "#/definitions/http.PostDeploysRequest"
                         }
                     }
                 ],
@@ -41,7 +78,340 @@ const docTemplate_swagger = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.PostModelsResponse"
+                            "$ref": "#/definitions/http.PostDeploysResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/deploys/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "배포 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Required. ",
+                        "name": "deployID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetDeployResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "배포 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Required. ",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "배포 수정",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Required. ",
+                        "name": "modelPackageID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Archive Package",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.PatchDeploysRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/model/modelPackages": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "모델패키지 리스트 조회",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Optional. This many results will be skipped. minimum: 0 default: 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Optional. At most this many results are returned. minimum: 1 maximum: 1000 default: 20",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetAllModelPackageResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "모델을 배포하기 위한 패키지 등록",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Create Package",
+                "parameters": [
+                    {
+                        "description": "Info of Package",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.PostModelPackagesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PostModelPackagesResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/model/modelPackages/locationType": {
+            "get": {
+                "description": "모델 패키지 등록을 위한 모델파일 위치 종류 선택 정보",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Model's Location Type List Request",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetLocationType"
+                        }
+                    }
+                }
+            }
+        },
+        "/model/modelPackages/runtimeFrameWorkList": {
+            "get": {
+                "description": "모델 패키지 등록을 위한 모델이 서빙 될 프레임워크 리스트 정보",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Model's Runtime FrameWork List List Request",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetRuntimeFrameWork"
+                        }
+                    }
+                }
+            }
+        },
+        "/model/modelPackages/targetType": {
+            "get": {
+                "description": "모델 패키지 등록을 위한 모델의 예측 종류 리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Model's Target Type List Request",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetTargetType"
+                        }
+                    }
+                }
+            }
+        },
+        "/model/modelPackages/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "모델패키지 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Required. ",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetModelPackageResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "모델패키지 아카이브",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Required. ",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "모델패키지 수정",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Required. ",
+                        "name": "modelPackageID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Archive Package",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.PatchModelPackagesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -49,44 +419,593 @@ const docTemplate_swagger = `{
         }
     },
     "definitions": {
-        "http.PostModelsRequest": {
+        "http.Credential": {
             "type": "object",
             "properties": {
-                "classLabels": {
-                    "description": "멀티클래스분류 일때 라벨",
+                "awsaccesskeyID": {
+                    "description": "AWS 엑세스 키 ID. ID Location type이 'S3' 일때 사용",
                     "type": "string"
                 },
-                "description": {
+                "awssecretAccessKey": {
+                    "description": "AWS 시크릿 엑세스키. ID Location type이 'S3' 일때 사용",
                     "type": "string"
                 },
-                "language": {
+                "basicUserID": {
+                    "description": "기본 유저인증. ID Location type이 'BasicAuth' 일때 사용",
                     "type": "string"
                 },
-                "name": {
+                "basicUserPassword": {
+                    "description": "기본 유저인증 패스워드. ID Location type이 'BasicAuth' 일때 사용",
                     "type": "string"
                 },
-                "negativeClassLabel": {
-                    "description": "이진분류시 거짓값 라벨",
-                    "type": "string"
-                },
-                "positiveClassLabel": {
-                    "description": "이진분류시 참값 라벨",
-                    "type": "string"
-                },
-                "predictionThreshold": {
-                    "description": "이진분류 모델의 결과가 확률일 때 이진 범주에 매핑",
-                    "type": "string"
-                },
-                "targetType": {
-                    "description": "Required [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Anomaly’, ‘Transform’, ‘Unstructured’]",
+                "gcpkey": {
+                    "description": "GCP 키. ID Location type이 'GS' 일때 사용",
                     "type": "string"
                 }
             }
         },
-        "http.PostModelsResponse": {
+        "http.GetAllDeployResponse": {
+            "type": "object",
+            "required": [
+                "description",
+                "name"
+            ],
+            "properties": {
+                "count": {
+                    "description": "Optional. Number of items returned on this page.",
+                    "type": "integer",
+                    "x-order": "0"
+                },
+                "next": {
+                    "description": "Required. URL pointing to the next page (if null, there is no next page). nullable: True format: uri",
+                    "type": "string",
+                    "x-order": "1"
+                },
+                "name": {
+                    "description": "모델 패키지 명",
+                    "type": "string",
+                    "x-order": "1 x-nullable=false",
+                    "example": "ModelPackage Example"
+                },
+                "previous": {
+                    "description": "Required. URL pointing to the previous page (if null, there is no previous page). nullable: True format: uri",
+                    "type": "string",
+                    "x-order": "2"
+                },
+                "description": {
+                    "description": "모델 패키지 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "Description of this package"
+                },
+                "targetType": {
+                    "description": "모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        "Regression"
+                    ],
+                    "x-order": "4",
+                    "example": "‘Binary’"
+                }
+            }
+        },
+        "http.GetAllModelPackageResponse": {
+            "type": "object",
+            "required": [
+                "description",
+                "name"
+            ],
+            "properties": {
+                "count": {
+                    "description": "Optional. Number of items returned on this page.",
+                    "type": "integer",
+                    "x-order": "0"
+                },
+                "next": {
+                    "description": "Required. URL pointing to the next page (if null, there is no next page). nullable: True format: uri",
+                    "type": "string",
+                    "x-order": "1"
+                },
+                "name": {
+                    "description": "모델 패키지 명",
+                    "type": "string",
+                    "x-order": "1 x-nullable=false",
+                    "example": "ModelPackage Example"
+                },
+                "previous": {
+                    "description": "Required. URL pointing to the previous page (if null, there is no previous page). nullable: True format: uri",
+                    "type": "string",
+                    "x-order": "2"
+                },
+                "description": {
+                    "description": "모델 패키지 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "Description of this package"
+                },
+                "targetType": {
+                    "description": "모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        "Regression"
+                    ],
+                    "x-order": "4",
+                    "example": "‘Binary’"
+                }
+            }
+        },
+        "http.GetDeployResponse": {
+            "type": "object",
+            "required": [
+                "deployID",
+                "modelPackageID",
+                "name",
+                "projectID"
+            ],
+            "properties": {
+                "modelPackageID": {
+                    "description": "모델패키지 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "ID-1234"
+                },
+                "deployID": {
+                    "description": "배포 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "ID-1234"
+                },
+                "projectID": {
+                    "description": "프로젝트 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "ID-1234"
+                },
+                "name": {
+                    "description": "배포 명",
+                    "type": "string",
+                    "x-order": "1 x-nullable=false",
+                    "example": "This Is a Test Deploy"
+                },
+                "description": {
+                    "description": "배포 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "deploy best model"
+                },
+                "associationID": {
+                    "description": "예측 요청 데이터 중 업로드 할 실측값 데이터와 맵핑할 수 있는 연결ID",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "real_target"
+                },
+                "associationIDInRequests": {
+                    "description": "연결ID가 예측요청 피쳐에 속해 있을 경우 true, 피쳐 외부 json데이터에 있을 경우 false",
+                    "type": "boolean",
+                    "x-order": "2",
+                    "example": false
+                },
+                "enableAccurancyMonitoring": {
+                    "description": "활성화할 시 실측 데이터가 업로드 될 때마다 연결ID로 맵핑해 예측값과 실측값을 비교하고 정확도를 측정한다(실측데이터 업로드 필수)",
+                    "type": "boolean",
+                    "x-order": "2",
+                    "example": true
+                },
+                "enableFeatureDriftTracking": {
+                    "description": "활성화할 시 예측요청을 분석하여 피쳐의 분포도 변화를 추적한다 (훈련데이터 업로드 필수)",
+                    "type": "boolean",
+                    "x-order": "2",
+                    "example": true
+                },
+                "predictionEnvID": {
+                    "description": "예측 환경",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "k8s-inference-staging"
+                }
+            }
+        },
+        "http.GetLocationType": {
             "type": "object",
             "properties": {
-                "id": {
+                "type": {
+                    "description": "['Local', 'BasicAuth', 'S3' ,'GS']",
+                    "type": "string",
+                    "example": "['Local','BasicAuth','S3', 'GS']"
+                }
+            }
+        },
+        "http.GetModelPackageResponse": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "description": "모델 패키지 명",
+                    "type": "string",
+                    "x-order": "1 x-nullable=false",
+                    "example": "ModelPackage Example"
+                },
+                "description": {
+                    "description": "모델 패키지 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "Description of this package"
+                },
+                "model": {
+                    "description": "패키지에 추가할 모델의 정보",
+                    "x-order": "3",
+                    "$ref": "#/definitions/http.ModelInfo"
+                },
+                "targetType": {
+                    "description": "모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        "Regression"
+                    ],
+                    "x-order": "4",
+                    "example": "‘Binary’"
+                },
+                "features": {
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "feature_name1, feature_name2,....’"
+                },
+                "holdoutDataset": {
+                    "description": "홀드아웃 데이터셋",
+                    "$ref": "#/definitions/http.HoldoutDatasetInfo"
+                },
+                "negativeClassLabel": {
+                    "type": "string"
+                },
+                "positiveClassLabel": {
+                    "type": "string"
+                },
+                "predictionTargetName": {
+                    "description": "타켓컬럼 명칭",
+                    "type": "string"
+                },
+                "projectID": {
+                    "description": "프로젝트 ID",
+                    "type": "string"
+                },
+                "projectName": {
+                    "description": "프로젝트 명",
+                    "type": "string"
+                },
+                "runtimeFrameWork": {
+                    "description": "서빙 런타임 프레임워크",
+                    "type": "string"
+                },
+                "threshold": {
+                    "type": "number"
+                },
+                "trainingDataset": {
+                    "description": "훈련 데이터셋",
+                    "$ref": "#/definitions/http.TrainingDatasetInfo"
+                },
+                "transformer": {
+                    "description": "모델 입력 전처리기",
+                    "$ref": "#/definitions/http.TransformerInfo"
+                }
+            }
+        },
+        "http.GetRuntimeFrameWork": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "런타임 프레임워크 ['Tensorflow','PyTorch','Scikit-learn','XGBoost','PMML','Spark''Lightgbm','PaddleServer','Triton']",
+                    "type": "string",
+                    "example": "['Tensorflow','PyTorch','Scikit-learn','XGBoost','PMML','Spark''Lightgbm','PaddleServer','Triton']"
+                }
+            }
+        },
+        "http.GetTargetType": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "모델의 예측종류 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]",
+                    "type": "string",
+                    "example": "[‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]"
+                }
+            }
+        },
+        "http.HoldoutDatasetInfo": {
+            "type": "object",
+            "properties": {
+                "URL": {
+                    "description": "스토리지 URL",
+                    "type": "string"
+                },
+                "credential": {
+                    "description": "스토리지 접근 인증정보",
+                    "$ref": "#/definitions/http.Credential"
+                },
+                "locationType": {
+                    "description": "파일이 저장되어 있는 스토리지의 종류['Local', 'BasicAuth', 'S3' ,'GS']",
+                    "type": "string"
+                },
+                "targetName": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ModelInfo": {
+            "type": "object",
+            "properties": {
+                "Description": {
+                    "description": "설명",
+                    "type": "string"
+                },
+                "URL": {
+                    "description": "스토리지 URL",
+                    "type": "string"
+                },
+                "Version": {
+                    "description": "버전",
+                    "type": "string",
+                    "example": "V1"
+                },
+                "credential": {
+                    "description": "스토리지 접근 인증정보",
+                    "$ref": "#/definitions/http.Credential"
+                },
+                "locationType": {
+                    "description": "모델파일이 저장되어 있는 스토리지의 종류 ['Local', 'BasicAuth', 'S3' ,'GS']",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "모델명",
+                    "type": "string",
+                    "example": "Model Example"
+                }
+            }
+        },
+        "http.PatchDeploysRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "모델 패키지 명",
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "Model Package Example"
+                },
+                "description": {
+                    "description": "모델 패키지 설명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "Description of this package"
+                }
+            }
+        },
+        "http.PatchModelPackagesRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "모델 패키지 명",
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "Model Package Example"
+                },
+                "description": {
+                    "description": "모델 패키지 설명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "Description of this package"
+                }
+            }
+        },
+        "http.PostDeploysRequest": {
+            "type": "object",
+            "required": [
+                "modelPackageID",
+                "name",
+                "projectID"
+            ],
+            "properties": {
+                "projectID": {
+                    "description": "프로젝트 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "ID-1234"
+                },
+                "modelPackageID": {
+                    "description": "모델패키지 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "ID-1234"
+                },
+                "name": {
+                    "description": "배포 명",
+                    "type": "string",
+                    "x-order": "1 x-nullable=false",
+                    "example": "This Is a Test Deploy"
+                },
+                "predictionEnvID": {
+                    "description": "예측 환경",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "k8s-inference-staging"
+                },
+                "enableAccurancyMonitoring": {
+                    "description": "활성화할 시 실측 데이터가 업로드 될 때마다 연결ID로 맵핑해 예측값과 실측값을 비교하고 정확도를 측정한다(실측데이터 업로드 필수)",
+                    "type": "boolean",
+                    "x-order": "2",
+                    "example": true
+                },
+                "enableFeatureDriftTracking": {
+                    "description": "활성화할 시 예측요청을 분석하여 피쳐의 분포도 변화를 추적한다 (훈련데이터 업로드 필수)",
+                    "type": "boolean",
+                    "x-order": "2",
+                    "example": true
+                },
+                "description": {
+                    "description": "배포 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "deploy best model"
+                },
+                "associationID": {
+                    "description": "예측 요청 데이터 중 업로드 할 실측값 데이터와 맵핑할 수 있는 연결ID",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "real_target"
+                },
+                "associationIDInRequests": {
+                    "description": "연결ID가 예측요청 피쳐에 속해 있을 경우 true, 피쳐 외부 json데이터에 있을 경우 false",
+                    "type": "boolean",
+                    "x-order": "2",
+                    "example": false
+                }
+            }
+        },
+        "http.PostDeploysResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "상세 메세지",
+                    "type": "string"
+                }
+            }
+        },
+        "http.PostModelPackagesRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "projectID"
+            ],
+            "properties": {
+                "projectID": {
+                    "description": "모델 패키지를 등록할 프로젝트 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "ID-1234"
+                },
+                "name": {
+                    "description": "모델 패키지 명",
+                    "type": "string",
+                    "x-order": "1 x-nullable=false",
+                    "example": "ModelPackage Example"
+                },
+                "description": {
+                    "description": "모델 패키지 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "Description of this package"
+                },
+                "model": {
+                    "description": "패키지에 추가할 모델의 정보",
+                    "x-order": "3",
+                    "$ref": "#/definitions/http.ModelInfo"
+                },
+                "targetType": {
+                    "description": "모델의 예측타입 [‘Binary’, ‘Regression’, ‘Multiclass’, ‘Unstructured’]",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        "Regression"
+                    ],
+                    "x-order": "4",
+                    "example": "‘Binary’"
+                },
+                "features": {
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "feature_name1, feature_name2,....’"
+                },
+                "holdoutDataset": {
+                    "description": "홀드아웃 데이터셋",
+                    "$ref": "#/definitions/http.HoldoutDatasetInfo"
+                },
+                "negativeClassLabel": {
+                    "description": "모델의 예측 타입이 'Binary' 일 때 Negative클래스 명",
+                    "type": "string"
+                },
+                "positiveClassLabel": {
+                    "description": "모델의 예측 타입이 'Binary' 일 때 Positive클래스 명",
+                    "type": "string"
+                },
+                "predictionTargetName": {
+                    "description": "예측 타켓컬럼 명칭",
+                    "type": "string"
+                },
+                "runtimeFrameWork": {
+                    "description": "서빙 런타임 프레임워크",
+                    "$ref": "#/definitions/http.PostRuntimeFrameWork"
+                },
+                "threshold": {
+                    "description": "모델의 예측 타입이 'Binary' 일 때 Threshold",
+                    "type": "number"
+                },
+                "trainingDataset": {
+                    "description": "훈련 데이터셋",
+                    "$ref": "#/definitions/http.TrainingDatasetInfo"
+                },
+                "transformer": {
+                    "description": "모델 입력 전처리기",
+                    "$ref": "#/definitions/http.TransformerInfo"
+                }
+            }
+        },
+        "http.PostModelPackagesResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "상세 메세지",
+                    "type": "string"
+                }
+            }
+        },
+        "http.PostRuntimeFrameWork": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "런타임 프레임워크 ['Tensorflow','PyTorch','Scikit-learn','XGBoost','PMML','Spark''Lightgbm','PaddleServer','Triton']",
+                    "type": "string",
+                    "example": "['Tensorflow','PyTorch','Scikit-learn','XGBoost','PMML','Spark''Lightgbm','PaddleServer','Triton']"
+                },
+                "version": {
+                    "description": "런타임 프레임워크 버전",
+                    "type": "string",
+                    "example": "0.12"
+                }
+            }
+        },
+        "http.TrainingDatasetInfo": {
+            "type": "object",
+            "properties": {
+                "URL": {
+                    "description": "스토리지 URL",
+                    "type": "string"
+                },
+                "credential": {
+                    "description": "스토리지 접근 인증정보",
+                    "$ref": "#/definitions/http.Credential"
+                },
+                "locationType": {
+                    "description": "파일이 저장되어 있는 스토리지의 종류['Local', 'BasicAuth', 'S3' ,'GS']",
+                    "type": "string"
+                },
+                "targetName": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.TransformerInfo": {
+            "type": "object",
+            "properties": {
+                "URL": {
+                    "type": "string"
+                },
+                "credential": {
+                    "$ref": "#/definitions/http.Credential"
+                },
+                "locationType": {
+                    "description": "파일이 저장되어 있는 스토리지의 종류 ['Local', 'BasicAuth', 'S3' ,'GS']",
                     "type": "string"
                 }
             }
