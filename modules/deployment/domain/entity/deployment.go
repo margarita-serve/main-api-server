@@ -7,36 +7,60 @@ import (
 
 	domSvcInferenceSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service"
 	domSvcInferenceDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service/dto"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/rs/xid"
 )
 
-var ErrDeploymentID = errors.New("empty deployment id")
-
 type Deployment struct {
-	ID              string `gorm:"size:256"`
-	ProjectID       string `gorm:"size:256"`
-	ModelPackageID  string `gorm:"size:256"`
-	PredictionEnvID string `gorm:"size:256"`
-	Name            string `gorm:"size:256"`
-	Description     string `gorm:"size:256"`
-	Importance      string `gorm:"size:256"`
-	DeployType      string `gorm:"size:256"`
-	RequestCPU      string `gorm:"size:8"`
-	RequestMEM      string `gorm:"size:8"`
-	RequestGPU      string `gorm:"size:8"`
-	ActiveStatus    string `gorm:"size:256"`
-	ServiceStatus   string `gorm:"size:256"`
+	ID              string  `gorm:"size:256"`
+	ProjectID       string  `gorm:"size:256"`
+	ModelPackageID  string  `gorm:"size:256"`
+	PredictionEnvID string  `gorm:"size:256"`
+	Name            string  `gorm:"size:256"`
+	Description     string  `gorm:"size:256"`
+	Importance      string  `gorm:"size:256"`
+	DeployType      string  `gorm:"size:256"`
+	RequestCPU      float32 `gorm:"size:8"`
+	RequestMEM      float32 `gorm:"size:8"`
+	LimitCPU        float32 `gorm:"size:8"`
+	LimitMEM        float32 `gorm:"size:8"`
+	ActiveStatus    string  `gorm:"size:256"`
+	ServiceStatus   string  `gorm:"size:256"`
 	ChangeRequested bool
-	ModelHistory    []ModelHistory `gorm:"foreignKey:DeploymentID;references:ID"`
+	ModelHistory    []*ModelHistory `gorm:"foreignKey:DeploymentID;references:ID"`
+	EventHistory    []*EventHistory `gorm:"foreignKey:DeploymentID;references:ID"`
 	BaseEntity
 }
 
 func NewDeployment(id string, projectID string, modelPackageID string, predictionEnvID string,
-	name string, description string, importance string, requestCPU string, requestMEM string, requestGPU string, ownerID string) (*Deployment, error) {
+	name string, description string, importance string, deployType string, requestCPU float32, requestMEM float32, limitCPU float32, limitMEM float32, ownerID string) (*Deployment, error) {
 
-	var mh []ModelHistory
+	var modelHistory []*ModelHistory
+	var eventHistory []*EventHistory
 
-	var be BaseEntity
-	be.CreatedBy = "testuser"
+	var baseEntity BaseEntity
+	baseEntity.CreatedBy = "testuser"
+
+	// Validate
+	err := validation.Validate(deployType, validation.Required, validation.In("Normal", "Test", "Challenger"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Default CPU, MEM Resource Setting
+	if requestCPU == 0 {
+		requestCPU = 1
+	}
+	if requestMEM == 0 {
+		requestMEM = 2
+	}
+
+	if limitCPU == 0 {
+		limitCPU = requestCPU
+	}
+	if limitMEM == 0 {
+		limitMEM = requestMEM
+	}
 
 	deployment := &Deployment{
 		id,
@@ -46,75 +70,114 @@ func NewDeployment(id string, projectID string, modelPackageID string, predictio
 		name,
 		description,
 		importance,
-		"normal",
+		deployType,
 		requestCPU,
 		requestMEM,
-		requestGPU,
-		"inactive",
-		"createRequested",
+		limitCPU,
+		limitMEM,
+		"",
+		"",
 		false,
-		mh,
-		be}
+		modelHistory,
+		eventHistory,
+		baseEntity}
+
+	deployment.SetServiceStatusCreateRequested()
+	deployment.SetActiveStatusInActive()
 
 	return deployment, nil
 }
 
-func (d *Deployment) AddModelHistory(id string, name string, startDate time.Time, endDate time.Time, applyHistoryTag string) {
-	var mh ModelHistory
-	mh.ID = id
-	mh.Name = name
-	mh.StartDate = startDate
-	mh.EndDate = endDate
-	mh.ApplyHistoryTag = applyHistoryTag
-
-	d.ModelHistory = append(d.ModelHistory, mh)
+func (d *Deployment) AddEventHistory(eventType string, logMessage string, userId string) error {
+	eventHistory, err := newEventHistory(eventType, logMessage, userId)
+	if err != nil {
+		return err
+	}
+	d.EventHistory = append(d.EventHistory, eventHistory)
+	return nil
 }
 
-func (d *Deployment) SetDeploymentActive(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceCreateRequest) error {
-	err := domSvc.InferenceServiceActive(d.ID)
+func (d *Deployment) AddModelHistory(name string, version string) {
+	for i, mh := range d.ModelHistory {
+		if mh.ApplyHistoryTag == "Current" {
+			d.ModelHistory[i].ApplyHistoryTag = "Previous"
+			d.ModelHistory[i].EndDate = time.Now()
+		}
+	}
+
+	guid := xid.New().String()
+
+	modelHistory := newModelHistory(guid, name, version)
+	d.ModelHistory = append(d.ModelHistory, modelHistory)
+
+}
+
+func (d *Deployment) SetDeploymentActive(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceActiveRequest) error {
+	if d.ActiveStatus == "Active" {
+		return errors.New("already active")
+	}
+
+	res, err := domSvc.InferenceServiceActive(&reqDom)
+	fmt.Printf("res: %v\n", res)
 
 	if err != nil {
-		d.ServiceStatus = "error"
+		d.SetServiceStatusError()
 		return err
 	}
 
-	d.ActiveStatus = "active"
+	d.SetActiveStatusActive()
 	return err
 }
 
-func (d *Deployment) SetDeploymentInactive(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceCreateRequest) error {
-	err := domSvc.InferenceServiceInActive(d.ID)
+func (d *Deployment) SetDeploymentInActive(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceInActiveRequest) error {
+	if d.ActiveStatus == "InActive" {
+		return errors.New("already inactive")
+	}
+
+	res, err := domSvc.InferenceServiceInActive(&reqDom)
+	fmt.Printf("res: %v\n", res)
 
 	if err != nil {
-		d.ServiceStatus = "error"
+		d.SetServiceStatusError()
 		return err
 	}
 
-	d.ActiveStatus = "inactive"
+	d.SetActiveStatusInActive()
 	return err
 }
 
 func (d *Deployment) RequestCreateInferenceService(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceCreateRequest) error {
-	d.ServiceStatus = "createRequested"
-
 	res, err := domSvc.InferenceServiceCreate(&reqDom)
 	fmt.Printf("res: %v\n", res)
 
 	if err != nil {
-		d.ServiceStatus = "error"
+		d.SetServiceStatusError()
 		return err
 	}
 
-	d.AddModelHistory("000001", reqDom.ModelName, time.Now(), time.Time{}, "current")
+	d.SetActiveStatusActive()
+	d.SetServiceStatusReady()
 
-	d.ServiceStatus = "ready"
+	return err
+}
+
+func (d *Deployment) RequestReplaceModelInferenceService(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceReplaceModelRequest) error {
+	res, err := domSvc.InferenceServiceReplaceModel(&reqDom)
+	fmt.Printf("res: %v\n", res)
+
+	if err != nil {
+		d.SetServiceStatusError()
+		return err
+	}
+
+	d.SetServiceStatusReady()
 
 	return err
 }
 
 func (d *Deployment) RequestDeleteInferenceService(domSvc domSvcInferenceSvc.IInferenceServiceAdapter, reqDom domSvcInferenceDTO.InferenceServiceDeleteRequest) error {
-
-	err := domSvc.InferenceServiceDelete(&reqDom)
+	res, err := domSvc.InferenceServiceDelete(&reqDom)
+	fmt.Printf("res: %v\n", res)
 
 	if err != nil {
 		return err
@@ -123,50 +186,42 @@ func (d *Deployment) RequestDeleteInferenceService(domSvc domSvcInferenceSvc.IIn
 	return err
 }
 
-// func (d *Deployment) InferenceServiceModelReplaceRequest(domSvc domSvcInference.IInferenceServiceAdapter, reqDom domSvcInference.InferenceServiceModelReplaceRequest, modelPackageID string, now time.Time) (*domSvcInference.InferenceServiceModelReplaceResponse, error) {
+func (d *Deployment) UpdateDeploymentName(req string) {
+	d.Name = req
+}
 
-// 	res, err := domSvc.Update(&reqDom)
+func (d *Deployment) UpdateDeploymentDescription(req string) {
+	d.Description = req
+}
 
-// 	if err != nil {
-// 		d.ServiceStatus = "error"
-// 		return res, err
-// 	}
+func (d *Deployment) UpdateDeploymentImportance(req string) {
+	d.Importance = req
+}
 
-// 	d.ModelPackageID = modelPackageID
-// 	d.ModelHistory = append(d.ModelHistory, &ModelHistory{ID: res.ModelHistoryID, Name: reqDom.ModelName, StartDate: now, EndDate: time.Time{}, ApplyHistoryTag: "current"})
-// 	d.ServiceStatus = "ready"
+func (d *Deployment) ChangeModelPackage(req string) {
+	d.ModelPackageID = req
+}
 
-// 	return res, err
-// }
+func (d *Deployment) SetServiceStatusError() {
+	d.ServiceStatus = "Error"
+}
+
+func (d *Deployment) SetServiceStatusReady() {
+	d.ServiceStatus = "Ready"
+}
 
 func (d *Deployment) SetServiceStatusReplacingModel() {
-	d.ServiceStatus = "replacingModel"
+	d.ServiceStatus = "ReplacingModel"
 }
 
-func (d *Deployment) SetImportanceLow() {
-	d.Importance = "low"
+func (d *Deployment) SetServiceStatusCreateRequested() {
+	d.ServiceStatus = "CreateRequested"
 }
 
-func (d *Deployment) SetImportanceModerate() {
-	d.Importance = "moderate"
+func (d *Deployment) SetActiveStatusActive() {
+	d.ActiveStatus = "Active"
 }
 
-func (d *Deployment) SetImportanceHigh() {
-	d.Importance = "high"
-}
-
-func (d *Deployment) SetImportanceCritical() {
-	d.Importance = "critical"
-}
-
-func (d *Deployment) SetDeployTypeNormal() {
-	d.Importance = "normal"
-}
-
-func (d *Deployment) SetDeployTypeTest() {
-	d.Importance = "test"
-}
-
-func (d *Deployment) SetDeployTypeChallenger() {
-	d.Importance = "challenger"
+func (d *Deployment) SetActiveStatusInActive() {
+	d.ActiveStatus = "InActive"
 }

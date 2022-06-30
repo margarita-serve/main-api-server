@@ -28,13 +28,6 @@ type FModelPackage struct {
 	appModelPackage *appModelPackage.ModelPackageApp
 }
 
-// @Summary Deploy Package
-// @Description  배포 생성
-// @Tags Deploy
-// @Accept json
-// @Produce json
-// @Param body body PostDeploysRequest true "Create ModelPackage"
-// @Success 200 {object} appModelPackageDTO.ModelPackageCreateRequestDTO
 func (f *FModelPackage) Create(c echo.Context) error {
 	// identity
 	// i, err := f.SetIdentity(c)
@@ -58,12 +51,6 @@ func (f *FModelPackage) Create(c echo.Context) error {
 
 }
 
-// @Summary 배포 조회
-// @Description
-// @Tags Deploy
-// @Accept json
-// @Produce json
-// @Success 200 {object} appModelPackageDTO.ModelPackageDeleteResponseDTO
 func (f *FModelPackage) Delete(c echo.Context) error {
 	//
 	req := new(appModelPackageDTO.ModelPackageDeleteRequestDTO)
@@ -80,12 +67,6 @@ func (f *FModelPackage) Delete(c echo.Context) error {
 
 }
 
-// @Summary 배포 조회
-// @Description
-// @Tags Deploy
-// @Accept json
-// @Produce json
-// @Success 200 {object} appModelPackageDTO.ModelPackageGetResponseDTO
 func (f *FModelPackage) Get(c echo.Context) error {
 	//
 	req := new(appModelPackageDTO.ModelPackageGetRequestDTO)
@@ -102,12 +83,6 @@ func (f *FModelPackage) Get(c echo.Context) error {
 
 }
 
-// @Summary 배포 조회
-// @Description
-// @Tags Deploy
-// @Accept json
-// @Produce json
-// @Success 200 {object} appModelPackageDTO.ModelPackageGetByNameResponseDTO
 func (f *FModelPackage) GetByName(c echo.Context) error {
 	//
 

@@ -8,7 +8,7 @@ import (
 
 // SetEmail set Email Router
 func SetModelPackage(eg *echo.Group, f *feature.FModelPackage) {
-	gc := eg.Group("/modelpackages")
+	gc := eg.Group("/model-packages")
 	//gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
 
 	gc.POST("", f.Create)

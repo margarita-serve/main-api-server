@@ -3,30 +3,21 @@
 applications:
   servers:
     restapi:
-      name: "DDD Technical Architecture Patterns:: REST API"
-      version: "0.1.0"
-      description: "Domain-Driven Design Technical Architecture Patterns:: Golang Sample"
       options:
         showEngineHeader: true
         displayOpenAPI: true
+        hostname: "http://localhost"
         listener:
-          port: 2020
+          port: 32022
         middlewares:
           logger:
             enable: true
-        # openAPIDefinition: # OpenAPIDefinition
-        #   info:
-        #     title: "DDD Technical Architecture Patterns: REST API"
-        #     description: "A Simple Implementation of `Domain-Driven Design Technical Architecture Patterns` in Golang"
-        #     termsOfService: https://github.com/muharihar/d3la-go
-        #     contact:
-        #       name: Muhammad Hari
-        #       url: https://github.com/muharihar
-        #       email: hi.muhammad.hari@gmail.com
-        #     license:
-        #       name: MIT
-        #       url: https://github.com/muharihar/d3la-go
-        #     version: 1.0.0
+        openAPIDefinition: # OpenAPIDefinition
+          info:
+            title: "KoreServe REST API Server"
+            description: "KoreServe Main API Definition."
+            version: 0.1.0
+            basePath: "/api/v1"
 
 # Databases
 databases:
@@ -168,33 +159,3 @@ caches:
       occupyMode: false
       section: "cache"
 
-# Indexers
-indexers:
-  dataIndexer:
-    connectionName: "data-indexer"
-    engine: "elasticsearch"
-    driver: "elasticsearch"
-    version: "7"
-    configurations:
-      adapter: "elasticsearch"
-      addresses:
-        - "http://localhost:9200"
-        - "http://localhost:9201"
-      username: ""
-      password: ""
-      cloudID: ""
-      APIKey: ""
-  logIndexer:
-    connectionName: "log-indexer"
-    engine: "elasticsearch"
-    driver: "elasticsearch"
-    version: "8"
-    configurations:
-      adapter: "elasticseach"
-      addresses:
-        - "http://localhost:9201"
-        - "http://localhost:9200"
-      username: ""
-      password: ""
-      cloudID: ""
-      APIKey: ""

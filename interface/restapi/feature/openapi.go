@@ -1,10 +1,10 @@
 package feature
 
 import (
-	"net/http"
-
+	docs "git.k3.acornsoft.io/msit-auto-ml/koreserv/docs"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // NewOpenAPI new FOpenAPI
@@ -21,21 +21,6 @@ type FOpenAPI struct {
 	BaseFeature
 }
 
-// SwaggerUI generate SwaggerUI html page
-func (f *FOpenAPI) SwaggerUI(c echo.Context) error {
-
-	cfg, err := f.handler.GetConfig()
-	if err != nil {
-		return err
-	}
-
-	data := map[string]interface{}{
-		"htmlTitle": cfg.Applications.Servers.RestAPI.Name,
-	}
-
-	return c.Render(http.StatusOK, "openapis/swagger-ui", data)
-}
-
 // GenOpenAPI generate openapi definition
 func (f *FOpenAPI) GenOpenAPI(c echo.Context) error {
 	cfg, err := f.handler.GetConfig()
@@ -43,18 +28,14 @@ func (f *FOpenAPI) GenOpenAPI(c echo.Context) error {
 		return err
 	}
 
-	data := map[string]interface{}{
-		"info.Title":              cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Title,
-		"info.Description":        cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Description,
-		"info.Contact.Name":       cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Contact.Name,
-		"info.Contact.URL":        cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Contact.URL,
-		"info.Contact.Email":      cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Contact.Email,
-		"info.License.Name":       cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.License.Name,
-		"info.License.URL":        cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.License.URL,
-		"info.Version":            cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Version,
-		"server.URL.Host.Default": c.Request().Host,
-	}
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	// return c.Blob(http.StatusOK, "text/plain; charset=utf-8", data)
-	return c.Render(http.StatusOK, "openapi.yaml", data)
+	docs.SwaggerInfo.Title = cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Title
+	docs.SwaggerInfo.Description = cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Description
+	docs.SwaggerInfo.Version = cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.Version
+	docs.SwaggerInfo.Host = c.Request().Host
+	docs.SwaggerInfo.BasePath = cfg.Applications.Servers.RestAPI.Options.OpenAPIDefinition.Info.BasePath
+
+	return echoSwagger.WrapHandler(c)
+
 }

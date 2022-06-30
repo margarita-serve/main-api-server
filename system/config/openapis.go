@@ -7,12 +7,10 @@ type RootOpenAPIDefinition struct {
 
 // OpenAPIInfo represent OpenAPIInfo
 type OpenAPIInfo struct {
-	Title          string         `json:"title" yaml:"title"`
-	Description    string         `json:"description" yaml:"description"`
-	TermsOfService string         `json:"termsOfService" yaml:"termsOfService"`
-	Contact        OpenAPIContact `json:"contact" yaml:"contact"`
-	License        OpenAPILicense `json:"license" yaml:"license"`
-	Version        string         `json:"version" yaml:"version"`
+	Title       string `json:"title" yaml:"title"`
+	Description string `json:"description" yaml:"description"`
+	Version     string `json:"version" yaml:"version"`
+	BasePath    string `json:"basePath" yaml:"basePath"`
 }
 
 // OpenAPIContact represent OpenAPIContact

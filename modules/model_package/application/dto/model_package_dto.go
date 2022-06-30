@@ -101,7 +101,7 @@ type ModelPackageGetInternalResponseDTO struct {
 	PredictionThreshold   float32
 	PositiveClassLabel    string
 	NegativeClassLabel    string
-	ModelFilePath         string
-	TrainingDatasetPath   string
-	HoldoutDatasetPath    string
+	ModelURL              string
+	TrainingDatasetURL    string
+	HoldoutDatasetURL     string
 }

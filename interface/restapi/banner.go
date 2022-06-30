@@ -20,7 +20,7 @@ Welcome to:
 #   #  #     # #    #  #             #     # #       #    #    # #   #       
 #    # ####### #     # #######        #####  ####### #     #    #    ####### %s
 
-High performance, minimalist muharihar Go web framework
+Machine Learning Model Serving & Monitoring FrameWork
 Based on Echo %s (https://echo.labstack.com/)
 
 %s

@@ -177,8 +177,8 @@ func (c *InferenceService) DeleteInferenceService(req *infsType.DeleteInferenceS
 	return &respObj, nil
 }
 
-// CreateInferenceService Post CreateInferenceService
-func (c *InferenceService) UpdateInferenceService(req *infsType.CreateInferenceServiceRequest) (*infsType.CreateInferenceServiceResponse, error) {
+// UpdateInferenceService Post UpdateInferenceService
+func (c *InferenceService) UpdateInferenceService(req *infsType.UpdateInferenceServiceRequest) (*infsType.UpdateInferenceServiceResponse, error) {
 	module := "inference-service"
 	url := fmt.Sprintf("%s/%s", req.InferenceServer, module)
 
@@ -187,7 +187,7 @@ func (c *InferenceService) UpdateInferenceService(req *infsType.CreateInferenceS
 		return nil, err
 	}
 
-	respObj := infsType.CreateInferenceServiceResponse{}
+	respObj := infsType.UpdateInferenceServiceResponse{}
 	err = json.Unmarshal(resp, &respObj)
 	if err != nil {
 		return nil, err

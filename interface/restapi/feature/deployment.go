@@ -1,6 +1,11 @@
 package feature
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"strconv"
+
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appDeployment "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application"
 	appDeploymentDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
@@ -28,13 +33,15 @@ type FDeployment struct {
 	appDeployment *appDeployment.DeploymentApp
 }
 
-// @Summary Deploy Package
+// @Summary Create Deployment
 // @Description  배포 생성
-// @Tags Deploy
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param body body PostDeploysRequest true "Create Deployment"
-// @Success 200 {object} appDeploymentDTO.DeploymentCreateRequestDTO
+// @Param projectID path string true "projectID"
+// @Param body body appDeploymentDTO.CreateDeploymentRequestDTO true "Create Deployment"
+// @Success 200 {object} appDeploymentDTO.CreateDeploymentResponseDTO
+// @Router      /projects/{projectID}/deployments [post]
 func (f *FDeployment) Create(c echo.Context) error {
 	// identity
 	// i, err := f.SetIdentity(c)
@@ -44,10 +51,12 @@ func (f *FDeployment) Create(c echo.Context) error {
 	// if !i.IsLogin || i.IsAnonymous {
 	// 	return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
 	// }
-	req := new(appDeploymentDTO.DeploymentCreateRequestDTO)
+	req := new(appDeploymentDTO.CreateDeploymentRequestDTO)
 	if err := c.Bind(req); err != nil {
 		return f.translateErrorMessage(err, c)
 	}
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
 
 	resp, err := f.appDeployment.DeploymentSvc.Create(req)
 	if err != nil {
@@ -58,18 +67,22 @@ func (f *FDeployment) Create(c echo.Context) error {
 
 }
 
-// @Summary 배포 조회
-// @Description
-// @Tags Deploy
+// @Summary Delete Deployment
+// @Description 배포 삭제
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Success 200 {object} appDeploymentDTO.DeploymentDeleteResponseDTO
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Success 200 {object} appDeploymentDTO.DeleteDeploymentResponseDTO
+// @Router       /projects/{projectID}/deployments/{deploymentID} [delete]
 func (f *FDeployment) Delete(c echo.Context) error {
 	//
-	req := new(appDeploymentDTO.DeploymentDeleteRequestDTO)
-	if err := c.Bind(req); err != nil {
-		return f.translateErrorMessage(err, c)
-	}
+	req := new(appDeploymentDTO.DeleteDeploymentRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
 
 	resp, err := f.appDeployment.DeploymentSvc.Delete(req)
 	if err != nil {
@@ -80,43 +93,102 @@ func (f *FDeployment) Delete(c echo.Context) error {
 
 }
 
-// @Summary 배포 조회
-// @Description
-// @Tags Deploy
+// @Summary Edit Deployment
+// @Description 배포 정보수정
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Success 200 {object} appDeploymentDTO.DeploymentGetResponseDTO
-func (f *FDeployment) Get(c echo.Context) error {
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Param body body appDeploymentDTO.UpdateDeploymentRequestDTO true "Update Deployment Info"
+// @Success 200 {object} appDeploymentDTO.UpdateDeploymentResponseDTO
+// @Router      /projects/{projectID}/deployments/{deploymentID} [patch]
+func (f *FDeployment) Update(c echo.Context) error {
 	//
-	req := new(appDeploymentDTO.DeploymentGetRequestDTO)
+	req := new(appDeploymentDTO.UpdateDeploymentRequestDTO)
 	if err := c.Bind(req); err != nil {
 		return f.translateErrorMessage(err, c)
 	}
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
+
+	resp, err := f.appDeployment.DeploymentSvc.UpdateDeployment(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+
+}
+
+// @Summary Get Deployment
+// @Description 배포 상세조회
+// @Tags Deployment
+// @Accept json
+// @Produce json
+// @Param projectID path string false "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Success 200 {object} appDeploymentDTO.GetDeploymentResponseDTO
+// @Router       /projects/{projectID}/deployments/{deploymentID} [get]
+// @Router       /deployments/{deploymentID} [get]
+func (f *FDeployment) GetByID(c echo.Context) error {
+	//
+	req := new(appDeploymentDTO.GetDeploymentRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
 
 	resp, err := f.appDeployment.DeploymentSvc.GetByID(req)
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}
 
+	resp.URI = f.getPredictionURL(c)
+
 	return response.OkWithData(resp, c)
 
 }
 
-// @Summary 배포 조회
-// @Description
-// @Tags Deploy
+func (f *FDeployment) getPredictionURL(c echo.Context) string {
+	//...
+	//cfg, _ := f.handler.GetConfig()
+	hostname := c.Request().Host
+	//port := cfg.Applications.Servers.RestAPI.Options.Listener.Port
+
+	predictURI := fmt.Sprintf("%s%s/%s", hostname, c.Request().RequestURI, "predict")
+
+	return predictURI
+}
+
+// @Summary Get Deployment List
+// @Description 배포 리스트
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Success 200 {object} appDeploymentDTO.DeploymentGetByNameResponseDTO
-func (f *FDeployment) GetByName(c echo.Context) error {
+// @Param projectID path string true "projectID"
+// @Param name query string false "queryName"
+// @Param page query int false "page"
+// @Param limit query int false "limit"
+// @Param sort query string false "sort"
+// @Success 200 {object} appDeploymentDTO.GetDeploymentListResponseDTO
+// @Router       /projects/{projectID}/deployments [get]
+// @Router       /deployments [get]
+func (f *FDeployment) GetList(c echo.Context) error {
 	//
+	req := new(appDeploymentDTO.GetDeploymentListRequestDTO)
 
-	name := c.QueryParam("name")
-	print("NAME:" + name)
-	req := new(appDeploymentDTO.DeploymentGetByNametRequestDTO)
-	req.Name = name
+	req.Name = c.QueryParam("name")
+	req.Page, _ = strconv.Atoi((c.QueryParam("page")))
+	req.Limit, _ = strconv.Atoi(c.QueryParam("limit"))
+	req.Sort = c.QueryParam("sort")
 
-	resp, err := f.appDeployment.DeploymentSvc.GetByName(req)
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
+
+	resp, err := f.appDeployment.DeploymentSvc.GetList(req)
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}
@@ -125,51 +197,176 @@ func (f *FDeployment) GetByName(c echo.Context) error {
 
 }
 
-// @Summary 배포 삭제
-// @Description
-// @Tags Deploy
+// @Summary Get Governance Log
+// @Description 배포 거버넌스 로그 조회
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param modelPackageID path string true "Required. "
-// @Success      200  {string}  string    "ok"
-// @Router /deployments/{deploymentsId} [delete]
-// func Delete(c echo.Context) error {
-// 	//...
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Success 200 {object} appDeploymentDTO.GetGovernanceHistoryResponseDTO
+// @Router       /projects/{projectID}/deployments/{deploymentID}/governance-log [get]
+// @Router       /deployments/{deploymentID}/governance-log [get]
+func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
+	//
+	req := new(appDeploymentDTO.GetGovernanceHistoryRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
 
-// 	post_response := new(PostDeploysResponse)
-// 	return c.JSONPretty(http.StatusOK, *post_response, "  ")
-// }
+	resp, err := f.appDeployment.DeploymentSvc.GetGovernanceHistory(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
 
-// @Summary 배포 수정
-// @Description
-// @Tags Deploy
+	return response.OkWithData(resp, c)
+
+}
+
+// @Summary Get Model History
+// @Description 배포 모델 변경이력 조회
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param modelPackageID query string true "Required. "
-// @Param body body PatchDeploysRequest true "Archive Package"
-// @Success      200  {string}  string    "ok"
-// @Router /deployments/{deploymentsId} [patch]
-// func Patch(c echo.Context) error {
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Success 200 {object} appDeploymentDTO.GetModelHistoryResponseDTO
+// @Router       /projects/{projectID}/deployments/{deploymentID}/model-history [get]
+// @Router       /deployments/{deploymentID}/model-history [get]
+func (f *FDeployment) GetModelHistory(c echo.Context) error {
+	//
+	req := new(appDeploymentDTO.GetModelHistoryRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
 
-// 	//...
+	resp, err := f.appDeployment.DeploymentSvc.GetModelHistory(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
 
-// 	post_response := new(PostDeploysResponse)
-// 	return c.JSONPretty(http.StatusOK, *post_response, "  ")
-// }
+	return response.OkWithData(resp, c)
 
-// @Summary 배포 모델변경
-// @Description
-// @Tags Deploy
+}
+
+// @Summary Replace Model
+// @Description  배포 모델변경
+// @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param modelPackageID query string true "Required. "
-// @Param body body PatchDeploysRequest true "Archive Package"
-// @Success      200  {string}  string    "ok"
-// @Router /deployments/{deploymentsId} [patch]
-// func PatchModel(c echo.Context) error {
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Param body body appDeploymentDTO.ReplaceModelRequestDTO true "Create Deployment"
+// @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
+// @Router        /projects/{projectID}/deployments/{deploymentID}/replace-model [patch]
+// @Router        /deployments/{deploymentID}/replace-model [patch]
+func (f *FDeployment) ReplaceModel(c echo.Context) error {
 
-// 	//...
+	//...
+	req := new(appDeploymentDTO.ReplaceModelRequestDTO)
+	if err := c.Bind(req); err != nil {
+		return f.translateErrorMessage(err, c)
+	}
 
-// 	post_response := new(PostDeploysResponse)
-// 	return c.JSONPretty(http.StatusOK, *post_response, "  ")
-// }
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
+
+	resp, err := f.appDeployment.DeploymentSvc.ReplaceModel(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+}
+
+// @Summary Send Prediction
+// @Description  예측 요청
+// @Tags Deployment
+// @Accept json
+// @Produce json
+// @Param projectID path string false "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Param json body string true "application/json" SchemaExample({\n"association_id": ["abcd1234", "abcd1235"], \n"instances": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]\n}) "Json data for prediction"
+// @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
+// @Router        /projects/{projectID}/deployments/{deploymentID}/predict [post]
+// @Router        /deployments/{deploymentID}/predict [post]
+func (f *FDeployment) SendPrediction(c echo.Context) error {
+
+	//...
+	req := new(appDeploymentDTO.SendPredictionRequestDTO)
+	a, _ := ioutil.ReadAll(c.Request().Body)
+
+	req.JsonData = bytes.NewBuffer(a).String()
+
+	// if err := c.Bind(req); err != nil {
+	// 	return f.translateErrorMessage(err, c)
+	// }
+
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
+
+	resp, err := f.appDeployment.DeploymentSvc.SendPrediction(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+}
+
+// @Summary Active Deployment
+// @Description 배포 활성화
+// @Tags Deployment
+// @Accept json
+// @Produce json
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Success 200 {object} appDeploymentDTO.ActiveDeploymentResponseDTO
+// @Router       /projects/{projectID}/deployments/{deploymentID}/active [put]
+func (f *FDeployment) Active(c echo.Context) error {
+	//
+	req := new(appDeploymentDTO.ActiveDeploymentRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
+
+	resp, err := f.appDeployment.DeploymentSvc.SetActive(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+
+}
+
+// @Summary Inactive Deployment
+// @Description 배포 비활성화
+// @Tags Deployment
+// @Accept json
+// @Produce json
+// @Param projectID path string true "projectID"
+// @Param deploymentID path string true "deploymentID"
+// @Success 200 {object} appDeploymentDTO.InActiveDeploymentResponseDTO
+// @Router       /projects/{projectID}/deployments/{deploymentID}/inactive [put]
+func (f *FDeployment) InActive(c echo.Context) error {
+	//
+	req := new(appDeploymentDTO.InActiveDeploymentRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	projectID := c.Param("projectID")
+	req.ProjectID = projectID
+
+	resp, err := f.appDeployment.DeploymentSvc.SetInActive(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+
+}

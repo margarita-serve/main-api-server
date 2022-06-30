@@ -8,7 +8,7 @@ import (
 func (r *InferenceServiceCreateRequest) Validate() error {
 	return validation.ValidateStruct(r,
 		validation.Field(&r.ConnectionInfo, validation.Required),
-		validation.Field(&r.Inferencename, validation.Required),
+		validation.Field(&r.DeploymentID, validation.Required),
 		validation.Field(&r.ModelURL, validation.Required),
 		validation.Field(&r.ModelFrameWork, validation.Required),
 		validation.Field(&r.Namespace, validation.Required),

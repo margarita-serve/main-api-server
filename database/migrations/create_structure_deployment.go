@@ -29,7 +29,7 @@ type CreateStructureDeployment struct {
 func (ms01 *CreateStructureDeployment) Run(db *gorm.DB) error {
 	// DB
 
-	if err := db.AutoMigrate(&deploymentModel.Deployment{}, &deploymentModel.ModelHistory{}); err != nil {
+	if err := db.AutoMigrate(&deploymentModel.Deployment{}, &deploymentModel.ModelHistory{}, &deploymentModel.EventHistory{}); err != nil {
 		return err
 	}
 

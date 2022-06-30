@@ -177,9 +177,9 @@ func (s *ModelPackageService) GetByIDInternal(req *appDTO.ModelPackageGetInterna
 	resDTO.PredictionThreshold = res.PredictionThreshold
 	resDTO.PositiveClassLabel = res.PositiveClassLabel
 	resDTO.NegativeClassLabel = res.NegativeClassLabel
-	resDTO.ModelFilePath = res.ModelFilePath
-	resDTO.TrainingDatasetPath = res.TrainingDatasetPath
-	resDTO.HoldoutDatasetPath = res.HoldoutDatasetPath
+	resDTO.ModelURL = res.ModelFilePath
+	resDTO.TrainingDatasetURL = res.TrainingDatasetPath
+	resDTO.HoldoutDatasetURL = res.HoldoutDatasetPath
 
 	return resDTO, nil
 }

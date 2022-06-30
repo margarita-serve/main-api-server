@@ -20,6 +20,7 @@ type RestAPI struct {
 
 // Options represent Options
 type Options struct {
+	Hostname          string
 	ShowEngineHeader  bool                  `json:"showEngineHeader" yaml:"showEngineHeader"`
 	DisplayOpenAPI    bool                  `json:"displayOpenAPI" yaml:"displayOpenAPI"`
 	Listener          Listener              `json:"listener" yaml:"listener"`

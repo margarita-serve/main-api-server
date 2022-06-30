@@ -1,6 +1,6 @@
 package types
 
-type CreateInferenceServiceResponse struct {
+type UpdateInferenceServiceResponse struct {
 	Message       string `json:"projectID"`
 	Inferencename string `json:"modelPackageID"`
 	Revision      string `json:"revision"`

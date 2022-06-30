@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	conInfSvcKserve "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/inference_service/kserve_cntr"
-	domSchema "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service/dto"
+	domSvcDto "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service/dto"
 )
 
 //
@@ -17,6 +17,7 @@ func NewInfSvcKserveAdapter() (*InfSvcKserveAdapter, error) {
 	//cfg, err := h.GetConfig()
 	// if err != nil {
 	// 	return nil, nil, err
+
 	// }
 
 	// info := infC19Adp.Covid19AdapterInfo{
@@ -40,8 +41,8 @@ type InfSvcKserveAdapter struct {
 	connector *conInfSvcKserve.InferenceService
 }
 
-func (a *InfSvcKserveAdapter) InferenceServiceGet(req *domSchema.InferenceServiceGetRequest) (*domSchema.InferenceServiceGetResponse, error) {
-	resp := new(domSchema.InferenceServiceGetResponse)
+func (a *InfSvcKserveAdapter) InferenceServiceGet(req *domSvcDto.InferenceServiceGetRequest) (*domSvcDto.InferenceServiceGetResponse, error) {
+	resp := new(domSvcDto.InferenceServiceGetResponse)
 	connReq, err := MapGetReq(req)
 	if err != nil {
 		return nil, err
@@ -63,8 +64,8 @@ func (a *InfSvcKserveAdapter) InferenceServiceGet(req *domSchema.InferenceServic
 	return resp, nil
 }
 
-func (a *InfSvcKserveAdapter) InferenceServiceCreate(req *domSchema.InferenceServiceCreateRequest) (*domSchema.InferenceServiceCreateResponse, error) {
-	resp := new(domSchema.InferenceServiceCreateResponse)
+func (a *InfSvcKserveAdapter) InferenceServiceCreate(req *domSvcDto.InferenceServiceCreateRequest) (*domSvcDto.InferenceServiceCreateResponse, error) {
+	resp := new(domSvcDto.InferenceServiceCreateResponse)
 
 	connReq, err := MapCreateReq(req)
 	if err != nil {
@@ -84,60 +85,85 @@ func (a *InfSvcKserveAdapter) InferenceServiceCreate(req *domSchema.InferenceSer
 	return resp, nil
 }
 
-func (a *InfSvcKserveAdapter) InferenceServiceDelete(req *domSchema.InferenceServiceDeleteRequest) error {
+func (a *InfSvcKserveAdapter) InferenceServiceReplaceModel(req *domSvcDto.InferenceServiceReplaceModelRequest) (*domSvcDto.InferenceServiceReplaceModelResponse, error) {
+	resp := new(domSvcDto.InferenceServiceReplaceModelResponse)
+
+	connReq, err := MapReplaceModelReq(req)
+	if err != nil {
+		return nil, err
+	}
+
+	connResp, err := a.connector.UpdateInferenceService(connReq)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err = MapReplaceModelRes(connResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (a *InfSvcKserveAdapter) InferenceServiceDelete(req *domSvcDto.InferenceServiceDeleteRequest) (*domSvcDto.InferenceServiceDeleteResponse, error) {
+	resp := new(domSvcDto.InferenceServiceDeleteResponse)
 	connReq, err := MapDeleteReq(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	connResp, err := a.connector.DeleteInferenceService(connReq)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	resp, err := MapDeleteRes(connResp)
+	resp, err = MapDeleteRes(connResp)
 	if err != nil {
 		fmt.Printf("resp: %v\n", resp)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return nil, err
 }
 
-func (a *InfSvcKserveAdapter) InferenceServiceActive(id string) error {
-	//
+func (a *InfSvcKserveAdapter) InferenceServiceActive(req *domSvcDto.InferenceServiceActiveRequest) (*domSvcDto.InferenceServiceActiveResponse, error) {
+	resp := new(domSvcDto.InferenceServiceActiveResponse)
+	connReq, err := MapActiveReq(req)
+	if err != nil {
+		return nil, err
+	}
 
-	// connReq, err := MapUpdateReq(req)
-	// if err != nil {
-	// 	return  err
-	// }
+	connResp, err := a.connector.UpdateInferenceService(connReq)
+	if err != nil {
+		return nil, err
+	}
 
-	// err := a.connector.UpdateInferenceService(connReq)
-	// if err != nil {
-	// 	return  err
-	// }
+	resp, err = MapActiveRes(connResp)
+	if err != nil {
+		return nil, err
+	}
 
-	// resp.Provider = a.GetInfo().Code
-	// resp.Information = fmt.Sprintf("[Enable: %v] %s [%s]", a.GetInfo().Enable, a.GetInfo().Name, a.GetInfo().Server)
-
-	return nil
+	return resp, err
 }
 
-func (a *InfSvcKserveAdapter) InferenceServiceInActive(id string) error {
-	//
+func (a *InfSvcKserveAdapter) InferenceServiceInActive(req *domSvcDto.InferenceServiceInActiveRequest) (*domSvcDto.InferenceServiceInActiveResponse, error) {
 
-	// connReq, err := MapUpdateReq(req)
-	// if err != nil {
-	// 	return  err
-	// }
+	resp := new(domSvcDto.InferenceServiceInActiveResponse)
+	connReq, err := MapInActiveReq(req)
+	if err != nil {
+		return nil, err
+	}
 
-	// err := a.connector.UpdateInferenceService(connReq)
-	// if err != nil {
-	// 	return  err
-	// }
+	connResp, err := a.connector.UpdateInferenceService(connReq)
+	if err != nil {
+		return nil, err
+	}
 
-	// resp.Provider = a.GetInfo().Code
-	// resp.Information = fmt.Sprintf("[Enable: %v] %s [%s]", a.GetInfo().Enable, a.GetInfo().Name, a.GetInfo().Server)
+	resp, err = MapInActiveRes(connResp)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	return resp, err
 }
