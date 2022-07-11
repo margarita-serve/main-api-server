@@ -2,30 +2,8 @@ package config
 
 // Connectors represent available connectors
 type Connectors struct {
-	Identity Identity   `json:"identity" yaml:"identity"`
-	Covid19  ConCovid19 `json:"covid19" yaml:"covid19"`
-}
-
-// ConCovid19 represent Connector Covid19
-type ConCovid19 struct {
-	Covid19WHO  Covid19WHO  `json:"covid19who" yaml:"covid19who"`
-	Covid19goid Covid19goid `json:"covid19goid" yaml:"covid19goid"`
-}
-
-// Covid19WHO represent Connector Covid19WHO - WHO
-type Covid19WHO struct {
-	Code   string `json:"code" yaml:"code"`
-	Name   string `json:"name" yaml:"name"`
-	Server string `json:"server" yaml:"server"`
-	Enable bool   `json:"enable" yaml:"enable"`
-}
-
-// Covid19goid represent Connector Covid19goid - Indonesia
-type Covid19goid struct {
-	Code   string `json:"code" yaml:"code"`
-	Name   string `json:"name" yaml:"name"`
-	Server string `json:"server" yaml:"server"`
-	Enable bool   `json:"enable" yaml:"enable"`
+	Identity Identity `json:"identity" yaml:"identity"`
+	Storages Storages `json:"storages" yaml:"storages"`
 }
 
 // Identity type
@@ -41,4 +19,15 @@ type EA2M struct {
 	AllowDevToken     bool   `json:"allowDevToken" yaml:"allowDevToken"`
 	DevIdentityToken  string `json:"devIdentityToken" yaml:"devIdentityToken"`
 	DevIdentityClaims string `json:"devIdentityClaims" yaml:"devIdentityClaims"`
+}
+
+type Storages struct {
+	Minio Minio `json:"storage" yaml:"storage"`
+}
+
+type Minio struct {
+	Endpoint        string `json:"endpoint" yaml:"endpoint"`
+	AccessKeyID     string `json:"accessKeyID" yaml:"accessKeyID"`
+	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
+	UseSSL          bool   `json:"useSSL" yaml:"useSSL"`
 }

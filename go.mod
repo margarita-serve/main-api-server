@@ -13,6 +13,7 @@ require (
 	github.com/jackc/pgx/v4 v4.15.0 // indirect
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/labstack/gommon v0.3.1
+	github.com/minio/minio-go/v7 v7.0.30
 	github.com/rs/xid v1.4.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0

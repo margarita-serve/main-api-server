@@ -4,6 +4,11 @@ definitions:
       message:
         type: string
     type: object
+  dto.ArchiveModelPackageResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
   dto.CreateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
@@ -71,7 +76,89 @@ definitions:
       deploymentID:
         type: string
     type: object
+  dto.CreateModelPackageRequestDTO:
+    properties:
+      description:
+        description: 모델패키지 설명
+        example: New ModelPacakge
+        type: string
+        x-order: "2"
+      modelDescription:
+        description: 모델 설명
+        example: Best Accuracy
+        type: string
+        x-order: "5"
+      modelFrameWork:
+        description: 모델 프레임워크
+        enum:
+        - TensorFlow
+        - ' PyTorch'
+        - ' SkLearn'
+        - ' XGBoost'
+        - ' LightGBM'
+        example: TensorFlow
+        type: string
+        x-order: "8"
+      modelFrameWorkVersion:
+        description: 모델 프레임워크 버전
+        example: 1.14.0
+        type: string
+        x-order: "9"
+      modelName:
+        description: 모델명
+        example: Example Model
+        type: string
+        x-order: "3"
+      modelVersion:
+        description: 모델 버전
+        example: "1.4"
+        type: string
+        x-order: "4"
+      name:
+        description: 모델패키지 명
+        example: ModelPacakge 01
+        type: string
+        x-order: "1"
+      negativeClassLabel:
+        description: 이진분류 음성명칭 지정
+        example: "False"
+        type: string
+        x-order: "12"
+      positiveClassLabel:
+        description: 이진분류 양성명칭 지정
+        example: "True"
+        type: string
+        x-order: "11"
+      predictionTargetName:
+        description: 예측 타켓명칭
+        example: Target
+        type: string
+        x-order: "7"
+      predictionThreshold:
+        description: 이진분류 예측임계값
+        example: 0.5
+        type: number
+        x-order: "10"
+      targetType:
+        description: 모델 예측타입
+        enum:
+        - Binary
+        - ' Regression'
+        example: Binary
+        type: string
+        x-order: "6"
+    type: object
+  dto.CreateModelPackageResponseDTO:
+    properties:
+      modelPackageID:
+        type: string
+    type: object
   dto.DeleteDeploymentResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.DeleteModelPackageResponseDTO:
     properties:
       message:
         type: string
@@ -127,6 +214,59 @@ definitions:
     properties:
       modelHistory: {}
     type: object
+  dto.GetModelPackageListResponseDTO:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      rows: {}
+      sort:
+        type: string
+      totalPages:
+        type: integer
+      totalRows:
+        type: integer
+    type: object
+  dto.GetModelPackageResponseDTO:
+    properties:
+      archived:
+        type: boolean
+      description:
+        type: string
+      holdoutDatasetName:
+        type: string
+      modelDescription:
+        type: string
+      modelFileName:
+        type: string
+      modelFrameWork:
+        type: string
+      modelFrameWorkVersion:
+        type: string
+      modelName:
+        type: string
+      modelPackageID:
+        type: string
+      modelVersion:
+        type: string
+      name:
+        type: string
+      negativeClassLabel:
+        type: string
+      positiveClassLabel:
+        type: string
+      predictionTargetName:
+        type: string
+      predictionThreshold:
+        type: number
+      projectID:
+        type: string
+      targetType:
+        type: string
+      trainingDatasetName:
+        type: string
+    type: object
   dto.InActiveDeploymentResponseDTO:
     properties:
       message:
@@ -180,190 +320,85 @@ definitions:
       message:
         type: string
     type: object
+  dto.UpdateModelPackageRequestDTO:
+    properties:
+      description:
+        description: 모델패키지 설명
+        example: New ModelPacakge
+        type: string
+        x-order: "2"
+      modelDescription:
+        description: 모델 설명
+        example: Best Accuracy
+        type: string
+        x-order: "5"
+      modelFrameWork:
+        description: 모델 프레임워크
+        enum:
+        - TensorFlow
+        - ' PyTorch'
+        - ' SkLearn'
+        - ' XGBoost'
+        - ' LightGBM'
+        example: TensorFlow
+        type: string
+        x-order: "8"
+      modelFrameWorkVersion:
+        description: 모델 프레임워크 버전
+        example: 1.14.0
+        type: string
+        x-order: "9"
+      modelName:
+        description: 모델명
+        example: Example Model
+        type: string
+        x-order: "3"
+      modelVersion:
+        description: 모델 버전
+        example: "1.4"
+        type: string
+        x-order: "4"
+      name:
+        description: 모델패키지 명
+        example: ModelPacakge 01
+        type: string
+        x-order: "1"
+      negativeClassLabel:
+        example: "False"
+        type: string
+        x-order: "12"
+      positiveClassLabel:
+        description: 이진분류 양성명칭 지정
+        example: "True"
+        type: string
+        x-order: "11"
+      predictionTargetName:
+        description: 예측 타켓명칭
+        example: Target
+        type: string
+        x-order: "7"
+      predictionThreshold:
+        description: 이진분류 예측임계값
+        example: 0.5
+        type: number
+        x-order: "10"
+      targetType:
+        description: 모델 예측타입
+        enum:
+        - Binary
+        - ' Regression'
+        example: Binary
+        type: string
+        x-order: "6"
+    type: object
+  dto.UpdateModelPackageResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
-  /deployments:
-    get:
-      consumes:
-      - application/json
-      description: 배포 리스트
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: queryName
-        in: query
-        name: name
-        type: string
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: sort
-        in: query
-        name: sort
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetDeploymentListResponseDTO'
-      summary: Get Deployment List
-      tags:
-      - Deployment
-  /deployments/{deploymentID}:
-    get:
-      consumes:
-      - application/json
-      description: 배포 상세조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetDeploymentResponseDTO'
-      summary: Get Deployment
-      tags:
-      - Deployment
-  /deployments/{deploymentID}/governance-log:
-    get:
-      consumes:
-      - application/json
-      description: 배포 거버넌스 로그 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetGovernanceHistoryResponseDTO'
-      summary: Get Governance Log
-      tags:
-      - Deployment
-  /deployments/{deploymentID}/model-history:
-    get:
-      consumes:
-      - application/json
-      description: 배포 모델 변경이력 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetModelHistoryResponseDTO'
-      summary: Get Model History
-      tags:
-      - Deployment
-  /deployments/{deploymentID}/predict:
-    post:
-      consumes:
-      - application/json
-      description: 예측 요청
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: application/json
-        in: body
-        name: json
-        required: true
-        schema:
-          example: '{"association_id": ["abcd1234", "abcd1235"], "instances": [[1.483887,
-            1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148,
-            -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642,
-            0.774676, -0.465148, -0.495225]]}'
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.ReplaceModelResponseDTO'
-      summary: Send Prediction
-      tags:
-      - Deployment
-  /deployments/{deploymentID}/replace-model:
-    patch:
-      consumes:
-      - application/json
-      description: 배포 모델변경
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Create Deployment
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ReplaceModelRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.ReplaceModelResponseDTO'
-      summary: Replace Model
-      tags:
-      - Deployment
   /projects/{projectID}/deployments:
     get:
       consumes:
@@ -373,7 +408,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: queryName
         in: query
@@ -436,7 +470,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -485,7 +518,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -517,7 +549,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -543,7 +574,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -569,7 +599,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -595,7 +624,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -632,10 +660,10 @@ paths:
         name: json
         required: true
         schema:
-          example: '{"association_id": ["abcd1234", "abcd1235"], "instances": [[1.483887,
-            1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148,
-            -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642,
-            0.774676, -0.465148, -0.495225]]}'
+          example: "{\n\"association_id\": [\"abcd1234\", \"abcd1235\"], \n\"instances\":
+            [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676,
+            -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891,
+            -1.604642, 0.774676, -0.465148, -0.495225]]\n}"
           type: string
       produces:
       - application/json
@@ -656,7 +684,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        required: true
         type: string
       - description: deploymentID
         in: path
@@ -679,4 +706,306 @@ paths:
       summary: Replace Model
       tags:
       - Deployment
+  /projects/{projectID}/model-packages:
+    get:
+      consumes:
+      - application/json
+      description: 모델 패키지 리스트
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: queryName
+        in: query
+        name: name
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetModelPackageListResponseDTO'
+      summary: Get ModelPackage List
+      tags:
+      - ModelPackage
+    post:
+      consumes:
+      - application/json
+      description: 모델 패키지 생성
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Create ModelPackage
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateModelPackageRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateModelPackageResponseDTO'
+      summary: Create ModelPackage
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}:
+    delete:
+      consumes:
+      - application/json
+      description: 모델 패키지 삭제
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DeleteModelPackageResponseDTO'
+      summary: Delete ModelPackage
+      tags:
+      - ModelPackage
+    get:
+      consumes:
+      - application/json
+      description: 모델 패키지 상세조회
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetModelPackageResponseDTO'
+      summary: Get ModelPackage
+      tags:
+      - ModelPackage
+    patch:
+      consumes:
+      - application/json
+      description: 모델 패키지 정보수정
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      - description: Update ModelPackage Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateModelPackageRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateModelPackageResponseDTO'
+      summary: Edit ModelPackage
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/archive:
+    put:
+      consumes:
+      - application/json
+      description: 모델 패키지 보관
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ArchiveModelPackageResponseDTO'
+      summary: Archive ModelPackage
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/download-holdout-dataset:
+    get:
+      description: 홀드아웃 데이터셋 파일 다운로드
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses: {}
+      summary: Download Holdout Dataset File
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/download-model:
+    get:
+      description: 모델 파일 다운로드
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses: {}
+      summary: Download Model File
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/download-training-dataset:
+    get:
+      description: 훈련 데이터셋 파일 다운로드
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses: {}
+      summary: Download Training Dataset File
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/upload-holdout-dataset:
+    post:
+      consumes:
+      - application/json
+      description: 훈련 검증 데이터셋 파일 업로드
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      - description: file upload
+        in: formData
+        name: upfile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses: {}
+      summary: Upload Holdout Dataset File
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/upload-model:
+    post:
+      consumes:
+      - application/json
+      description: 모델 파일 업로드
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      - description: file upload
+        in: formData
+        name: upfile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses: {}
+      summary: Upload Model File
+      tags:
+      - ModelPackage
+  /projects/{projectID}/model-packages/{modelPackageID}/upload-training-dataset:
+    post:
+      consumes:
+      - application/json
+      description: 훈련 데이터셋 파일 업로드
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        type: string
+      - description: modelPackageID
+        in: path
+        name: modelPackageID
+        required: true
+        type: string
+      - description: file upload
+        in: formData
+        name: upfile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses: {}
+      summary: Upload Training Dataset File
+      tags:
+      - ModelPackage
 swagger: "2.0"

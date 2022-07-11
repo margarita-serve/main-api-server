@@ -5,7 +5,8 @@ import domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_packag
 //interface
 type IModelPackageRepo interface {
 	Save(req *domEntity.ModelPackage) error
-	Get(req string) (*domEntity.ModelPackage, error)
-	ByName(req string) ([]domEntity.ModelPackage, error)
+	GetByID(req string) (*domEntity.ModelPackage, error)
+	GetForUpdate(modelPackageID string) (*domEntity.ModelPackage, error)
+	GetList(name string, pagination interface{}) ([]*domEntity.ModelPackage, interface{}, error)
 	Delete(req string) error
 }

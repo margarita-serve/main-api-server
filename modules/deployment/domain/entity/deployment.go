@@ -32,6 +32,21 @@ type Deployment struct {
 	BaseEntity
 }
 
+// Validate
+func (r *Deployment) Validate() error {
+	return validation.ValidateStruct(r,
+		validation.Field(&r.ProjectID, validation.Required, validation.NotNil, validation.Length(20, 20)),
+		validation.Field(&r.ModelPackageID, validation.Required, validation.NotNil, validation.Length(20, 20)),
+		validation.Field(&r.Name, validation.Length(0, 255)),
+		validation.Field(&r.Description, validation.Length(0, 255)),
+		validation.Field(&r.PredictionEnvID, validation.Required, validation.NotNil, validation.Length(20, 20)),
+		validation.Field(&r.Importance, validation.In("Low", "Moderate", "High", "Critical")),
+		validation.Field(&r.RequestCPU, validation.Min(0.1), validation.Max(2.0)),
+		validation.Field(&r.RequestMEM, validation.Min(0.1), validation.Max(2.0)),
+		validation.Field(&r.ID, validation.Required, validation.NotNil, validation.Length(20, 20)),
+	)
+}
+
 func NewDeployment(id string, projectID string, modelPackageID string, predictionEnvID string,
 	name string, description string, importance string, deployType string, requestCPU float32, requestMEM float32, limitCPU float32, limitMEM float32, ownerID string) (*Deployment, error) {
 

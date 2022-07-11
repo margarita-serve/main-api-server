@@ -47,7 +47,7 @@ func (c *PredictionSender) doRequest(req *http.Request) ([]byte, error) {
 
 func (c *PredictionSender) SendPrediction(url string, host string, data []byte) ([]byte, error) {
 	fmt.Printf("body: %v\n", string(data))
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}

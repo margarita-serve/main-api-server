@@ -72,7 +72,7 @@ func (f *FDeployment) Create(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.DeleteDeploymentResponseDTO
 // @Router       /projects/{projectID}/deployments/{deploymentID} [delete]
@@ -98,7 +98,7 @@ func (f *FDeployment) Delete(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appDeploymentDTO.UpdateDeploymentRequestDTO true "Update Deployment Info"
 // @Success 200 {object} appDeploymentDTO.UpdateDeploymentResponseDTO
@@ -132,7 +132,6 @@ func (f *FDeployment) Update(c echo.Context) error {
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.GetDeploymentResponseDTO
 // @Router       /projects/{projectID}/deployments/{deploymentID} [get]
-// @Router       /deployments/{deploymentID} [get]
 func (f *FDeployment) GetByID(c echo.Context) error {
 	//
 	req := new(appDeploymentDTO.GetDeploymentRequestDTO)
@@ -168,14 +167,13 @@ func (f *FDeployment) getPredictionURL(c echo.Context) string {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param name query string false "queryName"
 // @Param page query int false "page"
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
 // @Success 200 {object} appDeploymentDTO.GetDeploymentListResponseDTO
 // @Router       /projects/{projectID}/deployments [get]
-// @Router       /deployments [get]
 func (f *FDeployment) GetList(c echo.Context) error {
 	//
 	req := new(appDeploymentDTO.GetDeploymentListRequestDTO)
@@ -202,11 +200,10 @@ func (f *FDeployment) GetList(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.GetGovernanceHistoryResponseDTO
 // @Router       /projects/{projectID}/deployments/{deploymentID}/governance-log [get]
-// @Router       /deployments/{deploymentID}/governance-log [get]
 func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
 	//
 	req := new(appDeploymentDTO.GetGovernanceHistoryRequestDTO)
@@ -229,11 +226,10 @@ func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.GetModelHistoryResponseDTO
 // @Router       /projects/{projectID}/deployments/{deploymentID}/model-history [get]
-// @Router       /deployments/{deploymentID}/model-history [get]
 func (f *FDeployment) GetModelHistory(c echo.Context) error {
 	//
 	req := new(appDeploymentDTO.GetModelHistoryRequestDTO)
@@ -256,12 +252,11 @@ func (f *FDeployment) GetModelHistory(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appDeploymentDTO.ReplaceModelRequestDTO true "Create Deployment"
 // @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
 // @Router        /projects/{projectID}/deployments/{deploymentID}/replace-model [patch]
-// @Router        /deployments/{deploymentID}/replace-model [patch]
 func (f *FDeployment) ReplaceModel(c echo.Context) error {
 
 	//...
@@ -293,7 +288,6 @@ func (f *FDeployment) ReplaceModel(c echo.Context) error {
 // @Param json body string true "application/json" SchemaExample({\n"association_id": ["abcd1234", "abcd1235"], \n"instances": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]\n}) "Json data for prediction"
 // @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
 // @Router        /projects/{projectID}/deployments/{deploymentID}/predict [post]
-// @Router        /deployments/{deploymentID}/predict [post]
 func (f *FDeployment) SendPrediction(c echo.Context) error {
 
 	//...
@@ -324,7 +318,7 @@ func (f *FDeployment) SendPrediction(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.ActiveDeploymentResponseDTO
 // @Router       /projects/{projectID}/deployments/{deploymentID}/active [put]
@@ -350,7 +344,7 @@ func (f *FDeployment) Active(c echo.Context) error {
 // @Tags Deployment
 // @Accept json
 // @Produce json
-// @Param projectID path string true "projectID"
+// @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.InActiveDeploymentResponseDTO
 // @Router       /projects/{projectID}/deployments/{deploymentID}/inactive [put]

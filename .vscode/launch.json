@@ -10,7 +10,9 @@
 			"request": "launch",
 			"mode": "debug",
 			"program": "${workspaceFolder}/",    // main.go 가 있는 폴더 path
-            "args": ["server", "restapi"]
+            "args": ["server", "restapi"],
+			"env": {"AWS_ACCESS_KEY_ID":"bWluaW9hZG1pbg==",
+				"AWS_SECRET_ACCESS_KEY":"bWluaW9hZG1pbg=="}
 		}
 	]
 }

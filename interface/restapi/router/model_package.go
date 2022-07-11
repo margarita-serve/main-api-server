@@ -8,18 +8,20 @@ import (
 
 // SetEmail set Email Router
 func SetModelPackage(eg *echo.Group, f *feature.FModelPackage) {
-	gc := eg.Group("/model-packages")
+	gc := eg.Group("/projects/:projectID/model-packages")
 	//gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
 
 	gc.POST("", f.Create)
-	gc.GET("/:modelpackageId", f.Get)
-	gc.GET("", f.GetByName)
-	gc.DELETE("/:modelpackageId", f.Delete)
-	//e.GET("/deployments/{deploymentId}/serviceStats", GetServiceStats)
-	//e.GET("/deployments/{deploymentId}/featureDrift", GetFeatureDrift)
-	// gc.GET("/deployments/{deploymentId}/", f.Get)
-	// gc.PATCH("/deployments/{deploymentId}", f.Patch)
-	// gc.PATCH("/deployments/{deploymentId}/model", f.PatchModel)
+	gc.GET("/:modelPackageID", f.GetByID)
+	gc.GET("", f.GetList)
+	gc.DELETE("/:modelPackageID", f.Delete)
+	gc.PATCH("/:modelPackageID", f.Update)
+	gc.PUT("/:modelPackageID/archive", f.Archive)
+	gc.POST("/:modelPackageID/upload-model", f.UploadModel)
+	gc.POST("/:modelPackageID/upload-training-dataset", f.UploadTrainingDataset)
+	gc.POST("/:modelPackageID/upload-holdout-dataset", f.UploadHoldoutDataset)
+	gc.GET("/:modelPackageID/download-model", f.DownloadModelFile)
+	gc.GET("/:modelPackageID/download-training-dataset", f.DownloadTrainingDataset)
+	gc.GET("/:modelPackageID/download-holdout-dataset", f.DownloadHoldoutDataset)
 
-	// gc.POST("/deployments/actuals/{}", f.Post)
 }

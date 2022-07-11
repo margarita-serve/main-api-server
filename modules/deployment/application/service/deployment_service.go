@@ -132,16 +132,17 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 	}
 
 	reqDomSvc := domSvcInferenceSvcDto.InferenceServiceCreateRequest{
-		Namespace:      resPredictionEnvInfo.Namespace,
-		DeploymentID:   guid,
-		ModelFrameWork: resModelPackage.ModelFrameWork,
-		ModelURL:       resModelPackage.ModelURL,
-		ModelName:      resModelPackage.ModelName,
-		ConnectionInfo: resPredictionEnvInfo.ConnectionInfo,
-		RequestCPU:     domAggregateDeployment.RequestCPU,
-		RequestMEM:     domAggregateDeployment.RequestMEM,
-		LimitCPU:       domAggregateDeployment.LimitCPU,
-		LimitMEM:       domAggregateDeployment.LimitMEM,
+		Namespace:             resPredictionEnvInfo.Namespace,
+		DeploymentID:          guid,
+		ModelFrameWork:        resModelPackage.ModelFrameWork,
+		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
+		ModelURL:              resModelPackage.ModelFilePath,
+		ModelName:             resModelPackage.ModelName,
+		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
+		RequestCPU:            domAggregateDeployment.RequestCPU,
+		RequestMEM:            domAggregateDeployment.RequestMEM,
+		LimitCPU:              domAggregateDeployment.LimitCPU,
+		LimitMEM:              domAggregateDeployment.LimitMEM,
 	}
 
 	if err := reqDomSvc.Validate(); err != nil {
@@ -219,7 +220,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 		DeploymentID:          domAggregateDeployment.ID,
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
-		ModelURL:              resModelPackage.ModelURL,
+		ModelURL:              resModelPackage.ModelFilePath,
 		ModelName:             resModelPackage.ModelName,
 		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
@@ -240,7 +241,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 
 	domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
 
-	err = domAggregateDeployment.AddEventHistory("ReplaceModel", "Model is Replaced "+"Model: "+reqDomSvc.ModelName+" Reason: "+req.Reason, userID)
+	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -527,7 +528,7 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 		DeploymentID:          domAggregateDeployment.ID,
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
-		ModelURL:              resModelPackage.ModelURL,
+		ModelURL:              resModelPackage.ModelFilePath,
 		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
 	}
 
@@ -585,7 +586,7 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 		DeploymentID:          domAggregateDeployment.ID,
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
-		ModelURL:              resModelPackage.ModelURL,
+		ModelURL:              resModelPackage.ModelFilePath,
 		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
 	}
 
@@ -646,8 +647,8 @@ func (s *DeploymentService) SendPrediction(req *appDTO.SendPredictionRequestDTO)
 	return resDTO, nil
 }
 
-func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*appModelPackageDTO.ModelPackageGetInternalResponseDTO, error) {
-	reqModelPackage := &appModelPackageDTO.ModelPackageGetInternalRequestDTO{
+func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error) {
+	reqModelPackage := &appModelPackageDTO.InternalGetModelPackageRequestDTO{
 		ModelPackageID: modelPackageID,
 	}
 
@@ -655,9 +656,6 @@ func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*appMode
 	if err != nil {
 		return nil, err
 	}
-
-	//dev mode only
-	resModelPackage.ModelURL = "s3://testmodel/mpg2"
 
 	return resModelPackage, err
 }

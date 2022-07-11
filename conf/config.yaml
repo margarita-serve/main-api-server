@@ -105,20 +105,23 @@ dirLocations:
   temp: "./temp"
   log: "./logs"
   cache: "./caches"
+  modelPackageFileRootPath: "koreserve-modelpackage"
+  modelPath: "/model"
+  trainingDatasetPath: "/training-dataset"
+  holdoutDatasetPath: "/holdout-dataset" 
+  monitoringFileRootPath: "koreserve-monitoring"
+  actualDataPath: "/actual-data"
 
-# Connectors
 connectors:
-  covid19:
-    covid19who:
-      code: who
-      name: Covid19 WHO Official Website
-      server: "https://covid19.who.int"
-      enable: true
-    covid19goid:
-      code: covid19goid
-      name: Covid19 Indonesia Official Website
-      server: "https://data.covid19.go.id"
-      enable: true
+  storages:
+      minio:
+        endpoint: "192.168.88.154:9000"
+        accessKeyID: "minioadmin"
+        secretAccessKey: "minioadmin"
+        useSSL: false
+
+       
+
 
 # SMTP Servers
 SMTPServers:

@@ -4,274 +4,6 @@
         "contact": {}
     },
     "paths": {
-        "/deployments": {
-            "get": {
-                "description": "배포 리스트",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployment"
-                ],
-                "summary": "Get Deployment List",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "queryName",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sort",
-                        "name": "sort",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetDeploymentListResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/deployments/{deploymentID}": {
-            "get": {
-                "description": "배포 상세조회",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployment"
-                ],
-                "summary": "Get Deployment",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetDeploymentResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/deployments/{deploymentID}/governance-log": {
-            "get": {
-                "description": "배포 거버넌스 로그 조회",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployment"
-                ],
-                "summary": "Get Governance Log",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetGovernanceHistoryResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/deployments/{deploymentID}/model-history": {
-            "get": {
-                "description": "배포 모델 변경이력 조회",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployment"
-                ],
-                "summary": "Get Model History",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetModelHistoryResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/deployments/{deploymentID}/predict": {
-            "post": {
-                "description": "예측 요청",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployment"
-                ],
-                "summary": "Send Prediction",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "application/json",
-                        "name": "json",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "{\"association_id\": [\"abcd1234\", \"abcd1235\"], \"instances\": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]}"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ReplaceModelResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/deployments/{deploymentID}/replace-model": {
-            "patch": {
-                "description": "배포 모델변경",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployment"
-                ],
-                "summary": "Replace Model",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create Deployment",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ReplaceModelRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ReplaceModelResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/projects/{projectID}/deployments": {
             "get": {
                 "description": "배포 리스트",
@@ -290,8 +22,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -421,8 +152,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -458,8 +188,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -506,8 +235,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -545,8 +273,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -584,8 +311,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -623,8 +349,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -678,7 +403,7 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "{\"association_id\": [\"abcd1234\", \"abcd1235\"], \"instances\": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]}"
+                            "example": "{\n\"association_id\": [\"abcd1234\", \"abcd1235\"], \n\"instances\": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]\n}"
                         }
                     }
                 ],
@@ -710,8 +435,7 @@
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "string",
@@ -739,10 +463,468 @@
                     }
                 }
             }
+        },
+        "/projects/{projectID}/model-packages": {
+            "get": {
+                "description": "모델 패키지 리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Get ModelPackage List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetModelPackageListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "모델 패키지 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Create ModelPackage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create ModelPackage",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateModelPackageRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateModelPackageResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}": {
+            "get": {
+                "description": "모델 패키지 상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Get ModelPackage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetModelPackageResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "모델 패키지 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Delete ModelPackage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteModelPackageResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "모델 패키지 정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Edit ModelPackage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update ModelPackage Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateModelPackageRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateModelPackageResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/archive": {
+            "put": {
+                "description": "모델 패키지 보관",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Archive ModelPackage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ArchiveModelPackageResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/download-holdout-dataset": {
+            "get": {
+                "description": "홀드아웃 데이터셋 파일 다운로드",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Download Holdout Dataset File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/download-model": {
+            "get": {
+                "description": "모델 파일 다운로드",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Download Model File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/download-training-dataset": {
+            "get": {
+                "description": "훈련 데이터셋 파일 다운로드",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Download Training Dataset File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/upload-holdout-dataset": {
+            "post": {
+                "description": "훈련 검증 데이터셋 파일 업로드",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Upload Holdout Dataset File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "file upload",
+                        "name": "upfile",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/upload-model": {
+            "post": {
+                "description": "모델 파일 업로드",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Upload Model File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "file upload",
+                        "name": "upfile",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/model-packages/{modelPackageID}/upload-training-dataset": {
+            "post": {
+                "description": "훈련 데이터셋 파일 업로드",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Upload Training Dataset File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "file upload",
+                        "name": "upfile",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
         }
     },
     "definitions": {
         "dto.ActiveDeploymentResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ArchiveModelPackageResponseDTO": {
             "type": "object",
             "properties": {
                 "message": {
@@ -812,17 +994,17 @@
                     "x-order": "8",
                     "example": true
                 },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
-                },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
                     "type": "boolean",
                     "x-order": "9",
                     "example": true
+                },
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "Index"
                 }
             }
         },
@@ -834,7 +1016,111 @@
                 }
             }
         },
+        "dto.CreateModelPackageRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "모델패키지 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "ModelPacakge 01"
+                },
+                "predictionThreshold": {
+                    "description": "이진분류 예측임계값",
+                    "type": "number",
+                    "x-order": "10",
+                    "example": 0.5
+                },
+                "positiveClassLabel": {
+                    "description": "이진분류 양성명칭 지정",
+                    "type": "string",
+                    "x-order": "11",
+                    "example": "True"
+                },
+                "negativeClassLabel": {
+                    "description": "이진분류 음성명칭 지정",
+                    "type": "string",
+                    "x-order": "12",
+                    "example": "False"
+                },
+                "description": {
+                    "description": "모델패키지 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "New ModelPacakge"
+                },
+                "modelName": {
+                    "description": "모델명",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "Example Model"
+                },
+                "modelVersion": {
+                    "description": "모델 버전",
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "1.4"
+                },
+                "modelDescription": {
+                    "description": "모델 설명",
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "Best Accuracy"
+                },
+                "targetType": {
+                    "description": "모델 예측타입",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        " Regression"
+                    ],
+                    "x-order": "6",
+                    "example": "Binary"
+                },
+                "predictionTargetName": {
+                    "description": "예측 타켓명칭",
+                    "type": "string",
+                    "x-order": "7",
+                    "example": "Target"
+                },
+                "modelFrameWork": {
+                    "description": "모델 프레임워크",
+                    "type": "string",
+                    "enum": [
+                        "TensorFlow",
+                        " PyTorch",
+                        " SkLearn",
+                        " XGBoost",
+                        " LightGBM"
+                    ],
+                    "x-order": "8",
+                    "example": "TensorFlow"
+                },
+                "modelFrameWorkVersion": {
+                    "description": "모델 프레임워크 버전",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "1.14.0"
+                }
+            }
+        },
+        "dto.CreateModelPackageResponseDTO": {
+            "type": "object",
+            "properties": {
+                "modelPackageID": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DeleteDeploymentResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DeleteModelPackageResponseDTO": {
             "type": "object",
             "properties": {
                 "message": {
@@ -919,6 +1205,86 @@
                 "modelHistory": {}
             }
         },
+        "dto.GetModelPackageListResponseDTO": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "rows": {},
+                "sort": {
+                    "type": "string"
+                },
+                "totalPages": {
+                    "type": "integer"
+                },
+                "totalRows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetModelPackageResponseDTO": {
+            "type": "object",
+            "properties": {
+                "archived": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "holdoutDatasetName": {
+                    "type": "string"
+                },
+                "modelDescription": {
+                    "type": "string"
+                },
+                "modelFileName": {
+                    "type": "string"
+                },
+                "modelFrameWork": {
+                    "type": "string"
+                },
+                "modelFrameWorkVersion": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "modelPackageID": {
+                    "type": "string"
+                },
+                "modelVersion": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "negativeClassLabel": {
+                    "type": "string"
+                },
+                "positiveClassLabel": {
+                    "type": "string"
+                },
+                "predictionTargetName": {
+                    "type": "string"
+                },
+                "predictionThreshold": {
+                    "type": "number"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                },
+                "trainingDatasetName": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.InActiveDeploymentResponseDTO": {
             "type": "object",
             "properties": {
@@ -986,6 +1352,101 @@
             }
         },
         "dto.UpdateDeploymentResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateModelPackageRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "모델패키지 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "ModelPacakge 01"
+                },
+                "predictionThreshold": {
+                    "description": "이진분류 예측임계값",
+                    "type": "number",
+                    "x-order": "10",
+                    "example": 0.5
+                },
+                "positiveClassLabel": {
+                    "description": "이진분류 양성명칭 지정",
+                    "type": "string",
+                    "x-order": "11",
+                    "example": "True"
+                },
+                "negativeClassLabel": {
+                    "type": "string",
+                    "x-order": "12",
+                    "example": "False"
+                },
+                "description": {
+                    "description": "모델패키지 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "New ModelPacakge"
+                },
+                "modelName": {
+                    "description": "모델명",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "Example Model"
+                },
+                "modelVersion": {
+                    "description": "모델 버전",
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "1.4"
+                },
+                "modelDescription": {
+                    "description": "모델 설명",
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "Best Accuracy"
+                },
+                "targetType": {
+                    "description": "모델 예측타입",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        " Regression"
+                    ],
+                    "x-order": "6",
+                    "example": "Binary"
+                },
+                "predictionTargetName": {
+                    "description": "예측 타켓명칭",
+                    "type": "string",
+                    "x-order": "7",
+                    "example": "Target"
+                },
+                "modelFrameWork": {
+                    "description": "모델 프레임워크",
+                    "type": "string",
+                    "enum": [
+                        "TensorFlow",
+                        " PyTorch",
+                        " SkLearn",
+                        " XGBoost",
+                        " LightGBM"
+                    ],
+                    "x-order": "8",
+                    "example": "TensorFlow"
+                },
+                "modelFrameWorkVersion": {
+                    "description": "모델 프레임워크 버전",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "1.14.0"
+                }
+            }
+        },
+        "dto.UpdateModelPackageResponseDTO": {
             "type": "object",
             "properties": {
                 "message": {

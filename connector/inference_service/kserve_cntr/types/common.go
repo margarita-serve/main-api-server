@@ -11,7 +11,7 @@ type Predictor struct {
 type Modelspec struct {
 	Modelframwwork string `json:"modelframwwork,omitempty" `
 	Storageuri     string `json:"storageuri,omitempty" `
-	RuntimeVersion string `json:"runtimeVersion,omitempty" `
+	RuntimeVersion string `json:"runtime_version,omitempty" `
 }
 
 type Resource struct {
