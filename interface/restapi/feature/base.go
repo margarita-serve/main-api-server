@@ -12,6 +12,8 @@ import (
 	response "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	sysErr "git.k3.acornsoft.io/msit-auto-ml/koreserv/system/error"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/utils"
 )
 
 // BaseFeature represent BaseFeature
@@ -61,46 +63,46 @@ func (f *BaseFeature) translateErrorMessage(err error, c echo.Context) error {
 	}
 }
 
-// // SetSession set Session
-// func (f *BaseFeature) SetSession(sessionValue string, expiration int64) error {
-// 	cfg, err := f.handler.GetConfig()
-// 	if err != nil {
-// 		return err
-// 	}
+// SetSession set Session
+func (f *BaseFeature) SetSession(sessionValue string, expiration int64) error {
+	cfg, err := f.handler.GetConfig()
+	if err != nil {
+		return err
+	}
 
-// 	ce, err := f.handler.GetCacher(cfg.Caches.SessionCache.ConnectionName)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	ce.Context = "interface"
-// 	ce.Container = "session"
-// 	ce.Component = "jwt"
+	ce, err := f.handler.GetCacher(cfg.Caches.SessionCache.ConnectionName)
+	if err != nil {
+		return err
+	}
+	ce.Context = "interface"
+	ce.Container = "session"
+	ce.Component = "jwt"
 
-// 	sessionKey := utils.MD5([]byte(sessionValue))
-// 	if err := ce.Put(sessionKey, sessionValue, expiration); err != nil {
-// 		return err
-// 	}
+	sessionKey := utils.MD5([]byte(sessionValue))
+	if err := ce.Put(sessionKey, sessionValue, expiration); err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// // SetIdentity set Identity
-// func (f *BaseFeature) SetIdentity(c echo.Context) (identity.Identity, error) {
+// SetIdentity set Identity
+func (f *BaseFeature) SetIdentity(c echo.Context) (identity.Identity, error) {
 
-// 	token := c.Get("identity.token.jwt")
-// 	if token == nil {
-// 		token = ""
-// 	}
+	token := c.Get("identity.token.jwt")
+	if token == nil {
+		token = ""
+	}
 
-// 	claims := c.Get("identity.token.jwt.claims")
-// 	if claims == nil {
-// 		claims = &identity.JWTCustomClaims{}
-// 	}
+	claims := c.Get("identity.token.jwt.claims")
+	if claims == nil {
+		claims = &identity.JWTCustomClaims{}
+	}
 
-// 	i, err := identity.NewIdentity(identity.DefaultIdentity, identity.TokenJWT, token.(string), claims.(*identity.JWTCustomClaims), c, f.handler)
+	i, err := identity.NewIdentity(identity.DefaultIdentity, identity.TokenJWT, token.(string), claims.(*identity.JWTCustomClaims), c, f.handler)
 
-// 	return i, err
-// }
+	return i, err
+}
 
 func (f *BaseFeature) inTestMode() bool {
 	return strings.HasSuffix(os.Args[0], ".test")

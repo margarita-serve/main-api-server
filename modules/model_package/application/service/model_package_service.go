@@ -15,11 +15,13 @@ import (
 	"errors"
 	"io"
 	"path"
+	"path/filepath"
 
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/domain/repository"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
 
@@ -111,11 +113,6 @@ func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO) (
 		req.NegativeClassLabel,
 		OwnerID,
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	domEntity.Validate(domAggregateModelPackage)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +245,7 @@ func (s *ModelPackageService) UpdateModelPackage(req *appDTO.UpdateModelPackageR
 		domAggregateModelPackage.SetTargetType(req.TargetType)
 	}
 
-	domEntity.Validate(domAggregateModelPackage)
+	err = domEntity.Validate(domAggregateModelPackage)
 	if err != nil {
 		return nil, err
 	}
@@ -292,6 +289,9 @@ func (s *ModelPackageService) GetByID(req *appDTO.GetModelPackageRequestDTO) (*a
 	resDTO.PredictionThreshold = res.PredictionThreshold
 	resDTO.PositiveClassLabel = res.PositiveClassLabel
 	resDTO.NegativeClassLabel = res.NegativeClassLabel
+	resDTO.ModelFileName = path.Base(res.ModelFilePath)
+	resDTO.TrainingDatasetName = path.Base(res.TrainingDatasetPath)
+	resDTO.HoldoutDatasetName = path.Base(res.HoldoutDatasetPath)
 
 	return resDTO, nil
 }
@@ -382,6 +382,21 @@ func (s *ModelPackageService) UploadModel(req *appDTO.UploadModelRequestDTO) (*a
 	cfg, err := s.handler.GetConfig()
 	if err != nil {
 		return nil, err
+	}
+
+	//모델 프레임워크별 지원 확장자 검증
+	err = validation.Validate(filepath.Ext(req.FileName), validation.When(domAggregateModelPackage.ModelFrameWork == "TensorFlow", validation.In(".zip", ".tar").Error("must be a extension in (.zip, .tar)")),
+		validation.When(domAggregateModelPackage.ModelFrameWork == "SkLearn", validation.In(".pkl", ".joblib", ".pickle").Error("must be a extension in (.pkl, .joblib, .pickle)")),
+		validation.When(domAggregateModelPackage.ModelFrameWork == "PyTorch", validation.In(".pt").Error("must be a extension in (.pt)")),
+		validation.When(domAggregateModelPackage.ModelFrameWork == "XGBoost", validation.In(".bst").Error("must be a extension in (.bst)")),
+		validation.When(domAggregateModelPackage.ModelFrameWork == "LightGBM", validation.In(".bst").Error("must be a extension in (.bst)")))
+	if err != nil {
+		return nil, err
+	}
+
+	//특정 모델 프레임워크의 경우 서빙모듈(kserve)에서 로드할때 model.pkl or model.extenstion 으로 고정해서 로드하기 때문에 파일명을 바꿔준다
+	if domAggregateModelPackage.ModelFrameWork == "SkLearn" || domAggregateModelPackage.ModelFrameWork == "XGBoost" || domAggregateModelPackage.ModelFrameWork == "LightGBM" {
+		req.FileName = "model" + filepath.Ext(req.FileName)
 	}
 
 	if domAggregateModelPackage.ModelFilePath != "" {

@@ -663,9 +663,9 @@ func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*appMode
 func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string) (*domSchema.PredictionEnv, error) {
 	//dev mode only
 	predictionEnvInfo := &domSchema.PredictionEnv{
-		Namespace: "koreserve",
-		//ConnectionInfo: "http://192.168.88.161:30070"
-		ConnectionInfo:          "http://localhost:5000",
+		Namespace:      "koreserve",
+		ConnectionInfo: "http://192.168.88.161:30070",
+		//ConnectionInfo:          "http://localhost:5000",
 		InfereceSvcHostName:     "kserve.acornsoft.io",
 		InferenceSvcIngressHost: "192.168.88.161",
 		InferenceSvcIngressPort: "31000",

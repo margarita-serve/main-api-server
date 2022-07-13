@@ -2,6 +2,7 @@ package kserve
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	conInfSvcKserve "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/inference_service/kserve_cntr/types"
@@ -36,7 +37,7 @@ func MapCreateReq(req *domSvcDto.InferenceServiceCreateRequest) (*conInfSvcKserv
 	reqCon.Namespace = req.Namespace
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
-		Storageuri:     req.ModelURL,
+		Storageuri:     path.Dir(req.ModelURL),
 		RuntimeVersion: req.ModelFrameWorkVersion,
 	},
 		Logger:      "all",
