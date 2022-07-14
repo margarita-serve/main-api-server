@@ -3,7 +3,7 @@ package config
 // Caches represent Caches
 type Caches struct {
 	SessionCache Cache `json:"sessionCache" yaml:"sessionCache"`
-	TmpDataCache Cache `json:"tmpDataCache" yaml:"tmpDataCache"`
+	//TmpDataCache Cache `json:"tmpDataCache" yaml:"tmpDataCache"`
 }
 
 // Cache represent Cache

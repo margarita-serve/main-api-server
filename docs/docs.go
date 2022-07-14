@@ -16,6 +16,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auths/register": {
+            "post": {
+                "description": "유저 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "register user",
+                "parameters": [
+                    {
+                        "description": "register user",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterReqDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterResDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{projectID}/deployments": {
             "get": {
                 "description": "배포 리스트",
@@ -1865,6 +1899,7 @@ const docTemplate = `{
                 }
             }
         },
+<<<<<<< HEAD
         "dto.MonitorCreateRequestDTO": {
             "type": "object",
             "properties": {
@@ -1895,10 +1930,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "deploymentID": {
+=======
+        "dto.RegisterReqDTO": {
+            "type": "object",
+            "properties": {
+                "captcha": {
+                    "type": "string"
+                },
+                "captchaID": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "nickName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+>>>>>>> 3a4861b (Add:user authetication)
                     "type": "string"
                 }
             }
         },
+<<<<<<< HEAD
         "dto.MonitorGetSettingResponseDTO": {
             "type": "object",
             "properties": {
@@ -1918,6 +1975,13 @@ const docTemplate = `{
                 },
                 "dataDriftSetting": {
                     "$ref": "#/definitions/dto.DataDriftSetting"
+=======
+        "dto.RegisterResDTO": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+>>>>>>> 3a4861b (Add:user authetication)
                 }
             }
         },

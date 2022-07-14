@@ -46,10 +46,10 @@ func initializeSystems(h *handler.Handler) error {
 		panic(err)
 	}
 
-	// // initialize cacher
-	// if err := initialize.OpenAllCacheConnection(h); err != nil {
-	// 	panic(err)
-	// }
+	// initialize cacher
+	if err := initialize.OpenAllCacheConnection(h); err != nil {
+		panic(err)
+	}
 
 	// // initialize indexer
 	// if err := initialize.OpenAllIndexerConnection(h); err != nil {

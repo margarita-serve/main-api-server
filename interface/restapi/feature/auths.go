@@ -36,6 +36,14 @@ type FAuths struct {
 }
 
 // RegisterUser register user
+// @Summary register user
+// @Description  유저 생성
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param body body dto.RegisterReqDTO true "register user"
+// @Success 200 {object} dto.RegisterResDTO
+// @Router      /auths/register [post]
 func (f *FAuths) RegisterUser(c echo.Context) error {
 
 	req := new(dto.RegisterReqDTO)

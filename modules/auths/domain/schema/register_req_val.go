@@ -12,6 +12,7 @@ func (r *RegisterRequest) Validate() error {
 		validation.Field(&r.Password, validation.Required),
 		validation.Field(&r.Email, validation.Required, valIs.Email),
 		validation.Field(&r.NickName, validation.Required),
-		validation.Field(&r.Captcha, validation.Required),
-		validation.Field(&r.CaptchaID, validation.Required))
+		//validation.Field(&r.Captcha, validation.Required),
+		//validation.Field(&r.CaptchaID, validation.Required)
+	)
 }

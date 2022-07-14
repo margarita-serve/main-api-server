@@ -2,14 +2,14 @@ package router
 
 import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/feature"
+	internalMiddleware "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/middleware"
 	"github.com/labstack/echo/v4"
-	//internalMiddleware "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/middleware"
 )
 
-// SetEmail set Email Router
+// SetModelPackage set Modelpackage Router
 func SetModelPackage(eg *echo.Group, f *feature.FModelPackage) {
 	gc := eg.Group("/projects/:projectID/model-packages")
-	//gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
+	gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
 
 	gc.POST("", f.Create)
 	gc.GET("/:modelPackageID", f.GetByID)

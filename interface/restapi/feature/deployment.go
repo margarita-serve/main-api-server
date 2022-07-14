@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
@@ -43,14 +44,15 @@ type FDeployment struct {
 // @Success 200 {object} appDeploymentDTO.CreateDeploymentResponseDTO
 // @Router      /projects/{projectID}/deployments [post]
 func (f *FDeployment) Create(c echo.Context) error {
-	// identity
-	// i, err := f.SetIdentity(c)
-	// if err != nil {
-	// 	return f.translateErrorMessage(err, c)
-	// }
-	// if !i.IsLogin || i.IsAnonymous {
-	// 	return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
-	// }
+	//identity
+	i, err := f.SetIdentity(c)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
+
 	req := new(appDeploymentDTO.CreateDeploymentRequestDTO)
 	if err := c.Bind(req); err != nil {
 		return f.translateErrorMessage(err, c)

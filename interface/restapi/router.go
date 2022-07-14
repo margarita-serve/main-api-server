@@ -67,10 +67,7 @@ func SetRouters(e *echo.Echo, h *handler.Handler) {
 	router.SetDeployment(ga, features.Deployment)
 	router.SetModelPackage(ga, features.ModelPackage)
 	router.SetMonitor(ga, features.Monitor)
-	// ga.Use(internalMiddleware.JWTVerifier(h))
-	// router.SetAuths(ga, features.Auths)
-	// router.SetCovid19(ga, features.Covid19)
-	// router.SetGeoLocation(ga, features.GeoLocation)
-	// router.SetEmail(ga, features.Email)
+	router.SetAuths(ga, features.Auths)
+	router.SetEmail(ga, features.Email)
 
 }

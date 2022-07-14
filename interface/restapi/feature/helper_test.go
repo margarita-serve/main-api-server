@@ -2,9 +2,13 @@ package feature
 
 import (
 	"fmt"
+	"testing"
+	"time"
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/config"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -44,29 +48,29 @@ func newHandler() *handler.Handler {
 	return h
 }
 
-// func generateUserTestToken(h *handler.Handler, t *testing.T) (string, *identity.JWTCustomClaims, error) {
-// 	j, err := identity.NewJWT(h)
-// 	if err != nil {
-// 		return "", nil, err
-// 	}
+func generateUserTestToken(h *handler.Handler, t *testing.T) (string, *identity.JWTCustomClaims, error) {
+	j, err := identity.NewJWT(h)
+	if err != nil {
+		return "", nil, err
+	}
 
-// 	claims := identity.JWTCustomClaims{
-// 		ID:          0,
-// 		UUID:        "test-test-test-test-test",
-// 		Username:    "test.d3tago",
-// 		NickName:    "Test User",
-// 		AuthorityID: "group:admin",
-// 		StandardClaims: jwt.StandardClaims{
-// 			NotBefore: time.Now().Unix() - 1000,           // signature effective time
-// 			ExpiresAt: time.Now().Unix() + 60*60*24*30*12, // expiration time 12 month
-// 			Issuer:    j.Issuer,
-// 		},
-// 	}
+	claims := identity.JWTCustomClaims{
+		ID:          0,
+		UUID:        "test-test-test-test-test",
+		Username:    "test.d3tago",
+		NickName:    "Test User",
+		AuthorityID: "group:admin",
+		StandardClaims: jwt.StandardClaims{
+			NotBefore: time.Now().Unix() - 1000,           // signature effective time
+			ExpiresAt: time.Now().Unix() + 60*60*24*30*12, // expiration time 12 month
+			Issuer:    j.Issuer,
+		},
+	}
 
-// 	token, _, err := j.GenerateToken(claims)
-// 	if err != nil {
-// 		return "", nil, err
-// 	}
+	token, _, err := j.GenerateToken(claims)
+	if err != nil {
+		return "", nil, err
+	}
 
-// 	return token, &claims, nil
-// }
+	return token, &claims, nil
+}

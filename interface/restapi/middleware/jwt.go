@@ -54,18 +54,18 @@ func JWTVerifier(h *handler.Handler) echo.MiddlewareFunc {
 				return response.FailWithMessageWithCode(http.StatusInternalServerError, err.Error(), c)
 			}
 			if !exist {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider (EA2M) Error [%s]", "Invalid Token"), c)
+				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Invalid Token"), c)
 			}
 
 			// if expired
 			now := time.Now().Unix()
 			if claims.ExpiresAt < now {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider (EA2M) Error [%s]", "Token Expired"), c)
+				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Token Expired"), c)
 			}
 
 			// if not valid before
 			if claims.NotBefore > now {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider (EA2M) Error [%s]", "Token Not Valid Berofe"), c)
+				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Token Not Valid Berofe"), c)
 			}
 			c.Set("identity.token.jwt", token)
 			c.Set("identity.token.jwt.claims", claims)

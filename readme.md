@@ -12,6 +12,11 @@ grant all privileges on koreserve_email.* to 'gorm'@'localhost';
 ```
 
 #### How to create Swagger OpenApi Definition ####
+swag cli설치
+```
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
 feature 디렉토리 안에서 실행
 ```
 swag init -g openapi.go -output ../../../docs --parseDependency -d ./

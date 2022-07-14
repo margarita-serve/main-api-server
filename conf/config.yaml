@@ -82,8 +82,8 @@ IAM:
     activationURL: "http://%s/api/v1/auths/registration/activate"
     defaultAuthorityID: "group:default"
   JWT:
-    issuer: "D3TA-Go"
-    signingKey: "D3TA-GO-SigningKey"
+    issuer: "KORESERVE"
+    signingKey: "KORESERVE-SigningKey"
   casbin:
     modelPath: "casbin/casbin_rbac_rest_model.conf"
     enforcers:
@@ -128,10 +128,10 @@ SMTPServers:
   defaultSMTP:
     server: "smtp.gmail.com"
     port: "587"
-    username: "email@gmail.com"
-    password: "password"
+    username: "koreserve.acornsoft@gmail.com"
+    password: "coqaxngvrbrhzset"
     senderEmail: "no-reply@gmail.com"
-    senderName: "D3TAgo NoReply"
+    senderName: "KoreServe NoReply"
 
 # Caches
 caches:
@@ -151,14 +151,14 @@ caches:
       poolSize: 10
       minIdleConns: 5
   # Cache with GoMacaron/Cache engine Sample
-  tmpDataCache:
-    connectionName: "tmp-data-cache"
-    engine: "gomacaron"
-    driver: "redis"
-    configurations: # Following GoMacaron/Cache engine
-      adapter: "redis"
-      adapterConfig: "addr:127.0.0.1:6379"
-      interval: 60
-      occupyMode: false
-      section: "cache"
+  # tmpDataCache:
+  #   connectionName: "tmp-data-cache"
+  #   engine: "gomacaron"
+  #   driver: "redis"
+  #   configurations: # Following GoMacaron/Cache engine
+  #     adapter: "redis"
+  #     adapterConfig: "addr:127.0.0.1:6379"
+  #     interval: 60
+  #     occupyMode: false
+  #     section: "cache"
 

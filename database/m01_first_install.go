@@ -12,31 +12,31 @@ func M01FirstInstall(h *handler.Handler) error {
 		return err
 	}
 
-	// identity (IAM)
-	// iamDB, err := h.GetGormDB(cfg.Databases.IdentityDB.ConnectionName)
-	// if err != nil {
-	// 	return err
-	// }
-	// iamMig := NewMigration(iamDB)
+	//identity (IAM)
+	iamDB, err := h.GetGormDB(cfg.Databases.IdentityDB.ConnectionName)
+	if err != nil {
+		return err
+	}
+	iamMig := NewMigration(iamDB)
 
-	// // Create Structure
-	// if err := iamMig.Run(migrations.NewMS0101CreateStructureIAM(h)); err != nil {
-	// 	if err := iamMig.Rollback(migrations.NewMS0101CreateStructureIAM(h)); err != nil {
-	// 		return err
-	// 	}
-	// }
-	// // Seed Data
-	// if err := iamMig.Run(migrations.NewMS0102SeedDataIAM(h)); err != nil {
-	// 	if err := iamMig.Rollback(migrations.NewMS0102SeedDataIAM(h)); err != nil {
-	// 		return err
-	// 	}
-	// }
-	// // Init Casbin
-	// if err := iamMig.Run(migrations.NewMS0103CreateAndInitCasbin(h)); err != nil {
-	// 	if err := iamMig.Rollback(migrations.NewMS0103CreateAndInitCasbin(h)); err != nil {
-	// 		return err
-	// 	}
-	// }
+	// Create Structure
+	if err := iamMig.Run(migrations.NewMS0101CreateStructureIAM(h)); err != nil {
+		if err := iamMig.Rollback(migrations.NewMS0101CreateStructureIAM(h)); err != nil {
+			return err
+		}
+	}
+	// Seed Data
+	if err := iamMig.Run(migrations.NewMS0102SeedDataIAM(h)); err != nil {
+		if err := iamMig.Rollback(migrations.NewMS0102SeedDataIAM(h)); err != nil {
+			return err
+		}
+	}
+	// Init Casbin
+	if err := iamMig.Run(migrations.NewMS0103CreateAndInitCasbin(h)); err != nil {
+		if err := iamMig.Rollback(migrations.NewMS0103CreateAndInitCasbin(h)); err != nil {
+			return err
+		}
+	}
 
 	//  (MainDB)
 	geoDB, err := h.GetGormDB(cfg.Databases.MainDB.ConnectionName)
@@ -77,25 +77,25 @@ func M01FirstInstall(h *handler.Handler) error {
 	// 	}
 	// }
 
-	// Email (EmailDB)
-	// emailDB, err := h.GetGormDB(cfg.Databases.EmailDB.ConnectionName)
-	// if err != nil {
-	// 	return err
-	// }
-	// emailMig := NewMigration(emailDB)
+	//Email (EmailDB)
+	emailDB, err := h.GetGormDB(cfg.Databases.EmailDB.ConnectionName)
+	if err != nil {
+		return err
+	}
+	emailMig := NewMigration(emailDB)
 
-	// // Create Structure
-	// if err := emailMig.Run(migrations.NewMS0301CreateStructureEmail(h)); err != nil {
-	// 	if err := emailMig.Rollback(migrations.NewMS0301CreateStructureEmail(h)); err != nil {
-	// 		return err
-	// 	}
-	// }
-	// // Seed Data
-	// if err := emailMig.Run(migrations.NewMS0301SeedDataEmail(h)); err != nil {
-	// 	if err := emailMig.Rollback(migrations.NewMS0301SeedDataEmail(h)); err != nil {
-	// 		return err
-	// 	}
-	// }
+	// Create Structure
+	if err := emailMig.Run(migrations.NewMS0301CreateStructureEmail(h)); err != nil {
+		if err := emailMig.Rollback(migrations.NewMS0301CreateStructureEmail(h)); err != nil {
+			return err
+		}
+	}
+	// Seed Data
+	if err := emailMig.Run(migrations.NewMS0301SeedDataEmail(h)); err != nil {
+		if err := emailMig.Rollback(migrations.NewMS0301SeedDataEmail(h)); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

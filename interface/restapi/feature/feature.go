@@ -29,13 +29,13 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	// if f.Auths, err = NewFAuths(h); err != nil {
-	// 	return nil, err
-	// }
+	if f.Auths, err = NewFAuths(h); err != nil {
+		return nil, err
+	}
 
-	// if f.Email, err = NewFEmail(h); err != nil {
-	// 	return nil, err
-	// }
+	if f.Email, err = NewFEmail(h); err != nil {
+		return nil, err
+	}
 
 	return f, nil
 }
@@ -49,6 +49,6 @@ type Feature struct {
 	Deployment   *FDeployment
 	ModelPackage *FModelPackage
 	Monitor      *FMonitor
-	// Auths   *FAuths
-	// Email *FEmail
+	Auths        *FAuths
+	Email        *FEmail
 }

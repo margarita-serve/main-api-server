@@ -2,14 +2,14 @@ package router
 
 import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/feature"
+	internalMiddleware "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/middleware"
 	"github.com/labstack/echo/v4"
-	//internalMiddleware "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/middleware"
 )
 
 // SetDeployment Deployment Router
 func SetDeployment(eg *echo.Group, f *feature.FDeployment) {
 	gc := eg.Group("/projects/:projectID/deployments")
-	//gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
+	gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
 
 	gc.POST("", f.Create)
 	gc.GET("/:deploymentID", f.GetByID)

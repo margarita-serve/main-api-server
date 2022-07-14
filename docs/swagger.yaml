@@ -326,6 +326,7 @@ definitions:
       message:
         type: string
     type: object
+<<<<<<< HEAD
   dto.MonitorCreateRequestDTO:
     properties:
       accuracyMonitoring:
@@ -361,6 +362,27 @@ definitions:
         $ref: '#/definitions/dto.AccuracySetting'
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
+=======
+  dto.RegisterReqDTO:
+    properties:
+      captcha:
+        type: string
+      captchaID:
+        type: string
+      email:
+        type: string
+      nickName:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.RegisterResDTO:
+    properties:
+      email:
+        type: string
+>>>>>>> 3a4861b (Add:user authetication)
     type: object
   dto.ReplaceModelRequestDTO:
     properties:
@@ -491,6 +513,28 @@ definitions:
 info:
   contact: {}
 paths:
+  /auths/register:
+    post:
+      consumes:
+      - application/json
+      description: 유저 생성
+      parameters:
+      - description: register user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterReqDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RegisterResDTO'
+      summary: register user
+      tags:
+      - Auth
   /projects/{projectID}/deployments:
     get:
       consumes:
