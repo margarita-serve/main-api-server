@@ -25,6 +25,10 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
+	if f.Monitor, err = NewMonitor(h); err != nil {
+		return nil, err
+	}
+
 	// if f.Auths, err = NewFAuths(h); err != nil {
 	// 	return nil, err
 	// }
@@ -44,6 +48,7 @@ type Feature struct {
 	OpenAPI      *FOpenAPI
 	Deployment   *FDeployment
 	ModelPackage *FModelPackage
+	Monitor      *FMonitor
 	// Auths   *FAuths
 	// Email *FEmail
 }

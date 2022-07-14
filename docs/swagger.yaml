@@ -1,4 +1,26 @@
 definitions:
+  dto.AccuracyGetResponseDTO:
+    properties:
+      data:
+        type: string
+      endTime:
+        type: string
+      message:
+        type: string
+      startTime:
+        type: string
+    type: object
+  dto.AccuracySetting:
+    properties:
+      atRiskValue:
+        type: number
+      failingValue:
+        type: number
+      measurement:
+        type: string
+      metricType:
+        type: string
+    type: object
   dto.ActiveDeploymentResponseDTO:
     properties:
       message:
@@ -153,6 +175,25 @@ definitions:
       modelPackageID:
         type: string
     type: object
+  dto.DataDriftSetting:
+    properties:
+      driftMetricType:
+        type: string
+      driftThreshold:
+        type: number
+      highImportanceAtRiskCount:
+        type: integer
+      highImportanceFailingCount:
+        type: integer
+      importanceThreshold:
+        type: number
+      lowImportanceAtRiskCount:
+        type: integer
+      lowImportanceFailingCount:
+        type: integer
+      monitorRange:
+        type: string
+    type: object
   dto.DeleteDeploymentResponseDTO:
     properties:
       message:
@@ -161,6 +202,19 @@ definitions:
   dto.DeleteModelPackageResponseDTO:
     properties:
       message:
+        type: string
+    type: object
+  dto.FeatureDriftGetResponseDTO:
+    properties:
+      data:
+        type: string
+      endTime:
+        type: string
+      message:
+        type: string
+      predictionCount:
+        type: integer
+      startTime:
         type: string
     type: object
   dto.GetDeploymentListResponseDTO:
@@ -272,6 +326,42 @@ definitions:
       message:
         type: string
     type: object
+  dto.MonitorCreateRequestDTO:
+    properties:
+      accuracyMonitoring:
+        type: boolean
+      accuracySetting:
+        $ref: '#/definitions/dto.AccuracySetting'
+      associationID:
+        type: string
+      dataDriftSetting:
+        $ref: '#/definitions/dto.DataDriftSetting'
+      featureDriftTracking:
+        type: boolean
+      modelPackageID:
+        type: string
+      serviceHealthSetting:
+        $ref: '#/definitions/dto.ServiceHealthSetting'
+    type: object
+  dto.MonitorCreateResponseDTO:
+    properties:
+      deploymentID:
+        type: string
+    type: object
+  dto.MonitorGetSettingResponseDTO:
+    properties:
+      accuracySetting:
+        $ref: '#/definitions/dto.AccuracySetting'
+      dataDriftSetting:
+        $ref: '#/definitions/dto.DataDriftSetting'
+    type: object
+  dto.MonitorPatchRequestDTO:
+    properties:
+      accuracySetting:
+        $ref: '#/definitions/dto.AccuracySetting'
+      dataDriftSetting:
+        $ref: '#/definitions/dto.DataDriftSetting'
+    type: object
   dto.ReplaceModelRequestDTO:
     properties:
       modelPackageID:
@@ -295,6 +385,8 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  dto.ServiceHealthSetting:
     type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
@@ -640,6 +732,332 @@ paths:
       summary: Get Model History
       tags:
       - Deployment
+  /projects/{projectID}/deployments/{deploymentID}/monitor:
+    get:
+      consumes:
+      - application/json
+      description: 모니터 설정 조회
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorGetSettingResponseDTO'
+      summary: Get Monitor Setting
+      tags:
+      - Monitor
+    patch:
+      consumes:
+      - application/json
+      description: 모니터링 설정 변경
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch Monitor
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
+      produces:
+      - application/json
+      responses: {}
+      summary: Patch Monitor Setting
+      tags:
+      - Monitor
+    post:
+      consumes:
+      - application/json
+      description: Test
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Create Monitor
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorCreateRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorCreateResponseDTO'
+      summary: Test Create
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/accuracy:
+    get:
+      consumes:
+      - application/json
+      description: 정확도 조회
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: type
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: startTime
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: endTime
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccuracyGetResponseDTO'
+      summary: Get Accuracy
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/actual:
+    post:
+      consumes:
+      - application/json
+      description: upload Actual file
+      parameters:
+      - description: actual file upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: actualResponse
+        in: query
+        name: actualResponse
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Upload Actual file
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/detail:
+    get:
+      consumes:
+      - application/json
+      description: 피쳐 드리프트 디테일
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: startTime
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: endTime
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+      summary: Get Feature Detail
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/detail/graph:
+    get:
+      consumes:
+      - application/json
+      description: 피쳐 디테일 그래프
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: startTime
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: endTime
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+      summary: Get Feature Detail Graph
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/drift:
+    get:
+      consumes:
+      - application/json
+      description: 데이터 드리프트
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: startTime
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: endTime
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+      summary: Get Data Drift
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/drift/graph:
+    get:
+      consumes:
+      - application/json
+      description: 드리프트 그래프
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: startTime
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: endTime
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+      summary: Get Drift Graph
+      tags:
+      - Monitor
   /projects/{projectID}/deployments/{deploymentID}/predict:
     post:
       consumes:

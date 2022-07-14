@@ -64,6 +64,12 @@ func M01FirstInstall(h *handler.Handler) error {
 			return err
 		}
 	}
+
+	if err := geoMig.Run(migrations.NewCreateStructureMonitor(h)); err != nil {
+		if err := geoMig.Rollback(migrations.NewCreateStructureMonitor(h)); err != nil {
+			return err
+		}
+	}
 	// // Seed Data
 	// if err := geoMig.Run(migrations.NewMS0201SeedDataGeo(h)); err != nil {
 	// 	if err := geoMig.Rollback(migrations.NewMS0201SeedDataGeo(h)); err != nil {

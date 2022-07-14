@@ -6,6 +6,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/casbin/casbin/v2 v2.50.2
 	github.com/casbin/gorm-adapter/v3 v3.0.2
+	github.com/confluentinc/confluent-kafka-go v1.9.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
@@ -27,6 +28,7 @@ require (
 	golang.org/x/net v0.0.0-20220622184535-263ec571b305 // indirect
 	golang.org/x/sys v0.0.0-20220622161953-175b2fd9d664 // indirect
 	golang.org/x/tools v0.1.11 // indirect
+	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.8.2
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.3.3
 	gorm.io/driver/postgres v1.3.4

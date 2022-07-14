@@ -381,6 +381,483 @@ const docTemplate = `{
                 }
             }
         },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor": {
+            "get": {
+                "description": "모니터 설정 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorGetSettingResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Test",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Test Create",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Monitor",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorCreateRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorCreateResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "모니터링 설정 변경",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Patch Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch Monitor",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorPatchRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/accuracy": {
+            "get": {
+                "description": "정확도 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Accuracy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "type",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccuracyGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/actual": {
+            "post": {
+                "description": "upload Actual file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Upload Actual file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "actual file upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "actualResponse",
+                        "name": "actualResponse",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/detail": {
+            "get": {
+                "description": "피쳐 드리프트 디테일",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Feature Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/detail/graph": {
+            "get": {
+                "description": "피쳐 디테일 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Feature Detail Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/drift": {
+            "get": {
+                "description": "데이터 드리프트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Data Drift",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/drift/graph": {
+            "get": {
+                "description": "드리프트 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Drift Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{projectID}/deployments/{deploymentID}/predict": {
             "post": {
                 "description": "예측 요청",
@@ -928,6 +1405,40 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AccuracyGetResponseDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AccuracySetting": {
+            "type": "object",
+            "properties": {
+                "atRiskValue": {
+                    "type": "number"
+                },
+                "failingValue": {
+                    "type": "number"
+                },
+                "measurement": {
+                    "type": "string"
+                },
+                "metricType": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.ActiveDeploymentResponseDTO": {
             "type": "object",
             "properties": {
@@ -1006,17 +1517,17 @@ const docTemplate = `{
                     "x-order": "8",
                     "example": true
                 },
-                "accuracyAnalyze": {
-                    "description": "정확도 측정 설정",
-                    "type": "boolean",
-                    "x-order": "9",
-                    "example": true
-                },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
                     "type": "string",
                     "x-order": "9",
                     "example": "Index"
+                },
+                "accuracyAnalyze": {
+                    "description": "정확도 측정 설정",
+                    "type": "boolean",
+                    "x-order": "9",
+                    "example": true
                 }
             }
         },
@@ -1124,6 +1635,35 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.DataDriftSetting": {
+            "type": "object",
+            "properties": {
+                "driftMetricType": {
+                    "type": "string"
+                },
+                "driftThreshold": {
+                    "type": "number"
+                },
+                "highImportanceAtRiskCount": {
+                    "type": "integer"
+                },
+                "highImportanceFailingCount": {
+                    "type": "integer"
+                },
+                "importanceThreshold": {
+                    "type": "number"
+                },
+                "lowImportanceAtRiskCount": {
+                    "type": "integer"
+                },
+                "lowImportanceFailingCount": {
+                    "type": "integer"
+                },
+                "monitorRange": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DeleteDeploymentResponseDTO": {
             "type": "object",
             "properties": {
@@ -1136,6 +1676,26 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureDriftGetResponseDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "predictionCount": {
+                    "type": "integer"
+                },
+                "startTime": {
                     "type": "string"
                 }
             }
@@ -1305,6 +1865,62 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.MonitorCreateRequestDTO": {
+            "type": "object",
+            "properties": {
+                "accuracyMonitoring": {
+                    "type": "boolean"
+                },
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.AccuracySetting"
+                },
+                "associationID": {
+                    "type": "string"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.DataDriftSetting"
+                },
+                "featureDriftTracking": {
+                    "type": "boolean"
+                },
+                "modelPackageID": {
+                    "type": "string"
+                },
+                "serviceHealthSetting": {
+                    "$ref": "#/definitions/dto.ServiceHealthSetting"
+                }
+            }
+        },
+        "dto.MonitorCreateResponseDTO": {
+            "type": "object",
+            "properties": {
+                "deploymentID": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.MonitorGetSettingResponseDTO": {
+            "type": "object",
+            "properties": {
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.AccuracySetting"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.DataDriftSetting"
+                }
+            }
+        },
+        "dto.MonitorPatchRequestDTO": {
+            "type": "object",
+            "properties": {
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.AccuracySetting"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.DataDriftSetting"
+                }
+            }
+        },
         "dto.ReplaceModelRequestDTO": {
             "type": "object",
             "required": [
@@ -1337,6 +1953,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "dto.ServiceHealthSetting": {
+            "type": "object"
         },
         "dto.UpdateDeploymentRequestDTO": {
             "type": "object",
