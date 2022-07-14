@@ -326,7 +326,6 @@ definitions:
       message:
         type: string
     type: object
-<<<<<<< HEAD
   dto.MonitorCreateRequestDTO:
     properties:
       accuracyMonitoring:
@@ -356,13 +355,31 @@ definitions:
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
     type: object
+  dto.MonitorGetStatusListResponseDTO:
+    properties:
+      statusList:
+        items:
+          $ref: '#/definitions/dto.MonitorStatus'
+        type: array
+    type: object
   dto.MonitorPatchRequestDTO:
     properties:
       accuracySetting:
         $ref: '#/definitions/dto.AccuracySetting'
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
-=======
+    type: object
+  dto.MonitorStatus:
+    properties:
+      accuracyStatus:
+        type: string
+      deploymentID:
+        type: string
+      driftStatus:
+        type: string
+      serviceHealthStatus:
+        type: string
+    type: object
   dto.RegisterReqDTO:
     properties:
       captcha:
@@ -382,7 +399,6 @@ definitions:
     properties:
       email:
         type: string
->>>>>>> 3a4861b (Add:user authetication)
     type: object
   dto.ReplaceModelRequestDTO:
     properties:
@@ -1100,6 +1116,32 @@ paths:
           schema:
             $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
       summary: Get Drift Graph
+      tags:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/statuses:
+    get:
+      consumes:
+      - application/json
+      description: 모니터 상태 리스트 조회
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: deploymentsID
+        in: path
+        name: deploymentsID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorGetStatusListResponseDTO'
+      summary: Get Monitor Status List
       tags:
       - Monitor
   /projects/{projectID}/deployments/{deploymentID}/predict:

@@ -892,6 +892,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/statuses": {
+            "get": {
+                "description": "모니터 상태 리스트 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Monitor Status List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentsID",
+                        "name": "deploymentsID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorGetStatusListResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{projectID}/deployments/{deploymentID}/predict": {
             "post": {
                 "description": "예측 요청",
@@ -1551,17 +1590,17 @@ const docTemplate = `{
                     "x-order": "8",
                     "example": true
                 },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
-                },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
                     "type": "boolean",
                     "x-order": "9",
                     "example": true
+                },
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "Index"
                 }
             }
         },
@@ -1899,7 +1938,6 @@ const docTemplate = `{
                 }
             }
         },
-<<<<<<< HEAD
         "dto.MonitorCreateRequestDTO": {
             "type": "object",
             "properties": {
@@ -1930,7 +1968,60 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "deploymentID": {
-=======
+                    "type": "string"
+                }
+            }
+        },
+        "dto.MonitorGetSettingResponseDTO": {
+            "type": "object",
+            "properties": {
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.AccuracySetting"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.DataDriftSetting"
+                }
+            }
+        },
+        "dto.MonitorGetStatusListResponseDTO": {
+            "type": "object",
+            "properties": {
+                "statusList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.MonitorStatus"
+                    }
+                }
+            }
+        },
+        "dto.MonitorPatchRequestDTO": {
+            "type": "object",
+            "properties": {
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.AccuracySetting"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.DataDriftSetting"
+                }
+            }
+        },
+        "dto.MonitorStatus": {
+            "type": "object",
+            "properties": {
+                "accuracyStatus": {
+                    "type": "string"
+                },
+                "deploymentID": {
+                    "type": "string"
+                },
+                "driftStatus": {
+                    "type": "string"
+                },
+                "serviceHealthStatus": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.RegisterReqDTO": {
             "type": "object",
             "properties": {
@@ -1950,38 +2041,15 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
->>>>>>> 3a4861b (Add:user authetication)
                     "type": "string"
                 }
             }
         },
-<<<<<<< HEAD
-        "dto.MonitorGetSettingResponseDTO": {
-            "type": "object",
-            "properties": {
-                "accuracySetting": {
-                    "$ref": "#/definitions/dto.AccuracySetting"
-                },
-                "dataDriftSetting": {
-                    "$ref": "#/definitions/dto.DataDriftSetting"
-                }
-            }
-        },
-        "dto.MonitorPatchRequestDTO": {
-            "type": "object",
-            "properties": {
-                "accuracySetting": {
-                    "$ref": "#/definitions/dto.AccuracySetting"
-                },
-                "dataDriftSetting": {
-                    "$ref": "#/definitions/dto.DataDriftSetting"
-=======
         "dto.RegisterResDTO": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
->>>>>>> 3a4861b (Add:user authetication)
                 }
             }
         },
