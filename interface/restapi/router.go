@@ -66,7 +66,7 @@ func SetRouters(e *echo.Echo, h *handler.Handler) {
 	ga := e.Group("api/v1")
 	router.SetDeployment(ga, features.Deployment)
 	router.SetModelPackage(ga, features.ModelPackage)
-	router.SetMonitor(ga, features.Monitor)
+	//router.SetMonitor(ga, features.Monitor)
 	router.SetAuths(ga, features.Auths)
 	router.SetEmail(ga, features.Email)
 

@@ -1,6 +1,8 @@
 package feature
 
-import "git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+import (
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+)
 
 // NewFeature new Feature
 func NewFeature(h *handler.Handler) (*Feature, error) {
@@ -17,15 +19,19 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	if f.Deployment, err = NewDeployment(h); err != nil {
-		return nil, err
-	}
-
 	if f.ModelPackage, err = NewModelPackage(h); err != nil {
 		return nil, err
 	}
 
-	if f.Monitor, err = NewMonitor(h); err != nil {
+	// if f.Monitor, err = NewMonitor(h); err != nil {
+	// 	return nil, err
+	// }
+
+	if f.Monitor, err = NewMonitorMockup(h, f.ModelPackage.appModelPackage.ModelPackageSvc); err != nil {
+		return nil, err
+	}
+
+	if f.Deployment, err = NewDeployment(h, f.ModelPackage.appModelPackage.ModelPackageSvc, f.Monitor.appMonitor.MonitorSvc); err != nil {
 		return nil, err
 	}
 

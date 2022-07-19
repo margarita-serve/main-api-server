@@ -5,12 +5,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	monType "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/monitoring_service/data_drift/types"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
+
+	monType "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/monitoring_service/data_drift/types"
 )
 
 func NewDriftMonitor(config Config, httpClient *http.Client) *DriftMonitor {

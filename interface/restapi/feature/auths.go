@@ -112,6 +112,14 @@ func (f *FAuths) ActivateRegistration(c echo.Context) error {
 }
 
 // Login user Login
+// @Summary Login user
+// @Description  유저 로그인
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param body body dto.LoginReqDTO true "login user"
+// @Success 200 {object} dto.LoginResDTO
+// @Router      /auths/ogin [post]
 func (f *FAuths) Login(c echo.Context) error {
 
 	req := new(dto.LoginReqDTO)

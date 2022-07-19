@@ -326,6 +326,26 @@ definitions:
       message:
         type: string
     type: object
+  dto.LoginReqDTO:
+    properties:
+      captcha:
+        type: string
+      captchaID:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.LoginResDTO:
+    properties:
+      expiredAt:
+        type: integer
+      token:
+        type: string
+      tokenType:
+        type: string
+    type: object
   dto.MonitorCreateRequestDTO:
     properties:
       accuracyMonitoring:
@@ -529,6 +549,28 @@ definitions:
 info:
   contact: {}
 paths:
+  /auths/login:
+    post:
+      consumes:
+      - application/json
+      description: 유저 로그인
+      parameters:
+      - description: login user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginReqDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResDTO'
+      summary: Login user
+      tags:
+      - Auth
   /auths/register:
     post:
       consumes:
@@ -577,6 +619,12 @@ paths:
         in: query
         name: sort
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -603,6 +651,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateDeploymentRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -628,6 +682,12 @@ paths:
         name: deploymentID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -650,6 +710,12 @@ paths:
       - description: deploymentID
         in: path
         name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -682,6 +748,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateDeploymentRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -705,6 +777,12 @@ paths:
       - description: deploymentID
         in: path
         name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -732,6 +810,12 @@ paths:
         name: deploymentID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -757,6 +841,12 @@ paths:
         name: deploymentID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -780,6 +870,12 @@ paths:
       - description: deploymentID
         in: path
         name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -1169,6 +1265,12 @@ paths:
             -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891,
             -1.604642, 0.774676, -0.465148, -0.495225]]\n}"
           type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1200,6 +1302,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ReplaceModelRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1237,6 +1345,12 @@ paths:
         in: query
         name: sort
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1263,6 +1377,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateModelPackageRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1288,6 +1408,12 @@ paths:
         name: modelPackageID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1310,6 +1436,12 @@ paths:
       - description: modelPackageID
         in: path
         name: modelPackageID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -1342,6 +1474,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateModelPackageRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1367,6 +1505,12 @@ paths:
         name: modelPackageID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1390,6 +1534,12 @@ paths:
         name: modelPackageID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/octet-stream
       responses: {}
@@ -1409,6 +1559,12 @@ paths:
         name: modelPackageID
         required: true
         type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/octet-stream
       responses: {}
@@ -1426,6 +1582,12 @@ paths:
       - description: modelPackageID
         in: path
         name: modelPackageID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -1454,6 +1616,12 @@ paths:
         name: upfile
         required: true
         type: file
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses: {}
@@ -1480,6 +1648,12 @@ paths:
         name: upfile
         required: true
         type: file
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses: {}
@@ -1506,6 +1680,12 @@ paths:
         name: upfile
         required: true
         type: file
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses: {}

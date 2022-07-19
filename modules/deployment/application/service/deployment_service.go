@@ -11,6 +11,9 @@ package service
 */
 
 import (
+	"fmt"
+	"sync"
+
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/repository"
@@ -24,30 +27,41 @@ import (
 	infInfSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/inference_service/kserve"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/repository"
 	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
+	appMonitoringDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/application/dto"
 
 	// appPredictionEnvDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/predictionEnv/application/dto"
-	// appPredictionEnvSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/predictionEnv/application/service"
-	// appMonitoringDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
-	// appMonitoringSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/service"
-	// appOrgDTO
-	// appOrgSvc
+
 	predictionSendSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/prediction_sender"
 )
+
+type IMonitorService interface {
+	//Create(req interface{}) (interface{}, error)
+	Create(req *appMonitoringDTO.MonitorCreateRequestDTO) (*appMonitoringDTO.MonitorCreateResponseDTO, error)
+	GetByID(req *appMonitoringDTO.MonitorGetByIDRequestDTO) (*appMonitoringDTO.MonitorGetByIDResponseDTO, error)
+	Delete(req *appMonitoringDTO.MonitorDeleteRequestDTO) (*appMonitoringDTO.MonitorDeleteResponseDTO, error)
+	SetDriftMonitorActive(req *appMonitoringDTO.MonitorDriftActiveRequestDTO) (*appMonitoringDTO.MonitorDriftActiveResponseDTO, error)
+	SetDriftMonitorInActive(req *appMonitoringDTO.MonitorDriftInActiveRequestDTO) (*appMonitoringDTO.MonitorDriftInActiveResponseDTO, error)
+	SetAccuracyMonitorActive(req *appMonitoringDTO.MonitorAccuracyActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyActiveResponseDTO, error)
+	SetAccuracyMonitorInActive(req *appMonitoringDTO.MonitorAccuracyInActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyInActiveResponseDTO, error)
+}
+
+type IModelPackageService interface {
+	GetByIDInternal(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
+}
 
 // DeploymentService type
 type DeploymentService struct {
 	BaseService
 	domInferenceSvc domSvcInferenceSvc.IInferenceServiceAdapter
-	modelPackageSvc *appModelPackageSvc.ModelPackageService
+	modelPackageSvc IModelPackageService
+	monitoringSvc   IMonitorService
 	// predictionEnvSvc   *appPredictionEnvSvc.PredictionEnvService
-	// monitoringSvc          *appMonitoringSvc.MonitoringService
 	predictionSendSvc *predictionSendSvc.PredictionSender
 	repo              domRepo.IDeploymentRepo
 }
 
 // NewDeploymentService new DeploymentService
-func NewDeploymentService(h *handler.Handler) (*DeploymentService, error) {
+func NewDeploymentService(h *handler.Handler, modelPackageSvc IModelPackageService, monitorSvc IMonitorService) (*DeploymentService, error) {
 	var err error
 
 	svc := new(DeploymentService)
@@ -65,13 +79,12 @@ func NewDeploymentService(h *handler.Handler) (*DeploymentService, error) {
 		return nil, err
 	}
 
-	if svc.modelPackageSvc, err = appModelPackageSvc.NewModelPackageService(h); err != nil {
-		return nil, err
-	}
-
 	if svc.predictionSendSvc, err = predictionSendSvc.NewPredictionSendService(); err != nil {
 		return nil, err
 	}
+
+	svc.modelPackageSvc = modelPackageSvc
+	svc.monitoringSvc = monitorSvc
 
 	return svc, nil
 }
@@ -149,30 +162,80 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 		return nil, err
 	}
 
-	domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
+	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
 
 	err = domAggregateDeployment.AddEventHistory("Create", "Deployment Created", userID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = domAggregateDeployment.RequestCreateInferenceService(s.domInferenceSvc, reqDomSvc)
-	if err != nil {
-		errDelete := s.repo.Delete(domAggregateDeployment.ID)
-		if errDelete != nil {
-			return nil, errDelete
-		}
-		return nil, err
+	//Create Monitoring Service
+	reqMonitoring := &appMonitoringDTO.MonitorCreateRequestDTO{
+		DeploymentID:         domAggregateDeployment.ID,
+		ModelPackageID:       domAggregateDeployment.ModelPackageID,
+		FeatureDriftTracking: convStrToBoolType(req.FeatureDriftTracking),
+		AccuracyMonitoring:   convStrToBoolType(req.AccuracyAnalyze),
+		AssociationID:        req.AssociationID,
+		ModelHistoryID:       newModelHistoryID,
 	}
+
+	// WaitGroup 생성. 2개의 Go루틴을 기다림.
+	var wait sync.WaitGroup
+	wait.Add(2)
+
+	// ch생성
+	//var errCh chan string = make(chan string)
+	errs := make(chan error, 1)
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		_, err := s.monitoringSvc.Create(reqMonitoring)
+		if err != nil {
+			errs <- err
+		}
+
+	}()
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		err = domAggregateDeployment.RequestCreateInferenceService(s.domInferenceSvc, reqDomSvc)
+		if err != nil {
+			errs <- err
+		}
+	}()
+
+	wait.Wait() //Go루틴 모두 끝날 때까지 대기
+
+	var checkErrMsg error = <-errs
+	if checkErrMsg != nil {
+		reqDeleteInference := &appDTO.DeleteDeploymentRequestDTO{
+			ProjectID:    req.ProjectID,
+			DeploymentID: guid,
+		}
+
+		_, err := s.Delete(reqDeleteInference)
+		if err != nil {
+			return nil, fmt.Errorf("deployment create error: %s, %s", checkErrMsg, err)
+		}
+
+		reqDeleteMonitoring := &appMonitoringDTO.MonitorDeleteRequestDTO{
+			DeploymentID: guid,
+		}
+
+		_, err = s.monitoringSvc.Delete(reqDeleteMonitoring)
+		if err != nil {
+			return nil, fmt.Errorf("deployment create error: %s, %s", checkErrMsg, err)
+		}
+
+		return nil, fmt.Errorf("deployment create error: %s", checkErrMsg)
+	}
+
+	//Go Routine run for Create Monitoring Service
 
 	err = s.repo.Save(domAggregateDeployment)
 	if err != nil {
 		return nil, err
 	}
-
-	//Create Monitoring Service
-	//createMonitoring
-	//
 
 	// response dto
 	resDTO := new(appDTO.CreateDeploymentResponseDTO)
@@ -300,6 +363,28 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	if req.Importance != "" {
 		domAggregateDeployment.UpdateDeploymentImportance(req.Importance)
 	}
+	if req.AssociationID != "" {
+		//To Be..
+		//s.monitoringSvc.UpdateAssociationID(req.DeploymentID, req.AssociationID)
+	}
+	if req.FeatureDriftTracking != "" {
+		if convStrToBoolType(req.FeatureDriftTracking) == true {
+			//To Be..
+			//SetDriftMonitorActive(reqDriftActive) (*appMonitoringDTO.MonitorDriftActiveResponseDTO)
+		} else {
+			//To Be..
+			//SetDriftMonitorInActive(reqDriftActive) (*appMonitoringDTO.MonitorDriftInActiveResponseDTO)
+		}
+	}
+	if req.AccuracyAnalyze != "" {
+		if convStrToBoolType(req.AccuracyAnalyze) == true {
+			//To Be..
+			//SetAccuracyMonitorActive(reqDriftActive) (*appMonitoringDTO.MonitorAccuracyActiveRequestDTO)
+		} else {
+			//To Be..
+			//SetAccuracyMonitorInActive(reqDriftActive) (*appMonitoringDTO.MonitorAccuracyInActiveRequestDTO)
+		}
+	}
 
 	err = domAggregateDeployment.AddEventHistory("Update", "Deployment is Updated", userID)
 	if err != nil {
@@ -381,6 +466,15 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO) (*appDT
 		return nil, err
 	}
 
+	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
+		ID: req.DeploymentID,
+	}
+
+	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	if err != nil {
+		return nil, err
+	}
+
 	// response dto
 	resDTO := new(appDTO.GetDeploymentResponseDTO)
 	resDTO.ID = res.ID
@@ -395,50 +489,14 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO) (*appDT
 	resDTO.ActiveStatus = res.ActiveStatus
 	resDTO.ServiceStatus = res.ServiceStatus
 	resDTO.ChangeRequested = res.ChangeRequested
+	resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
+	resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
+	// resDTO.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
+	resDTO.FeatureDriftTracking = convBoolToStrType(resMonitor.Monitor.FeatureDriftTracking)
+	resDTO.AccuracyAnalyze = convBoolToStrType(resMonitor.Monitor.AccuracyMonitoring)
 
 	return resDTO, nil
 }
-
-// func (s *DeploymentService) GetByName(req *appDTO.GetDeploymentByNametRequestDTO) (*appDTO.GetDeploymentByNameResponseDTO, error) {
-// 	// //authorization
-// 	// if i.CanAccessCurrentRequest() == false {
-// 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
-// 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
-// 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
-// 	// }
-
-// 	res, err := s.repo.GetByName(req.Name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// response dto
-
-// 	var listDeployment []*appDTO.Deployment
-// 	for _, rec := range res {
-// 		tmp := new(appDTO.Deployment)
-
-// 		tmp.ID = rec.ID
-// 		tmp.ProjectID = rec.ProjectID
-// 		tmp.ModelPackageID = rec.ModelPackageID
-// 		tmp.PredictionEnvID = rec.PredictionEnvID
-// 		tmp.Name = rec.Name
-// 		tmp.Description = rec.Description
-// 		tmp.Importance = rec.Importance
-// 		tmp.RequestCPU = rec.RequestCPU
-// 		tmp.RequestMEM = rec.RequestMEM
-// 		tmp.ActiveStatus = rec.ActiveStatus
-// 		tmp.ServiceStatus = rec.ServiceStatus
-// 		tmp.ChangeRequested = rec.ChangeRequested
-
-// 		listDeployment = append(listDeployment, tmp)
-// 	}
-
-// 	resDTO := new(appDTO.GetDeploymentByNameResponseDTO)
-// 	resDTO.Deployments = listDeployment
-
-// 	return resDTO, nil
-// }
 
 func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO) (*appDTO.GetDeploymentListResponseDTO, error) {
 	// //authorization
@@ -724,6 +782,26 @@ func (s *DeploymentService) GetModelHistory(req *appDTO.GetModelHistoryRequestDT
 	// }
 
 	return resDTO, nil
+}
+
+func convStrToBoolType(boolStr string) bool {
+	if (boolStr == "True") || (boolStr == "true") {
+		return true
+	} else if (boolStr == "False") || (boolStr == "false") {
+		return false
+	}
+
+	return false
+}
+
+func convBoolToStrType(boolType bool) string {
+	if boolType {
+		return "True"
+	} else if !boolType {
+		return "False"
+	}
+
+	return "False"
 }
 
 // func (s *DeploymentService) checkApprovalProcess(req string) (*domSchema.PredictionEnv, error) {

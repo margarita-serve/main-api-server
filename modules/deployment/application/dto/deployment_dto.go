@@ -1,21 +1,28 @@
 package dto
 
 type Deployment struct {
-	ID                string
-	ProjectID         string
-	ModelPackageID    string
-	PredictionEnvID   string
-	PredictionEnvName string
-	URI               string
-	Name              string
-	Description       string
-	Importance        string
-	RequestCPU        float32
-	RequestMEM        float32
-	ActiveStatus      string
-	ServiceStatus     string
-	ChangeRequested   bool
+	ID                   string
+	ProjectID            string
+	ModelPackageID       string
+	PredictionEnvID      string
+	PredictionEnvName    string
+	URI                  string
+	Name                 string
+	Description          string
+	Importance           string
+	RequestCPU           float32
+	RequestMEM           float32
+	ActiveStatus         string
+	ServiceStatus        string
+	ChangeRequested      bool
+	ServiceHealthStatus  string
+	DriftStatus          string
+	AccuracyStatus       string
+	FeatureDriftTracking string `json:"featureDriftTracking" example:"True" extensions:"x-order=8"` //데이터 드리프트 설정
+	AccuracyAnalyze      string `json:"accuracyAnalyze" example:"True" extensions:"x-order=9"`      // 정확도 측정 설정
+	AssociationID        string `json:"associationID" example:"Index" extensions:"x-order=9"`       // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
 }
+
 type DeploymentList struct {
 	ID                string
 	ProjectID         string
@@ -36,8 +43,8 @@ type CreateDeploymentRequestDTO struct {
 	Importance           string  `json:"importance" example:"Low" extensions:"x-order=5" enums:"Low, Moderate, High, Critical"`                        // 배포중요도
 	RequestCPU           float32 `json:"requestCPU" example:"1" extensions:"x-order=6"`                                                                //요청 CPU
 	RequestMEM           float32 `json:"requestMEM" example:"2" extensions:"x-order=7"`                                                                //요청 MEM
-	FeatureDriftTracking bool    `json:"featureDriftTracking" example:"True" extensions:"x-order=8"`                                                   //데이터 드리프트 설정
-	AccuracyAnalyze      bool    `json:"accuracyAnalyze" example:"True" extensions:"x-order=9"`                                                        // 정확도 측정 설정
+	FeatureDriftTracking string  `json:"featureDriftTracking" example:"True" extensions:"x-order=8"`                                                   //데이터 드리프트 설정
+	AccuracyAnalyze      string  `json:"accuracyAnalyze" example:"True" extensions:"x-order=9"`                                                        // 정확도 측정 설정
 	AssociationID        string  `json:"associationID" example:"Index" extensions:"x-order=9"`                                                         // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
 }
 
@@ -58,11 +65,16 @@ type ReplaceModelResponseDTO struct {
 }
 
 type UpdateDeploymentRequestDTO struct {
-	ProjectID    string `json:"projectID" validate:"false" swaggerignore:"true"`                                       // 프로젝트 ID
-	DeploymentID string `json:"deploymentID" validate:"required" swaggerignore:"true"`                                 // 베포 ID
-	Name         string `json:"name" `                                                                                 // 베포 명
-	Description  string `json:"description" `                                                                          // 베포 설명
-	Importance   string `json:"importance" example:"Low" extensions:"x-order=5" enums:"Low, Moderate, High, Critical"` // 배포중요도
+	ProjectID            string  `json:"projectID" validate:"false" swaggerignore:"true"`                                       // 프로젝트 ID
+	DeploymentID         string  `json:"deploymentID" validate:"required" swaggerignore:"true"`                                 // 베포 ID
+	Name                 string  `json:"name" `                                                                                 // 베포 명
+	Description          string  `json:"description" `                                                                          // 베포 설명
+	Importance           string  `json:"importance" example:"Low" extensions:"x-order=5" enums:"Low, Moderate, High, Critical"` // 배포중요도
+	RequestCPU           float32 `json:"requestCPU" example:"1" extensions:"x-order=6"`                                         // 요청 CPU
+	RequestMEM           float32 `json:"requestMEM" example:"2" extensions:"x-order=7"`                                         // 요청 MEM
+	FeatureDriftTracking string  `json:"featureDriftTracking" example:"True" extensions:"x-order=8"`                            // 데이터 드리프트 설정
+	AccuracyAnalyze      string  `json:"accuracyAnalyze" example:"True" extensions:"x-order=9"`                                 // 정확도 측정 설정
+	AssociationID        string  `json:"associationID" example:"Index" extensions:"x-order=9"`                                  // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
 }
 
 type UpdateDeploymentResponseDTO struct {
@@ -75,19 +87,7 @@ type GetDeploymentRequestDTO struct {
 }
 
 type GetDeploymentResponseDTO struct {
-	ID              string
-	ProjectID       string
-	ModelPackageID  string
-	PredictionEnvID string
-	Name            string
-	Description     string
-	Importance      string
-	RequestCPU      float32
-	RequestMEM      float32
-	ActiveStatus    string
-	ServiceStatus   string
-	ChangeRequested bool
-	URI             string
+	Deployment
 }
 
 type GetDeploymentListRequestDTO struct {

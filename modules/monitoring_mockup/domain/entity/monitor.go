@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	domSvcMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
-	domAccuracySvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
-	domDriftSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
+	domSvcMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/domain/service"
+	domAccuracySvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/domain/service/accuracy/dto"
+	domDriftSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/domain/service/data_drift/dto"
 )
 
 // Monitor type

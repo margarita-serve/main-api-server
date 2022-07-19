@@ -8,7 +8,6 @@ import (
 	domSvcInferenceSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service"
 	domSvcInferenceDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service/dto"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/rs/xid"
 )
 
 type Deployment struct {
@@ -112,18 +111,26 @@ func (d *Deployment) AddEventHistory(eventType string, logMessage string, userId
 	return nil
 }
 
-func (d *Deployment) AddModelHistory(name string, version string) {
+func (d *Deployment) AddModelHistory(name string, version string) string {
+	var newModelHistoryID string
+	var lenOfArr = len(d.ModelHistory) - 1
 	for i, mh := range d.ModelHistory {
 		if mh.ApplyHistoryTag == "Current" {
 			d.ModelHistory[i].ApplyHistoryTag = "Previous"
 			d.ModelHistory[i].EndDate = time.Now()
 		}
+
+		if lenOfArr == i {
+			newModelHistoryID = fmt.Sprintf("%06d", i+1)
+		}
 	}
 
-	guid := xid.New().String()
+	//guid := xid.New().String()
 
-	modelHistory := newModelHistory(guid, name, version)
+	modelHistory := newModelHistory(newModelHistoryID, name, version)
 	d.ModelHistory = append(d.ModelHistory, modelHistory)
+
+	return newModelHistoryID
 
 }
 

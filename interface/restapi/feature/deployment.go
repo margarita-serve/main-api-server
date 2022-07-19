@@ -10,18 +10,20 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appDeployment "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application"
 	appDeploymentDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
+	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
+	appMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewFDeployment new FDeployment
-func NewDeployment(h *handler.Handler) (*FDeployment, error) {
+func NewDeployment(h *handler.Handler, modelPackageSvc *appModelPackageSvc.ModelPackageService, monitorSvc *appMonitorSvc.MonitorService) (*FDeployment, error) {
 	var err error
 
 	f := new(FDeployment)
 	f.handler = h
 
-	if f.appDeployment, err = appDeployment.NewDeploymentApp(h); err != nil {
+	if f.appDeployment, err = appDeployment.NewDeploymentApp(h, modelPackageSvc, monitorSvc); err != nil {
 		return nil, err
 	}
 
@@ -34,6 +36,8 @@ type FDeployment struct {
 	appDeployment *appDeployment.DeploymentApp
 }
 
+//bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MiwiVVVJRCI6IjM1MzlkNTQ1LWU2YmUtNDI0Yi1hYTZhLTcyMmQ4OTE0NGZmYiIsIlVzZXJuYW1lIjoiSkggSFdBTkcxIiwiTmlja05hbWUiOiJqaHl1biIsIkF1dGhvcml0eUlEIjoiZ3JvdXA6ZGVmYXVsdCIsImV4cCI6MTY1ODQ3MDM2OCwiaXNzIjoiS09SRVNFUlZFIiwibmJmIjoxNjU3ODY0NTY4fQ.uA7Pg_yMAXC1hGTGk_p1vcNxulk0GZyVEcyeSBE1NsA
+
 // @Summary Create Deployment
 // @Description  배포 생성
 // @Tags Deployment
@@ -42,6 +46,7 @@ type FDeployment struct {
 // @Param projectID path string true "projectID"
 // @Param body body appDeploymentDTO.CreateDeploymentRequestDTO true "Create Deployment"
 // @Success 200 {object} appDeploymentDTO.CreateDeploymentResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router      /projects/{projectID}/deployments [post]
 func (f *FDeployment) Create(c echo.Context) error {
 	//identity
@@ -77,6 +82,7 @@ func (f *FDeployment) Create(c echo.Context) error {
 // @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.DeleteDeploymentResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments/{deploymentID} [delete]
 func (f *FDeployment) Delete(c echo.Context) error {
 	//
@@ -104,6 +110,7 @@ func (f *FDeployment) Delete(c echo.Context) error {
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appDeploymentDTO.UpdateDeploymentRequestDTO true "Update Deployment Info"
 // @Success 200 {object} appDeploymentDTO.UpdateDeploymentResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router      /projects/{projectID}/deployments/{deploymentID} [patch]
 func (f *FDeployment) Update(c echo.Context) error {
 	//
@@ -133,6 +140,7 @@ func (f *FDeployment) Update(c echo.Context) error {
 // @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.GetDeploymentResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments/{deploymentID} [get]
 func (f *FDeployment) GetByID(c echo.Context) error {
 	//
@@ -175,6 +183,7 @@ func (f *FDeployment) getPredictionURL(c echo.Context) string {
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
 // @Success 200 {object} appDeploymentDTO.GetDeploymentListResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments [get]
 func (f *FDeployment) GetList(c echo.Context) error {
 	//
@@ -205,6 +214,7 @@ func (f *FDeployment) GetList(c echo.Context) error {
 // @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.GetGovernanceHistoryResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments/{deploymentID}/governance-log [get]
 func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
 	//
@@ -231,6 +241,7 @@ func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
 // @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.GetModelHistoryResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments/{deploymentID}/model-history [get]
 func (f *FDeployment) GetModelHistory(c echo.Context) error {
 	//
@@ -258,6 +269,7 @@ func (f *FDeployment) GetModelHistory(c echo.Context) error {
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appDeploymentDTO.ReplaceModelRequestDTO true "Create Deployment"
 // @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router        /projects/{projectID}/deployments/{deploymentID}/replace-model [patch]
 func (f *FDeployment) ReplaceModel(c echo.Context) error {
 
@@ -289,6 +301,7 @@ func (f *FDeployment) ReplaceModel(c echo.Context) error {
 // @Param deploymentID path string true "deploymentID"
 // @Param json body string true "application/json" SchemaExample({\n"association_id": ["abcd1234", "abcd1235"], \n"instances": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]\n}) "Json data for prediction"
 // @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router        /projects/{projectID}/deployments/{deploymentID}/predict [post]
 func (f *FDeployment) SendPrediction(c echo.Context) error {
 
@@ -323,6 +336,7 @@ func (f *FDeployment) SendPrediction(c echo.Context) error {
 // @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.ActiveDeploymentResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments/{deploymentID}/active [put]
 func (f *FDeployment) Active(c echo.Context) error {
 	//
@@ -349,6 +363,7 @@ func (f *FDeployment) Active(c echo.Context) error {
 // @Param projectID path string false "projectID"
 // @Param deploymentID path string true "deploymentID"
 // @Success 200 {object} appDeploymentDTO.InActiveDeploymentResponseDTO
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /projects/{projectID}/deployments/{deploymentID}/inactive [put]
 func (f *FDeployment) InActive(c echo.Context) error {
 	//
