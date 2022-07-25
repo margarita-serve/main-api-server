@@ -13,7 +13,7 @@ func newMessagingService(t *testing.T) {
 		fmt.Errorf(err.Error())
 	}
 
-	service.NewMessagingService(h)
+	service.NewMessagingService(h, "accuracy-monitoring-data", "accuracy")
 }
 
 func TestMessageBrokerSvc_Create(t *testing.T) {

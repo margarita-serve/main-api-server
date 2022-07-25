@@ -54,14 +54,14 @@ func MapCreateRes(res *conMonitor.CreateDataDriftResponse) (*domSchema.DataDrift
 	return resDom, nil
 }
 
-func MapDeleteReq(req *domSchema.DataDriftDeleteRequest) (*conMonitor.DeleteDriftMonitorRequest, error) {
-	reqCon := new(conMonitor.DeleteDriftMonitorRequest)
+func MapDeleteReq(req *domSchema.DataDriftDeleteRequest) (*conMonitor.DisableMonitorRequest, error) {
+	reqCon := new(conMonitor.DisableMonitorRequest)
 	reqCon.InferenceName = req.InferenceName
 
 	return reqCon, nil
 }
 
-func MapDeleteRes(res *conMonitor.DeleteDriftMonitorResponse) (*domSchema.DataDriftDeleteResponse, error) {
+func MapDeleteRes(res *conMonitor.DisableMonitorResponse) (*domSchema.DataDriftDeleteResponse, error) {
 	resDom := new(domSchema.DataDriftDeleteResponse)
 	resDom.Message = res.Message
 	resDom.InferenceName = res.InferenceName
@@ -85,6 +85,21 @@ func MapPatchReq(req *domSchema.DataDriftPatchRequest) (*conMonitor.PatchDriftMo
 
 func MapPatchRes(res *conMonitor.PatchDriftMonitorSettingResponse) (*domSchema.DataDriftPatchResponse, error) {
 	resDom := new(domSchema.DataDriftPatchResponse)
+	resDom.Message = res.Message
+	resDom.InferenceName = res.InferenceName
+
+	return resDom, nil
+}
+
+func MapEnableReq(req *domSchema.DataDriftEnableRequest) (*conMonitor.EnableMonitorRequest, error) {
+	reqCon := new(conMonitor.EnableMonitorRequest)
+	reqCon.InferenceName = req.InferenceName
+
+	return reqCon, nil
+}
+
+func MapEnableRes(res *conMonitor.EnableMonitorResponse) (*domSchema.DataDriftEnableResponse, error) {
+	resDom := new(domSchema.DataDriftEnableResponse)
 	resDom.Message = res.Message
 	resDom.InferenceName = res.InferenceName
 

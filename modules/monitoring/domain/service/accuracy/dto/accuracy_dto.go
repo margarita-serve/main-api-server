@@ -36,6 +36,7 @@ type AccuracyPatchRequest struct {
 	InferenceName    string
 	DriftMetrics     string
 	DriftMeasurement string
+	ModelType        string
 	AtriskValue      float32
 	FailingValue     float32
 }
@@ -69,4 +70,13 @@ type AccuracyPostActualRequest struct {
 type AccuracyPostActualResponse struct {
 	Message       string `json:"message"`
 	InferenceName string `json:"inferencename"`
+}
+
+type AccuracyEnableRequest struct {
+	InferenceName string
+}
+
+type AccuracyEnableResponse struct {
+	Message       string
+	InferenceName string
 }

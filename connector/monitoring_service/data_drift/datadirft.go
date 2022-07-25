@@ -26,11 +26,12 @@ func NewDriftMonitor(config Config, httpClient *http.Client) *DriftMonitor {
 		httpClient = &http.Client{Timeout: time.Second * 600, Transport: netTransport}
 	}
 
-	return &DriftMonitor{httpClient: httpClient}
+	return &DriftMonitor{httpClient: httpClient, config: config}
 }
 
 type DriftMonitor struct {
 	httpClient *http.Client
+	config     Config
 }
 
 func (c *DriftMonitor) doRequest(req *http.Request) ([]byte, error) {
@@ -186,26 +187,6 @@ func (c *DriftMonitor) CreateDriftMonitor(req *monType.CreateDataDriftRequest) (
 	return &respObj, nil
 }
 
-// delete datadrift service
-func (c *DriftMonitor) DeleteDriftMonitor(req *monType.DeleteDriftMonitorRequest) (*monType.DeleteDriftMonitorResponse, error) {
-	module := fmt.Sprintf("drift-monitor/disable-monitor/%s", req.InferenceName)
-	env := c.getDriftEnv()
-	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
-
-	resp, err := c.patchRequest(url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	respObj := monType.DeleteDriftMonitorResponse{}
-	err = json.Unmarshal(resp, &respObj)
-	if err != nil {
-		return nil, err
-	}
-
-	return &respObj, nil
-}
-
 // patch datadrift service
 func (c *DriftMonitor) PatchDriftMonitor(req *monType.PatchDriftMonitorSettingRequest) (*monType.PatchDriftMonitorSettingResponse, error) {
 	module := fmt.Sprintf("drift-monitor/%s", req.InferenceName)
@@ -235,10 +216,45 @@ func (c *DriftMonitor) PatchDriftMonitor(req *monType.PatchDriftMonitorSettingRe
 	return &respObj, nil
 }
 
+func (c *DriftMonitor) EnableMonitor(req *monType.EnableMonitorRequest) (*monType.EnableMonitorResponse, error) {
+	module := fmt.Sprintf("drift-monitor/enable-monitor/%s", req.InferenceName)
+	env := c.getDriftEnv()
+	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
+
+	resp, err := c.patchRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	respObj := monType.EnableMonitorResponse{}
+	err = json.Unmarshal(resp, &respObj)
+	if err != nil {
+		return nil, err
+	}
+	return &respObj, nil
+}
+
+func (c *DriftMonitor) DisableMonitor(req *monType.DisableMonitorRequest) (*monType.DisableMonitorResponse, error) {
+	module := fmt.Sprintf("drift-monitor/disable-monitor/%s", req.InferenceName)
+	env := c.getDriftEnv()
+	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
+
+	resp, err := c.patchRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	respObj := monType.DisableMonitorResponse{}
+	err = json.Unmarshal(resp, &respObj)
+	if err != nil {
+		return nil, err
+	}
+	return &respObj, nil
+}
+
 func (c *DriftMonitor) getDriftEnv() *monType.DriftServerEnv {
 	env := new(monType.DriftServerEnv)
-	env.ConnectionInfo = "http://192.168.88.151:30071"
-	//env.ConnectionInfo = "http://127.0.0.1:5000"
+	env.ConnectionInfo = c.config.Endpoint
 
 	return env
 }

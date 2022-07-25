@@ -6,14 +6,12 @@ import (
 )
 
 type MonitorCreateRequestDTO struct {
-	DeploymentID         string `json:"deploymentID" swaggerignore:"true"`
-	ModelPackageID       string `json:"modelPackageID"`
-	FeatureDriftTracking bool   `json:"featureDriftTracking"`
-	AccuracyMonitoring   bool   `json:"accuracyMonitoring"`
-	AssociationID        string `json:"associationID"`
-	DataDriftSetting     DataDriftSetting
-	AccuracySetting      AccuracySetting
-	ServiceHealthSetting ServiceHealthSetting
+	DeploymentID         string `json:"deploymentID" validate:"required" example:"cbgfbddvqc7mecjqbc9g" extensions:"x-order=0" swaggerignore:"true"` // Deployment ID
+	ModelPackageID       string `json:"modelPackageID" validate:"required" example:"cbbrc45vqc7ks0qlldfg" extensions:"x-order=1"`                    // ModelPackage ID
+	FeatureDriftTracking bool   `json:"featureDriftTracking" validate:"required" example:"true" extensions:"x-order=2"`                              // DataDrift Monitor 활성 여부
+	AccuracyMonitoring   bool   `json:"accuracyMonitoring" validate:"required" example:"true" extensions:"x-order=3"`                                // Accuracy Monitor 활성 여부
+	AssociationID        string `json:"associationID" example:"index" extensions:"x-order=4"`                                                        // Accuracy Monitor 시 연결 ID
+	ModelHistoryID       string `json:"modelHistoryID" validate:"required" example:"000001" extensions:"x-order=5"`                                  // Monitor할 Model History ID
 }
 
 type MonitorStatus struct {
@@ -24,7 +22,7 @@ type MonitorStatus struct {
 }
 
 type MonitorCreateResponseDTO struct {
-	DeploymentID string
+	DeploymentID string `json:"deploymentID"`
 }
 
 type MonitorDeleteRequestDTO struct {
@@ -60,7 +58,6 @@ type MonitorGetSettingResponseDTO struct {
 
 type UploadActualRequestDTO struct {
 	DeploymentID   string    `json:"deploymentID" swaggerignore:"true"`
-	ProjectID      string    `json:"projectID" swaggerignore:"true"`
 	ActualResponse string    `json:"actualResponse"`
 	File           io.Reader `swaggerignore:"true"`
 	FileName       string    `swaggerignore:"true"`
@@ -71,10 +68,16 @@ type UploadActualResponseDTO struct {
 	Message      string
 }
 
-type MonitorGetStatusListRequestDTO struct {
-	DeploymentsID string `json:"deploymentsID"`
+type MonitorReplaceModelRequestDTO struct {
+	DeploymentID   string
+	ModelPackageID string
+	ModelHistoryID string
 }
 
-type MonitorGetStatusListResponseDTO struct {
-	StatusList []MonitorStatus
+type MonitorReplaceModelResponseDTO struct {
+	DeploymentID string
+}
+
+type MonitorPatchResponseDTO struct {
+	Message string
 }

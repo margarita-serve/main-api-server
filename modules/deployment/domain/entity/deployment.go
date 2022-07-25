@@ -124,6 +124,9 @@ func (d *Deployment) AddModelHistory(name string, version string) string {
 			newModelHistoryID = fmt.Sprintf("%06d", i+1)
 		}
 	}
+	if len(d.ModelHistory) == 0 {
+		newModelHistoryID = fmt.Sprintf("%06d", 1)
+	}
 
 	//guid := xid.New().String()
 

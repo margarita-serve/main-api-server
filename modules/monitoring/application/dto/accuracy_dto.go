@@ -1,10 +1,10 @@
 package dto
 
 type AccuracySetting struct {
-	MetricType   string  `json:"metricType"`
-	Measurement  string  `json:"measurement"`
-	AtRiskValue  float32 `json:"atRiskValue"`
-	FailingValue float32 `json:"failingValue"`
+	MetricType   string  `json:"metricType" example:"rmse" extensions:"x-order=0" enums:"rmse, rmsle, mae, mad, mape, mean_tweedie_deviance, gamma_deviance, tpr, accuracy, f1, ppv, fnr, fpr"` // Accuracy 측정 메트릭 종류
+	Measurement  string  `json:"measurement" example:"percent" extensions:"x-order=1" enums:"percent, value"`                                                                                   // 메트릭 Value 타입
+	AtRiskValue  float32 `json:"atRiskValue" example:"5" extensions:"x-order=2"`                                                                                                                // 메트릭의 AtRisk Value
+	FailingValue float32 `json:"failingValue" example:"10" extensions:"x-order=3"`                                                                                                              // 메트릭의 Failing Value
 }
 
 type MonitorAccuracyPatchRequestDTO struct {
@@ -26,17 +26,17 @@ type AccuracyGetRequestDTO struct {
 }
 
 type AccuracyGetResponseDTO struct {
-	Message   string
-	Data      string
-	StartTime string
-	EndTime   string
+	Message   string `json:"message" extensions:"x-order=0"`   // 결과 message
+	Data      string `json:"data" extensions:"x-order=1"`      // 응답 결과 data
+	StartTime string `json:"startTime" extensions:"x-order=2"` // 검색 시작 시간
+	EndTime   string `json:"endTIme" extensions:"x-order=3"`   // 검색 끝 시간
 }
 
 type MonitorAccuracyActiveRequestDTO struct {
-	DeploymentID    string
-	ModelPackageID  string
-	AssociationID   string
-	AccuracySetting AccuracySetting
+	DeploymentID   string
+	ModelPackageID string
+	AssociationID  string
+	CurrentModelID string
 }
 
 type MonitorAccuracyActiveResponseDTO struct {

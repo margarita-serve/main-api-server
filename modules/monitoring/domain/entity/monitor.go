@@ -2,15 +2,16 @@ package entity
 
 import (
 	"fmt"
-	"strings"
-
 	domSvcMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	domAccuracySvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domDriftSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
+	domGraphSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/graph/dto"
+	"strings"
 )
 
 // Monitor type
 type Monitor struct {
+	// drift, accuracy 생성 상태값 추가
 	ID                   string `gorm:"size:256"`
 	ModelPackageID       string `gorm:"size:256"`
 	FeatureDriftTracking bool
@@ -18,26 +19,16 @@ type Monitor struct {
 	AssociationID        string `gorm:"size:256"`
 	DriftStatus          string `gorm:"size:256"`
 	AccuracyStatus       string `gorm:"size:256"`
+	DriftCreated         bool
+	AccuracyCreated      bool
 	DataDriftSetting
 	AccuracySetting
 	ServiceHealthSetting
 	BaseEntity
 }
 
-//// Validate
-//func (m *Monitor) Validate() error {
-//	return validation.ValidateStruct(m,
-//		validation.Field(&m.ID, validation.Required, validation.NotNil, validation.Length(20, 20)),
-//		validation.Field(&m.ModelPackageID, validation.Required, validation.NotNil, validation.Length(20, 20)),
-//		validation.Field(&m.AccuracySetting.Measurement, validation.In("Percent", "Value")),
-//		validation.Field(&m.AccuracySetting.MetricType, validation.In("rmse", "rmsle", "mae", "mad", "mape", "mean_tweedie_deviance", "gamma_deviance", "tpr", "accuracy",
-//			"f1", "ppv", "fnr", "fpr")),
-//		validation.Field(&m.DataDriftSetting.DriftThreshold, validation.Min(0.0), validation.Max(1.0)),
-//		validation.Field(&m.DataDriftSetting.ImportanceThreshold, validation.Min(0.0), validation.Max(1.0)),
-//	)
-//}
-
 func NewMonitor(id string, modelPackageID string) (*Monitor, error) {
+	// drift, accuracy 생성 상태값 추가
 
 	monitor := &Monitor{
 		id,
@@ -47,6 +38,8 @@ func NewMonitor(id string, modelPackageID string) (*Monitor, error) {
 		"None",
 		"unknown",
 		"unknown",
+		false,
+		false,
 		DataDriftSetting{},
 		AccuracySetting{},
 		ServiceHealthSetting{},
@@ -100,12 +93,11 @@ func (m *Monitor) SetDataDriftSetting(monitorRange string, driftMetricType strin
 
 }
 
-func (m *Monitor) SetAccuracySetting(metricType string, measurement string, atRiskValue float32, failingValue float32) {
-	modelType := "Regression"
+func (m *Monitor) SetAccuracySetting(metricType string, measurement string, atRiskValue float32, failingValue float32, targetType string) {
 	if metricType == "" {
-		if modelType == "Regression" {
+		if targetType == "Regression" {
 			m.MetricType = "rmse"
-		} else if modelType == "Binary" {
+		} else if targetType == "Binary" {
 			m.MetricType = "f1"
 		}
 	} else {
@@ -138,34 +130,47 @@ func (m *Monitor) SetServiceHealthSetting() {
 // DataDrift Func
 
 func (m *Monitor) SetFeatureDriftTrackingOn(domSvc domSvcMonitor.IExternalDriftMonitorAdapter, reqDom domDriftSvcMonitorDTO.DataDriftCreateRequest) error {
-	if m.FeatureDriftTracking == true {
-		return fmt.Errorf("drift is already true")
+
+	if m.DriftCreated == true {
+		// 만들어져 있을경우엔 단순 on
+		reqEnable := new(domDriftSvcMonitorDTO.DataDriftEnableRequest)
+		reqEnable.InferenceName = reqDom.InferenceName
+		res, err := domSvc.MonitorEnable(reqEnable)
+		fmt.Printf("res : %v\n", res)
+		if err != nil {
+			return err
+		}
+
+		m.FeatureDriftTracking = true
+		m.DriftStatus = "unknown"
+		return nil
+	} else {
+		// 만들어져있지 않은 경우엔 생성 이후 on
+		res, err := domSvc.MonitorCreate(&reqDom)
+		fmt.Printf("res : %v\n", res)
+
+		if err != nil {
+			return err
+		}
+
+		m.DriftCreated = true
+		m.FeatureDriftTracking = true
+		m.DriftStatus = "unknown"
+
+		return nil
 	}
 
-	res, err := domSvc.MonitorCreate(&reqDom)
-	fmt.Printf("res : %v\n", res)
-
-	if err != nil {
-		return err
-	}
-
-	m.FeatureDriftTracking = true
-	m.DriftStatus = "unknown"
-	return nil
 }
 
 func (m *Monitor) SetFeatureDriftTrackingOff(domSvc domSvcMonitor.IExternalDriftMonitorAdapter, reqDom domDriftSvcMonitorDTO.DataDriftDeleteRequest) error {
-	if m.FeatureDriftTracking == false {
-		return fmt.Errorf("drift is already false")
-	}
 
-	err := domSvc.MonitorDelete(&reqDom)
+	err := domSvc.MonitorDisable(&reqDom)
 	if err != nil {
 		return err
 	}
 
 	m.FeatureDriftTracking = false
-	m.DriftStatus = "unavailable"
+	m.DriftStatus = "unknown"
 
 	return nil
 }
@@ -184,15 +189,17 @@ func (m *Monitor) PatchDataDriftSetting(domSvc domSvcMonitor.IExternalDriftMonit
 		reqDom.HighImportanceAtRiskCount,
 		reqDom.HighImportanceFailingCount,
 	)
-	res, err := domSvc.MonitorPatch(&reqDom)
-	fmt.Printf("res: %v\n", res)
-
-	if err != nil {
-		return fmt.Errorf("drift setting change failed")
+	if m.DriftCreated == true {
+		res, err := domSvc.MonitorPatch(&reqDom)
+		fmt.Printf("res: %v\n", res)
+		if err != nil {
+			return fmt.Errorf("drift setting change failed")
+		}
+		m.DriftStatus = "unknown"
+		return err
 	}
-	m.DriftStatus = "unknown"
 
-	return err
+	return nil
 }
 
 func (m *Monitor) GetFeatureDetail(domSvc domSvcMonitor.IExternalDriftMonitorAdapter, reqDom domDriftSvcMonitorDTO.DataDriftGetRequest) (*domDriftSvcMonitorDTO.DataDriftGetResponse, error) {
@@ -211,40 +218,71 @@ func (m *Monitor) GetFeatureDrift(domSvc domSvcMonitor.IExternalDriftMonitorAdap
 	return res, nil
 }
 
+func (m *Monitor) GetDetailGraph(domSvc domSvcMonitor.IExternalGraphMonitorAdapter, reqDom domGraphSvcMonitorDTO.DetailGraphGetRequest) (*domGraphSvcMonitorDTO.DetailGraphGetResponse, error) {
+	res, err := domSvc.MonitorGetDetailGraph(&reqDom)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (m *Monitor) GetDriftGraph(domSvc domSvcMonitor.IExternalGraphMonitorAdapter, reqDom domGraphSvcMonitorDTO.DriftGraphGetRequest) (*domGraphSvcMonitorDTO.DriftGraphGetResponse, error) {
+	res, err := domSvc.MonitorGetDriftGraph(&reqDom)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // Accuracy Func
 
 func (m *Monitor) SetAccuracyMonitoringOn(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyCreateRequest) error {
-	if m.AccuracyMonitoring == true {
-		return fmt.Errorf("accuracy is already true")
-	}
+
 	if m.AssociationID != "None" {
 		reqDom.AssociationID = m.AssociationID
 	}
 
-	res, err := domSvc.MonitorCreate(&reqDom)
-	fmt.Printf("res: %v\n", res)
+	if m.AccuracyCreated == true {
+		// 만들어져 있을경우엔 단순 on
+		reqEnable := new(domAccuracySvcMonitorDTO.AccuracyEnableRequest)
+		reqEnable.InferenceName = reqDom.InferenceName
+		res, err := domSvc.MonitorEnable(reqEnable)
+		fmt.Printf("res : %v\n", res)
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		m.AccuracyMonitoring = true
+		m.AccuracyStatus = "unknown"
+
+		return nil
+	} else {
+		// 만들어지지 않은 경우에는 생성 이후 on
+		res, err := domSvc.MonitorCreate(&reqDom)
+		fmt.Printf("res: %v\n", res)
+
+		if err != nil {
+			return err
+		}
+
+		m.AccuracyCreated = true
+		m.AccuracyMonitoring = true
+		m.AccuracyStatus = "unknown"
+
+		return nil
 	}
 
-	m.AccuracyMonitoring = true
-	m.AccuracyStatus = "unknown"
-	return nil
 }
 
 func (m *Monitor) SetAccuracyMonitoringOff(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyDeleteRequest) error {
-	if m.AccuracyMonitoring == false {
-		return fmt.Errorf("accuracy is already false")
-	}
 
-	err := domSvc.MonitorDelete(&reqDom)
+	err := domSvc.MonitorDisable(&reqDom)
 	if err != nil {
 		return err
 	}
 
 	m.AccuracyMonitoring = false
-	m.AccuracyStatus = "unavailable"
+	m.AccuracyStatus = "unknown"
 
 	return nil
 }
@@ -258,17 +296,20 @@ func (m *Monitor) PatchAccuracySetting(domSvc domSvcMonitor.IExternalAccuracyMon
 		reqDom.DriftMeasurement,
 		reqDom.AtriskValue,
 		reqDom.FailingValue,
+		reqDom.ModelType,
 	)
+	if m.AccuracyCreated == true {
+		res, err := domSvc.MonitorPatch(&reqDom)
+		fmt.Printf("res: %v\n", res)
 
-	res, err := domSvc.MonitorPatch(&reqDom)
-	fmt.Printf("res: %v\n", res)
-
-	if err != nil {
-		return fmt.Errorf("accuracy setting change failed")
+		if err != nil {
+			return fmt.Errorf("accuracy setting change failed")
+		}
+		m.AccuracyStatus = "unknown"
+		return err
 	}
-	m.AccuracyStatus = "unknown"
 
-	return err
+	return nil
 
 }
 
@@ -292,8 +333,8 @@ func (m *Monitor) SetDriftStatusPass() {
 	m.DriftStatus = "pass"
 }
 
-func (m *Monitor) SetDriftStatusWarning() {
-	m.DriftStatus = "warning"
+func (m *Monitor) SetDriftStatusAtRisk() {
+	m.DriftStatus = "atrisk"
 }
 
 func (m *Monitor) SetDriftStatusFailing() {
@@ -308,8 +349,8 @@ func (m *Monitor) SetAccuracyStatusPass() {
 	m.DriftStatus = "pass"
 }
 
-func (m *Monitor) SetAccuracyStatusWarning() {
-	m.DriftStatus = "warning"
+func (m *Monitor) SetAccuracyStatusAtRisk() {
+	m.DriftStatus = "atrisk"
 }
 
 func (m *Monitor) SetAccuracyStatusFailing() {
@@ -318,4 +359,20 @@ func (m *Monitor) SetAccuracyStatusFailing() {
 
 func (m *Monitor) SetAccuracyStatusUnknown() {
 	m.DriftStatus = "unknown"
+}
+
+func (m *Monitor) SetDriftCreatedTrue() {
+	m.DriftCreated = true
+}
+
+func (m *Monitor) SetDriftCreatedFalse() {
+	m.DriftCreated = false
+}
+
+func (m *Monitor) SetAccuracyCreatedTrue() {
+	m.AccuracyCreated = true
+}
+
+func (m *Monitor) SetAccuracyCreatedFalse() {
+	m.AccuracyCreated = false
 }

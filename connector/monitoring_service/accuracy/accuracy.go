@@ -25,11 +25,12 @@ func NewAccuracyMonitor(config Config, httpClient *http.Client) *AccuracyMonitor
 		httpClient = &http.Client{Timeout: time.Second * 600, Transport: netTransport}
 	}
 
-	return &AccuracyMonitor{httpClient: httpClient}
+	return &AccuracyMonitor{httpClient: httpClient, config: config}
 }
 
 type AccuracyMonitor struct {
 	httpClient *http.Client
+	config     Config
 }
 
 func (c *AccuracyMonitor) doRequest(req *http.Request) ([]byte, error) {
@@ -166,26 +167,6 @@ func (c *AccuracyMonitor) CreateAccuracyMonitor(req *monType.CreateAccuracyReque
 	return &respObj, nil
 }
 
-// delete accuracy service
-func (c *AccuracyMonitor) DeleteAccuracyMonitor(req *monType.DeleteAccuracyMonitorRequest) (*monType.DeleteAccuracyMonitorResponse, error) {
-	module := fmt.Sprintf("accuracy-monitor/disable-monitor/%s", req.InferenceName)
-	env := c.getAccuracyEnv()
-	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
-
-	resp, err := c.patchRequest(url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	respObj := monType.DeleteAccuracyMonitorResponse{}
-	err = json.Unmarshal(resp, &respObj)
-	if err != nil {
-		return nil, err
-	}
-
-	return &respObj, nil
-}
-
 // patch accuracy service
 func (c *AccuracyMonitor) PatchAccuracyMonitor(req *monType.PatchAccuracySettingRequest) (*monType.PatchAccuracySettingResponse, error) {
 	module := fmt.Sprintf("accuracy-monitor/%s", req.InferenceName)
@@ -232,10 +213,45 @@ func (c *AccuracyMonitor) PostActual(req *monType.ActualRequest) (*monType.Actua
 	return &respObj, nil
 }
 
+func (c *AccuracyMonitor) EnableMonitor(req *monType.EnableMonitorRequest) (*monType.EnableMonitorResponse, error) {
+	module := fmt.Sprintf("accuracy-monitor/enable-monitor/%s", req.InferenceName)
+	env := c.getAccuracyEnv()
+	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
+
+	resp, err := c.patchRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	respObj := monType.EnableMonitorResponse{}
+	err = json.Unmarshal(resp, &respObj)
+	if err != nil {
+		return nil, err
+	}
+	return &respObj, nil
+}
+
+func (c *AccuracyMonitor) DisableMonitor(req *monType.DisableMonitorRequest) (*monType.DisableMonitorResponse, error) {
+	module := fmt.Sprintf("accuracy-monitor/disable-monitor/%s", req.InferenceName)
+	env := c.getAccuracyEnv()
+	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
+
+	resp, err := c.patchRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	respObj := monType.DisableMonitorResponse{}
+	err = json.Unmarshal(resp, &respObj)
+	if err != nil {
+		return nil, err
+	}
+	return &respObj, nil
+}
+
 func (c *AccuracyMonitor) getAccuracyEnv() *monType.AccuracyServerEnv {
 	env := new(monType.AccuracyServerEnv)
-	env.ConnectionInfo = "http://192.168.88.151:30072"
-	//env.ConnectionInfo = "http://127.0.0.1:5001"
+	env.ConnectionInfo = c.config.Endpoint
 
 	return env
 }

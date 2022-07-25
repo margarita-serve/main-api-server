@@ -2,24 +2,47 @@ definitions:
   dto.AccuracyGetResponseDTO:
     properties:
       data:
+        description: 응답 결과 data
         type: string
-      endTime:
+        x-order: "1"
+      endTIme:
+        description: 검색 끝 시간
         type: string
+        x-order: "3"
       message:
+        description: 결과 message
         type: string
+        x-order: "0"
       startTime:
+        description: 검색 시작 시간
         type: string
+        x-order: "2"
     type: object
   dto.AccuracySetting:
     properties:
       atRiskValue:
+        description: 메트릭의 AtRisk Value
+        example: 5
         type: number
+        x-order: "2"
       failingValue:
+        description: 메트릭의 Failing Value
+        example: 10
         type: number
+        x-order: "3"
       measurement:
+        description: 메트릭 Value 타입
+        enum:
+        - percent
+        - ' value'
+        example: percent
         type: string
+        x-order: "1"
       metricType:
+        description: Accuracy 측정 메트릭 종류
+        example: rmse
         type: string
+        x-order: "0"
     type: object
   dto.ActiveDeploymentResponseDTO:
     properties:
@@ -35,8 +58,8 @@ definitions:
     properties:
       accuracyAnalyze:
         description: 정확도 측정 설정
-        example: true
-        type: boolean
+        example: "True"
+        type: string
         x-order: "9"
       associationID:
         description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
@@ -50,8 +73,8 @@ definitions:
         x-order: "3"
       featureDriftTracking:
         description: 데이터 드리프트 설정
-        example: true
-        type: boolean
+        example: "True"
+        type: string
         x-order: "8"
       importance:
         description: 배포중요도
@@ -178,21 +201,45 @@ definitions:
   dto.DataDriftSetting:
     properties:
       driftMetricType:
+        description: DataDrift 측정 Metric
+        example: PSI
         type: string
+        x-order: "1"
       driftThreshold:
+        description: Drift 값 임계치
+        example: 0.15
         type: number
+        x-order: "2"
       highImportanceAtRiskCount:
+        description: 높은 importance feature 수의 drift at risk 임계치
+        example: 0
         type: integer
+        x-order: "6"
       highImportanceFailingCount:
+        description: 높은 importance feature 수의 drift failing 임계치
+        example: 1
         type: integer
+        x-order: "7"
       importanceThreshold:
+        description: Importance 값 임계치
+        example: 0.5
         type: number
+        x-order: "3"
       lowImportanceAtRiskCount:
+        description: 낮은 importance feature 수의 drift at risk 임계치
+        example: 1
         type: integer
+        x-order: "4"
       lowImportanceFailingCount:
+        description: 낮은 importance feature 수의 drift failing 임계치
+        example: 0
         type: integer
+        x-order: "5"
       monitorRange:
+        description: Monitoring 할 범위
+        example: 7d
         type: string
+        x-order: "0"
     type: object
   dto.DeleteDeploymentResponseDTO:
     properties:
@@ -204,18 +251,40 @@ definitions:
       message:
         type: string
     type: object
+  dto.DetailGraphGetResponseDTO:
+    properties:
+      script:
+        description: graph JS script
+        type: string
+    type: object
+  dto.DriftGraphGetResponseDTO:
+    properties:
+      script:
+        description: graph JS script
+        type: string
+    type: object
   dto.FeatureDriftGetResponseDTO:
     properties:
       data:
+        description: Feature Drift 결과 Data
         type: string
-      endTime:
+        x-order: "1"
+      endTIme:
+        description: 검색 끝 시간
         type: string
+        x-order: "3"
       message:
+        description: Message
         type: string
+        x-order: "0"
       predictionCount:
+        description: 검색 시간 사이의 총 예측 수
         type: integer
-      startTime:
+        x-order: "4"
+      startTIme:
+        description: 검색 시작 시간
         type: string
+        x-order: "2"
     type: object
   dto.GetDeploymentListResponseDTO:
     properties:
@@ -233,12 +302,31 @@ definitions:
     type: object
   dto.GetDeploymentResponseDTO:
     properties:
+      accuracyAnalyze:
+        description: 정확도 측정 설정
+        example: "True"
+        type: string
+        x-order: "9"
+      accuracyStatus:
+        type: string
       activeStatus:
         type: string
+      associationID:
+        description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
+        example: Index
+        type: string
+        x-order: "9"
       changeRequested:
         type: boolean
       description:
         type: string
+      driftStatus:
+        type: string
+      featureDriftTracking:
+        description: 데이터 드리프트 설정
+        example: "True"
+        type: string
+        x-order: "8"
       id:
         type: string
       importance:
@@ -249,12 +337,16 @@ definitions:
         type: string
       predictionEnvID:
         type: string
+      predictionEnvName:
+        type: string
       projectID:
         type: string
       requestCPU:
         type: number
       requestMEM:
         type: number
+      serviceHealthStatus:
+        type: string
       serviceStatus:
         type: string
       uri:
@@ -346,41 +438,12 @@ definitions:
       tokenType:
         type: string
     type: object
-  dto.MonitorCreateRequestDTO:
-    properties:
-      accuracyMonitoring:
-        type: boolean
-      accuracySetting:
-        $ref: '#/definitions/dto.AccuracySetting'
-      associationID:
-        type: string
-      dataDriftSetting:
-        $ref: '#/definitions/dto.DataDriftSetting'
-      featureDriftTracking:
-        type: boolean
-      modelPackageID:
-        type: string
-      serviceHealthSetting:
-        $ref: '#/definitions/dto.ServiceHealthSetting'
-    type: object
-  dto.MonitorCreateResponseDTO:
-    properties:
-      deploymentID:
-        type: string
-    type: object
   dto.MonitorGetSettingResponseDTO:
     properties:
       accuracySetting:
         $ref: '#/definitions/dto.AccuracySetting'
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
-    type: object
-  dto.MonitorGetStatusListResponseDTO:
-    properties:
-      statusList:
-        items:
-          $ref: '#/definitions/dto.MonitorStatus'
-        type: array
     type: object
   dto.MonitorPatchRequestDTO:
     properties:
@@ -389,15 +452,9 @@ definitions:
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
     type: object
-  dto.MonitorStatus:
+  dto.MonitorPatchResponseDTO:
     properties:
-      accuracyStatus:
-        type: string
-      deploymentID:
-        type: string
-      driftStatus:
-        type: string
-      serviceHealthStatus:
+      message:
         type: string
     type: object
   dto.RegisterReqDTO:
@@ -444,13 +501,26 @@ definitions:
       message:
         type: string
     type: object
-  dto.ServiceHealthSetting:
-    type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
+      accuracyAnalyze:
+        description: 정확도 측정 설정
+        example: "True"
+        type: string
+        x-order: "9"
+      associationID:
+        description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
+        example: Index
+        type: string
+        x-order: "9"
       description:
         description: 베포 설명
         type: string
+      featureDriftTracking:
+        description: 데이터 드리프트 설정
+        example: "True"
+        type: string
+        x-order: "8"
       importance:
         description: 배포중요도
         enum:
@@ -464,6 +534,16 @@ definitions:
       name:
         description: 베포 명
         type: string
+      requestCPU:
+        description: 요청 CPU
+        example: 1
+        type: number
+        x-order: "6"
+      requestMEM:
+        description: 요청 MEM
+        example: 2
+        type: number
+        x-order: "7"
     type: object
   dto.UpdateDeploymentResponseDTO:
     properties:
@@ -546,6 +626,13 @@ definitions:
       message:
         type: string
     type: object
+  dto.UploadActualResponseDTO:
+    properties:
+      deploymentID:
+        type: string
+      message:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -593,6 +680,317 @@ paths:
       summary: register user
       tags:
       - Auth
+  /deployments/{deploymentID}/monitor:
+    get:
+      consumes:
+      - application/json
+      description: 모니터 설정 조회
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorGetSettingResponseDTO'
+      summary: Get Monitor Setting
+      tags:
+      - Monitor
+    patch:
+      consumes:
+      - application/json
+      description: 모니터링 설정 변경
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch Monitor
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorPatchResponseDTO'
+      summary: Patch Monitor Setting
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/accuracy:
+    get:
+      consumes:
+      - application/json
+      description: 정확도 조회
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: timeline or aggregation
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: example=2022-05-04T05:23:43.44980458Z
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-07-04T05:23:43.44980458Z
+        in: query
+        name: endTime
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccuracyGetResponseDTO'
+      summary: Get Accuracy
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/actual:
+    post:
+      consumes:
+      - application/json
+      description: upload Actual file
+      parameters:
+      - description: actual file upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: target column name
+        in: query
+        name: targetLabel
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UploadActualResponseDTO'
+      summary: Upload Actual file
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/detail:
+    get:
+      consumes:
+      - application/json
+      description: 피쳐 드리프트 디테일
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-04T05:23:43.44980458Z
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-07-04T05:23:43.44980458Z
+        in: query
+        name: endTime
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+      summary: Get Feature Detail
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/detail/graph:
+    get:
+      consumes:
+      - application/json
+      description: 피쳐 디테일 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-04T05:23:43.44980458Z
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-07-04T05:23:43.44980458Z
+        in: query
+        name: endTime
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DetailGraphGetResponseDTO'
+      summary: Get Feature Detail Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/drift:
+    get:
+      consumes:
+      - application/json
+      description: 데이터 드리프트
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-04T05:23:43.44980458Z
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-07-04T05:23:43.44980458Z
+        in: query
+        name: endTime
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+      summary: Get Data Drift
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/drift/graph:
+    get:
+      consumes:
+      - application/json
+      description: 드리프트 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-04T05:23:43.44980458Z
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-07-04T05:23:43.44980458Z
+        in: query
+        name: endTime
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DriftGraphGetResponseDTO'
+      summary: Get Drift Graph
+      tags:
+      - Monitor
   /projects/{projectID}/deployments:
     get:
       consumes:
@@ -888,358 +1286,6 @@ paths:
       summary: Get Model History
       tags:
       - Deployment
-  /projects/{projectID}/deployments/{deploymentID}/monitor:
-    get:
-      consumes:
-      - application/json
-      description: 모니터 설정 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.MonitorGetSettingResponseDTO'
-      summary: Get Monitor Setting
-      tags:
-      - Monitor
-    patch:
-      consumes:
-      - application/json
-      description: 모니터링 설정 변경
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Patch Monitor
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
-      produces:
-      - application/json
-      responses: {}
-      summary: Patch Monitor Setting
-      tags:
-      - Monitor
-    post:
-      consumes:
-      - application/json
-      description: Test
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Create Monitor
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MonitorCreateRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.MonitorCreateResponseDTO'
-      summary: Test Create
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/accuracy:
-    get:
-      consumes:
-      - application/json
-      description: 정확도 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: type
-        in: query
-        name: type
-        required: true
-        type: string
-      - description: startTime
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: endTime
-        in: query
-        name: endTime
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.AccuracyGetResponseDTO'
-      summary: Get Accuracy
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/actual:
-    post:
-      consumes:
-      - application/json
-      description: upload Actual file
-      parameters:
-      - description: actual file upload
-        in: formData
-        name: file
-        required: true
-        type: file
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: actualResponse
-        in: query
-        name: actualResponse
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      summary: Upload Actual file
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/detail:
-    get:
-      consumes:
-      - application/json
-      description: 피쳐 드리프트 디테일
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: startTime
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: endTime
-        in: query
-        name: endTime
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
-      summary: Get Feature Detail
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/detail/graph:
-    get:
-      consumes:
-      - application/json
-      description: 피쳐 디테일 그래프
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: startTime
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: endTime
-        in: query
-        name: endTime
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
-      summary: Get Feature Detail Graph
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/drift:
-    get:
-      consumes:
-      - application/json
-      description: 데이터 드리프트
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: startTime
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: endTime
-        in: query
-        name: endTime
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
-      summary: Get Data Drift
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/drift/graph:
-    get:
-      consumes:
-      - application/json
-      description: 드리프트 그래프
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: startTime
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: endTime
-        in: query
-        name: endTime
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
-      summary: Get Drift Graph
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/statuses:
-    get:
-      consumes:
-      - application/json
-      description: 모니터 상태 리스트 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentsID
-        in: path
-        name: deploymentsID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.MonitorGetStatusListResponseDTO'
-      summary: Get Monitor Status List
-      tags:
-      - Monitor
   /projects/{projectID}/deployments/{deploymentID}/predict:
     post:
       consumes:

@@ -1,15 +1,14 @@
 package restapi
 
 import (
-	"html/template"
-	"io"
-	"net/http"
-
 	feature "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/feature"
 	router "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/router"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"html/template"
+	"io"
+	"net/http"
 )
 
 // Template html Template
@@ -62,11 +61,15 @@ func SetRouters(e *echo.Echo, h *handler.Handler) {
 		router.SetOpenAPI(gd, features.OpenAPI)
 	}
 
+	gr := e.Group("graph")
+	router.SetGraph(gr, h)
+	gr2 := e.Group("static/js")
+	router.SetGraphJS(gr2, h)
 	//Group API
 	ga := e.Group("api/v1")
 	router.SetDeployment(ga, features.Deployment)
 	router.SetModelPackage(ga, features.ModelPackage)
-	//router.SetMonitor(ga, features.Monitor)
+	router.SetMonitor(ga, features.Monitor)
 	router.SetAuths(ga, features.Auths)
 	router.SetEmail(ga, features.Email)
 

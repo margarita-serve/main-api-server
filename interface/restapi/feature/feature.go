@@ -27,7 +27,7 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 	// 	return nil, err
 	// }
 
-	if f.Monitor, err = NewMonitorMockup(h, f.ModelPackage.appModelPackage.ModelPackageSvc); err != nil {
+	if f.Monitor, err = NewMonitor(h, f.ModelPackage.appModelPackage.ModelPackageSvc); err != nil {
 		return nil, err
 	}
 

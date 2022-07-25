@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"fmt"
+	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
@@ -22,11 +23,12 @@ func (c *ConsumerKafka) SetTopic(topic string) {
 	c.Topic = topic
 }
 
-func (c *ConsumerKafka) RegisterConsumer() error {
+func (c *ConsumerKafka) RegisterConsumer(server *appDTO.RegisterServer) error {
+	// config 수정
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": "192.168.88.151:32038",
-		"group.id":          "datadrift-monitor-group",
-		"auto.offset.reset": "latest",
+		"bootstrap.servers": server.Endpoint,
+		"group.id":          server.GroupID,
+		"auto.offset.reset": server.AutoOffsetReset,
 	})
 	if err != nil {
 		return err
@@ -36,7 +38,7 @@ func (c *ConsumerKafka) RegisterConsumer() error {
 	return nil
 }
 
-func (c *ConsumerKafka) ConsumeMessage(ch chan OrgMsg) error {
+func (c *ConsumerKafka) ConsumeMessage(ch chan OrgMsg, msgType string) error {
 	err := c.Consumer.SubscribeTopics([]string{c.Topic}, nil)
 	if err != nil {
 		return err
@@ -46,12 +48,12 @@ func (c *ConsumerKafka) ConsumeMessage(ch chan OrgMsg) error {
 		if err == nil {
 			orgMsg := OrgMsg{
 				Msg:     msg.Value,
-				MsgType: "datadrift",
+				MsgType: msgType,
 			}
 			ch <- orgMsg
 		} else {
 			// The client will automatically try to recover from all errors.
-			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+			fmt.Printf("Consumer error: %v (%v), MsgType: %v\n", err, msg, msgType)
 		}
 	}
 

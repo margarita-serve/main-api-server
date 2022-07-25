@@ -1,14 +1,14 @@
 package dto
 
 type DataDriftSetting struct {
-	MonitorRange               string  `json:"monitorRange"`
-	DriftMetricType            string  `json:"driftMetricType"`
-	DriftThreshold             float32 `json:"driftThreshold"`
-	ImportanceThreshold        float32 `josn:"importanceThreshold"`
-	LowImportanceAtRiskCount   int     `json:"lowImportanceAtRiskCount"`
-	LowImportanceFailingCount  int     `json:"lowImportanceFailingCount"`
-	HighImportanceAtRiskCount  int     `json:"highImportanceAtRiskCount"`
-	HighImportanceFailingCount int     `json:"highImportanceFailingCount"`
+	MonitorRange               string  `json:"monitorRange" example:"7d" extensions:"x-order=0" enum:"2h, 1d, 7d, 30d, 90d, 180d, 365d"` // Monitoring 할 범위
+	DriftMetricType            string  `json:"driftMetricType" example:"PSI" extensions:"x-order=1" enum:"PSI"`                          // DataDrift 측정 Metric
+	DriftThreshold             float32 `json:"driftThreshold" example:"0.15" extensions:"x-order=2"`                                     // Drift 값 임계치
+	ImportanceThreshold        float32 `json:"importanceThreshold" example:"0.5" extensions:"x-order=3"`                                 // Importance 값 임계치
+	LowImportanceAtRiskCount   int     `json:"lowImportanceAtRiskCount" example:"1" extensions:"x-order=4"`                              // 낮은 importance feature 수의 drift at risk 임계치
+	LowImportanceFailingCount  int     `json:"lowImportanceFailingCount" example:"0" extensions:"x-order=5"`                             // 낮은 importance feature 수의 drift failing 임계치
+	HighImportanceAtRiskCount  int     `json:"highImportanceAtRiskCount" example:"0" extensions:"x-order=6"`                             // 높은 importance feature 수의 drift at risk 임계치
+	HighImportanceFailingCount int     `json:"highImportanceFailingCount" example:"1" extensions:"x-order=7"`                            // 높은 importance feature 수의 drift failing 임계치
 }
 
 type MonitorDriftPatchRequestDTO struct {
@@ -22,24 +22,26 @@ type MonitorDriftPatchResponseDTO struct {
 }
 
 type FeatureDriftGetRequestDTO struct {
-	DeploymentID   string
-	ModelHistoryID string
-	StartTime      string
-	EndTime        string
+	DeploymentID        string
+	ModelHistoryID      string
+	StartTime           string
+	EndTime             string
+	DriftThreshold      float32
+	ImportanceThreshold float32
 }
 
 type FeatureDriftGetResponseDTO struct {
-	Message         string
-	Data            string
-	StartTime       string
-	EndTime         string
-	PredictionCount int
+	Message         string `json:"message" extensions:"x-order=0"`         // Message
+	Data            string `json:"data" extensions:"x-order=1"`            // Feature Drift 결과 Data
+	StartTime       string `json:"startTIme" extensions:"x-order=2"`       // 검색 시작 시간
+	EndTime         string `json:"endTIme" extensions:"x-order=3"`         // 검색 끝 시간
+	PredictionCount int    `json:"predictionCount" extensions:"x-order=4"` // 검색 시간 사이의 총 예측 수
 }
 
 type MonitorDriftActiveRequestDTO struct {
-	DeploymentID     string
-	ModelPackageID   string
-	DataDriftSetting DataDriftSetting
+	DeploymentID   string
+	ModelPackageID string
+	CurrentModelID string
 }
 
 type MonitorDriftActiveResponseDTO struct {

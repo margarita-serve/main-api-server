@@ -4,13 +4,19 @@ import (
 	"fmt"
 	conMonitorAccuracy "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/monitoring_service/accuracy"
 	domSchema "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 )
 
-func NewAccuracyAdapter() (*AccuracyAdapter, error) {
+func NewAccuracyAdapter(h *handler.Handler) (*AccuracyAdapter, error) {
 	var err error
 
 	adp := new(AccuracyAdapter)
+	cfg, err := h.GetConfig()
+	if err != nil {
+		return nil, err
+	}
 	config := conMonitorAccuracy.Config{}
+	config.Endpoint = cfg.Connectors.AccuracyServer.Endpoint
 	adp.connector = conMonitorAccuracy.NewAccuracyMonitor(config, nil)
 
 	return adp, err
@@ -41,12 +47,12 @@ func (a *AccuracyAdapter) MonitorCreate(req *domSchema.AccuracyCreateRequest) (*
 	return resp, nil
 }
 
-func (a *AccuracyAdapter) MonitorDelete(req *domSchema.AccuracyDeleteRequest) error {
+func (a *AccuracyAdapter) MonitorDisable(req *domSchema.AccuracyDeleteRequest) error {
 	connReq, err := MapDeleteReq(req)
 	if err != nil {
 		return err
 	}
-	connResp, err := a.connector.DeleteAccuracyMonitor(connReq)
+	connResp, err := a.connector.DisableMonitor(connReq)
 	if err != nil {
 		return err
 	}
@@ -116,6 +122,26 @@ func (a *AccuracyAdapter) MonitorPostActual(req *domSchema.AccuracyPostActualReq
 	}
 
 	resp, err = MapPostRes(connResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (a *AccuracyAdapter) MonitorEnable(req *domSchema.AccuracyEnableRequest) (*domSchema.AccuracyEnableResponse, error) {
+	resp := new(domSchema.AccuracyEnableResponse)
+	connReq, err := MapEnableReq(req)
+	if err != nil {
+		return nil, err
+	}
+
+	connResp, err := a.connector.EnableMonitor(connReq)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err = MapEnableRes(connResp)
 	if err != nil {
 		return nil, err
 	}

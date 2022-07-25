@@ -3,20 +3,22 @@ package service
 import (
 	"context"
 	infStorageClient "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/storage/minio"
-	appDeploymentDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
-	appDeploymentSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/service"
-	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/entity"
 	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/repository"
 	domSvcMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domSvcMonitorSvcDriftDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
+	domSvcMonitorSvcGraphDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/graph/dto"
 	infAccuracySvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/accuracy"
 	infDriftSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/data_drift"
+	infGraphSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/graph"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	"github.com/minio/minio-go/v7"
+	"io"
+	"strings"
+
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/repository"
 )
@@ -30,17 +32,27 @@ domain을 호출하여 사용.
 
 */
 
+type IModelPackageService interface {
+	GetByIDInternal(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
+}
+
+type StorageClient interface {
+	UploadFile(ioReader io.Reader, filePath string) error
+	DeleteFile(filePath string) error
+	GetFile(filePath string) (*minio.Object, error)
+}
+
 type MonitorService struct {
 	BaseService
 	domMonitorDriftSvc    domSvcMonitorSvc.IExternalDriftMonitorAdapter
 	domMonitorAccuracySvc domSvcMonitorSvc.IExternalAccuracyMonitorAdapter
-	modelPackageSvc       *appModelPackageSvc.ModelPackageService
-	deploymentSvc         *appDeploymentSvc.DeploymentService
+	domMonitorGraphSvc    domSvcMonitorSvc.IExternalGraphMonitorAdapter
+	modelPackageSvc       IModelPackageService
 	repo                  domRepo.IMonitorRepo
-	storageClient         appModelPackageSvc.StorageClient
+	storageClient         StorageClient
 }
 
-func NewMonitorService(h *handler.Handler) (*MonitorService, error) {
+func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService) (*MonitorService, error) {
 	var err error
 
 	svc := new(MonitorService)
@@ -55,21 +67,19 @@ func NewMonitorService(h *handler.Handler) (*MonitorService, error) {
 		return nil, err
 	}
 
-	if svc.domMonitorDriftSvc, err = infDriftSvc.NewDataDriftAdapter(); err != nil {
+	if svc.domMonitorDriftSvc, err = infDriftSvc.NewDataDriftAdapter(h); err != nil {
 		return nil, err
 	}
 
-	if svc.domMonitorAccuracySvc, err = infAccuracySvc.NewAccuracyAdapter(); err != nil {
+	if svc.domMonitorAccuracySvc, err = infAccuracySvc.NewAccuracyAdapter(h); err != nil {
 		return nil, err
 	}
 
-	if svc.modelPackageSvc, err = appModelPackageSvc.NewModelPackageService(h); err != nil {
+	if svc.domMonitorGraphSvc, err = infGraphSvc.NewGraphAdapter(h); err != nil {
 		return nil, err
 	}
 
-	if svc.deploymentSvc, err = appDeploymentSvc.NewDeploymentService(h); err != nil {
-		return nil, err
-	}
+	svc.modelPackageSvc = modelPackageSvc
 
 	cfg, err := h.GetConfig()
 	if err != nil {
@@ -91,7 +101,10 @@ func NewMonitorService(h *handler.Handler) (*MonitorService, error) {
 }
 
 func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.MonitorCreateResponseDTO, error) {
-	// validate check
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
 
 	domAggregateMonitor, err := domEntity.NewMonitor(
 		req.DeploymentID,
@@ -103,66 +116,71 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
+	// feature drift 여부에 상관없이 셋팅값은 초기셋팅으로 설정 이후 패치만 받음
+	domAggregateMonitor.SetDataDriftSetting(
+		"",
+		"",
+		0,
+		0,
+		1,
+		0,
+		0,
+		1,
+	)
+
 	if req.FeatureDriftTracking == true {
-		domAggregateMonitor.SetDataDriftSetting(
-			req.DataDriftSetting.MonitorRange,
-			req.DataDriftSetting.DriftMetricType,
-			req.DataDriftSetting.DriftThreshold,
-			req.DataDriftSetting.ImportanceThreshold,
-			req.DataDriftSetting.LowImportanceAtRiskCount,
-			req.DataDriftSetting.LowImportanceFailingCount,
-			req.DataDriftSetting.HighImportanceAtRiskCount,
-			req.DataDriftSetting.HighImportanceFailingCount,
-		)
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
 			InferenceName:              req.DeploymentID,
-			ModelHistoryID:             "000001",
+			ModelHistoryID:             req.ModelHistoryID,
 			TargetLabel:                resModelPackage.PredictionTargetName,
 			ModelType:                  resModelPackage.TargetType,
 			Framework:                  resModelPackage.ModelFrameWork,
 			TrainDatasetPath:           resModelPackage.TrainingDatasetPath,
 			ModelPath:                  resModelPackage.ModelFilePath,
-			DriftThreshold:             req.DataDriftSetting.DriftThreshold,
-			ImportanceThreshold:        req.DataDriftSetting.ImportanceThreshold,
-			MonitorRange:               req.DataDriftSetting.MonitorRange,
-			LowImportanceAtRiskCount:   req.DataDriftSetting.LowImportanceAtRiskCount,
-			LowImportanceFailingCount:  req.DataDriftSetting.LowImportanceFailingCount,
-			HighImportanceAtRiskCount:  req.DataDriftSetting.HighImportanceAtRiskCount,
-			HighImportanceFailingCount: req.DataDriftSetting.HighImportanceFailingCount,
+			DriftThreshold:             domAggregateMonitor.DriftThreshold,
+			ImportanceThreshold:        domAggregateMonitor.ImportanceThreshold,
+			MonitorRange:               domAggregateMonitor.MonitorRange,
+			LowImportanceAtRiskCount:   domAggregateMonitor.LowImportanceAtRiskCount,
+			LowImportanceFailingCount:  domAggregateMonitor.LowImportanceFailingCount,
+			HighImportanceAtRiskCount:  domAggregateMonitor.HighImportanceAtRiskCount,
+			HighImportanceFailingCount: domAggregateMonitor.HighImportanceFailingCount,
 		}
 
 		err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
 		if err != nil {
 			return nil, err
 		}
+
+		domAggregateMonitor.SetDriftCreatedTrue()
+
 		err = s.repo.Save(domAggregateMonitor)
 		if err != nil {
 			return nil, err
 		}
 	}
+	// accuracy 여부에 상관없이 셋팅값은 초기셋팅으로 설정 이후 패치만 받음
+	domAggregateMonitor.SetAccuracySetting(
+		"",
+		"",
+		5,
+		10,
+		resModelPackage.TargetType,
+	)
+
 	if req.AccuracyMonitoring == true {
-		domAggregateMonitor.SetAccuracySetting(
-			req.AccuracySetting.MetricType,
-			req.AccuracySetting.Measurement,
-			req.AccuracySetting.AtRiskValue,
-			req.AccuracySetting.FailingValue,
-		)
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
 			InferenceName:    req.DeploymentID,
-			ModelHistoryID:   "000001",
+			ModelHistoryID:   req.ModelHistoryID,
 			DatasetPath:      resModelPackage.HoldoutDatasetPath,
 			ModelPath:        resModelPackage.ModelFilePath,
 			TargetLabel:      resModelPackage.PredictionTargetName,
 			AssociationID:    req.AssociationID,
 			ModelType:        resModelPackage.TargetType,
 			Framework:        resModelPackage.ModelFrameWork,
-			DriftMetrics:     req.AccuracySetting.MetricType,
-			DriftMeasurement: req.AccuracySetting.Measurement,
-			AtriskValue:      req.AccuracySetting.AtRiskValue,
-			FailingValue:     req.AccuracySetting.FailingValue,
+			DriftMetrics:     domAggregateMonitor.MetricType,
+			DriftMeasurement: domAggregateMonitor.Measurement,
+			AtriskValue:      domAggregateMonitor.AtRiskValue,
+			FailingValue:     domAggregateMonitor.FailingValue,
 			PositiveClass:    resModelPackage.PositiveClassLabel,
 			NegativeClass:    resModelPackage.NegativeClassLabel,
 			BinaryThreshold:  resModelPackage.PredictionThreshold,
@@ -172,12 +190,102 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 		if err != nil {
 			return nil, err
 		}
+		domAggregateMonitor.SetAccuracyCreatedTrue()
+
 		err = s.repo.Save(domAggregateMonitor)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	resDTO := new(appDTO.MonitorCreateResponseDTO)
+	resDTO.DeploymentID = domAggregateMonitor.ID
+
+	return resDTO, nil
+}
+
+func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequestDTO) (*appDTO.MonitorReplaceModelResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if domAggregateMonitor.FeatureDriftTracking == true {
+		domAggregateMonitor.SetDriftCreatedFalse()
+		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
+			InferenceName:              req.DeploymentID,
+			ModelHistoryID:             req.ModelHistoryID,
+			TargetLabel:                resModelPackage.PredictionTargetName,
+			ModelType:                  resModelPackage.TargetType,
+			Framework:                  resModelPackage.ModelFrameWork,
+			TrainDatasetPath:           resModelPackage.TrainingDatasetPath,
+			ModelPath:                  resModelPackage.ModelFilePath,
+			DriftThreshold:             domAggregateMonitor.DriftThreshold,
+			ImportanceThreshold:        domAggregateMonitor.ImportanceThreshold,
+			MonitorRange:               domAggregateMonitor.MonitorRange,
+			LowImportanceAtRiskCount:   domAggregateMonitor.LowImportanceAtRiskCount,
+			LowImportanceFailingCount:  domAggregateMonitor.LowImportanceFailingCount,
+			HighImportanceAtRiskCount:  domAggregateMonitor.HighImportanceAtRiskCount,
+			HighImportanceFailingCount: domAggregateMonitor.HighImportanceFailingCount,
+		}
+
+		err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
+		if err != nil {
+			return nil, err
+		}
+
+		domAggregateMonitor.SetDriftCreatedTrue()
+
+		err = s.repo.Save(domAggregateMonitor)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if domAggregateMonitor.AccuracyMonitoring == true {
+		domAggregateMonitor.SetAccuracyCreatedFalse()
+		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
+			InferenceName:    req.DeploymentID,
+			ModelHistoryID:   req.ModelHistoryID,
+			DatasetPath:      resModelPackage.HoldoutDatasetPath,
+			ModelPath:        resModelPackage.ModelFilePath,
+			TargetLabel:      resModelPackage.PredictionTargetName,
+			AssociationID:    domAggregateMonitor.AssociationID,
+			ModelType:        resModelPackage.TargetType,
+			Framework:        resModelPackage.ModelFrameWork,
+			DriftMetrics:     domAggregateMonitor.MetricType,
+			DriftMeasurement: domAggregateMonitor.Measurement,
+			AtriskValue:      domAggregateMonitor.AtRiskValue,
+			FailingValue:     domAggregateMonitor.FailingValue,
+			PositiveClass:    resModelPackage.PositiveClassLabel,
+			NegativeClass:    resModelPackage.NegativeClassLabel,
+			BinaryThreshold:  resModelPackage.PredictionThreshold,
+		}
+
+		err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+		if err != nil {
+			return nil, err
+		}
+		domAggregateMonitor.SetAccuracyCreatedTrue()
+
+		err = s.repo.Save(domAggregateMonitor)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	resDTO := new(appDTO.MonitorReplaceModelResponseDTO)
 	resDTO.DeploymentID = domAggregateMonitor.ID
 
 	return resDTO, nil
@@ -213,7 +321,7 @@ func (s *MonitorService) Delete(req *appDTO.MonitorDeleteRequestDTO) (*appDTO.Mo
 	}
 
 	resDTO := new(appDTO.MonitorDeleteResponseDTO)
-	resDTO.Message = "DataDrift Monitor Inactive Success"
+	resDTO.Message = "DataDrift Monitor Delete Success"
 
 	return resDTO, nil
 }
@@ -224,11 +332,12 @@ func (s *MonitorService) PatchDriftMonitorSetting(req *appDTO.MonitorDriftPatchR
 		return nil, err
 	}
 	resDTO := new(appDTO.MonitorDriftPatchResponseDTO)
-	if domAggregateMonitor.FeatureDriftTracking == false {
-		resDTO.DeploymentID = req.DeploymentID
-		resDTO.Message = "DataDrift Tracking is False"
-		return resDTO, nil
+	// false 여도 patch 가능
+
+	if err := req.Validate(); err != nil {
+		return nil, err
 	}
+
 	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftPatchRequest{
 		InferenceName:              req.DeploymentID,
 		DriftThreshold:             req.DataDriftSetting.DriftThreshold,
@@ -257,20 +366,8 @@ func (s *MonitorService) PatchDriftMonitorSetting(req *appDTO.MonitorDriftPatchR
 }
 
 func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveRequestDTO) (*appDTO.MonitorDriftActiveResponseDTO, error) {
+	// active 는 드리프트 셋팅과 연관이 없음. 단순 on 만 가능하게 하는데 drift monitor가 만들어지지 않을경우엔 생성, 이미 있을 경우엔 단순 on만. drift monitor 생성여부 상태값 저장해야함
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-
-	modelHistoryDTO := new(appDeploymentDTO.GetModelHistoryRequestDTO)
-	modelHistoryDTO.DeploymentID = domAggregateMonitor.ID
-
-	modelHistoryRes, err := s.deploymentSvc.GetModelHistory(modelHistoryDTO)
-	modelHistory := modelHistoryRes.ModelHistory.([]entity.ModelHistory)
-
-	var modelHistoryID string
-	for _, v := range modelHistory {
-		if v.ApplyHistoryTag == "current" {
-			modelHistoryID = v.Version
-		}
-	}
 
 	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
 	if err != nil {
@@ -279,17 +376,17 @@ func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveReq
 
 	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
 		InferenceName:              req.DeploymentID,
-		ModelHistoryID:             modelHistoryID,
+		ModelHistoryID:             req.CurrentModelID,
 		TargetLabel:                resModelPackage.PredictionTargetName,
 		ModelType:                  resModelPackage.TargetType,
 		Framework:                  resModelPackage.ModelFrameWork,
-		DriftThreshold:             req.DataDriftSetting.DriftThreshold,
-		ImportanceThreshold:        req.DataDriftSetting.ImportanceThreshold,
-		MonitorRange:               req.DataDriftSetting.MonitorRange,
-		LowImportanceAtRiskCount:   req.DataDriftSetting.LowImportanceAtRiskCount,
-		LowImportanceFailingCount:  req.DataDriftSetting.LowImportanceFailingCount,
-		HighImportanceAtRiskCount:  req.DataDriftSetting.HighImportanceAtRiskCount,
-		HighImportanceFailingCount: req.DataDriftSetting.HighImportanceFailingCount,
+		DriftThreshold:             domAggregateMonitor.DriftThreshold,
+		ImportanceThreshold:        domAggregateMonitor.ImportanceThreshold,
+		MonitorRange:               domAggregateMonitor.MonitorRange,
+		LowImportanceAtRiskCount:   domAggregateMonitor.LowImportanceAtRiskCount,
+		LowImportanceFailingCount:  domAggregateMonitor.LowImportanceFailingCount,
+		HighImportanceAtRiskCount:  domAggregateMonitor.HighImportanceAtRiskCount,
+		HighImportanceFailingCount: domAggregateMonitor.HighImportanceFailingCount,
 	}
 
 	err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
@@ -308,6 +405,7 @@ func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveReq
 }
 
 func (s *MonitorService) SetDriftMonitorInActive(req *appDTO.MonitorDriftInActiveRequestDTO) (*appDTO.MonitorDriftInActiveResponseDTO, error) {
+	// 단순 off 만 구현
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -332,6 +430,11 @@ func (s *MonitorService) SetDriftMonitorInActive(req *appDTO.MonitorDriftInActiv
 }
 
 func (s *MonitorService) GetFeatureDetail(req *appDTO.FeatureDriftGetRequestDTO) (*appDTO.FeatureDriftGetResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -357,6 +460,11 @@ func (s *MonitorService) GetFeatureDetail(req *appDTO.FeatureDriftGetRequestDTO)
 }
 
 func (s *MonitorService) GetFeatureDrift(req *appDTO.FeatureDriftGetRequestDTO) (*appDTO.FeatureDriftGetResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -387,16 +495,19 @@ func (s *MonitorService) PatchAccuracyMonitorSetting(req *appDTO.MonitorAccuracy
 		return nil, err
 	}
 	resDTO := new(appDTO.MonitorAccuracyPatchResponseDTO)
-	if domAggregateMonitor.AccuracyMonitoring == false {
-		resDTO.DeploymentID = req.DeploymentID
-		resDTO.Message = "Accuracy Monitor is False"
-		return resDTO, nil
+	// false 여도 patch는 가능
+
+	if err := req.Validate(); err != nil {
+		return nil, err
 	}
+
+	resModelPackage, err := s.getModelPackageByID(req.DeploymentID)
 
 	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyPatchRequest{
 		InferenceName:    req.DeploymentID,
 		DriftMetrics:     req.AccuracySetting.MetricType,
 		DriftMeasurement: req.AccuracySetting.Measurement,
+		ModelType:        resModelPackage.TargetType,
 		AtriskValue:      req.AccuracySetting.AtRiskValue,
 		FailingValue:     req.AccuracySetting.FailingValue,
 	}
@@ -418,20 +529,8 @@ func (s *MonitorService) PatchAccuracyMonitorSetting(req *appDTO.MonitorAccuracy
 }
 
 func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyActiveRequestDTO) (*appDTO.MonitorAccuracyActiveResponseDTO, error) {
+	// drift와 동일하게 on 기능 + accuracy monitor가 없을 경우 생성 있을경우 on 만. accuracy monitor 생성 여부 상태 저장해야함
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-
-	modelHistoryDTO := new(appDeploymentDTO.GetModelHistoryRequestDTO)
-	modelHistoryDTO.DeploymentID = domAggregateMonitor.ID
-
-	modelHistoryRes, err := s.deploymentSvc.GetModelHistory(modelHistoryDTO)
-	modelHistory := modelHistoryRes.ModelHistory.([]entity.ModelHistory)
-
-	var modelHistoryID string
-	for _, v := range modelHistory {
-		if v.ApplyHistoryTag == "current" {
-			modelHistoryID = v.Version
-		}
-	}
 
 	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
 	if err != nil {
@@ -440,17 +539,17 @@ func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyAct
 
 	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
 		InferenceName:    req.DeploymentID,
-		ModelHistoryID:   modelHistoryID,
+		ModelHistoryID:   req.CurrentModelID,
 		DatasetPath:      resModelPackage.HoldoutDatasetPath,
 		ModelPath:        resModelPackage.ModelFilePath,
 		TargetLabel:      resModelPackage.PredictionTargetName,
 		AssociationID:    req.AssociationID,
 		ModelType:        resModelPackage.TargetType,
 		Framework:        resModelPackage.ModelFrameWork,
-		DriftMetrics:     req.AccuracySetting.MetricType,
-		DriftMeasurement: req.AccuracySetting.Measurement,
-		AtriskValue:      req.AccuracySetting.AtRiskValue,
-		FailingValue:     req.AccuracySetting.FailingValue,
+		DriftMetrics:     domAggregateMonitor.MetricType,
+		DriftMeasurement: domAggregateMonitor.Measurement,
+		AtriskValue:      domAggregateMonitor.AtRiskValue,
+		FailingValue:     domAggregateMonitor.FailingValue,
 		PositiveClass:    resModelPackage.PositiveClassLabel,
 		NegativeClass:    resModelPackage.NegativeClassLabel,
 		BinaryThreshold:  resModelPackage.PredictionThreshold,
@@ -496,6 +595,11 @@ func (s *MonitorService) SetAccuracyMonitorInActive(req *appDTO.MonitorAccuracyI
 }
 
 func (s *MonitorService) GetAccuracy(req *appDTO.AccuracyGetRequestDTO) (*appDTO.AccuracyGetResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -523,6 +627,11 @@ func (s *MonitorService) GetAccuracy(req *appDTO.AccuracyGetRequestDTO) (*appDTO
 }
 
 func (s *MonitorService) GetByID(req *appDTO.MonitorGetByIDRequestDTO) (*appDTO.MonitorGetByIDResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	res, err := s.repo.Get(req.ID)
 	if err != nil {
 		return nil, err
@@ -548,6 +657,11 @@ func (s *MonitorService) getModelPackageByID(modelPackageID string) (*appModelPa
 }
 
 func (s *MonitorService) GetMonitorSetting(req *appDTO.MonitorGetSettingRequestDTO) (*appDTO.MonitorGetSettingResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -560,6 +674,11 @@ func (s *MonitorService) GetMonitorSetting(req *appDTO.MonitorGetSettingRequestD
 }
 
 func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appDTO.UploadActualResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -598,14 +717,60 @@ func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appD
 	return resDTO, nil
 }
 
-func (s *MonitorService) GetFeatureDriftGraph(req *appDTO.FeatureDriftGetRequestDTO) (*appDTO.FeatureDriftGetResponseDTO, error) {
-	return nil, nil
+func (s *MonitorService) GetFeatureDriftGraph(req *appDTO.DriftGraphGetRequestDTO) (*appDTO.DriftGraphGetResponseDTO, error) {
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+
+	if err != nil {
+		return nil, err
+	}
+	reqDomDriftGraphSvc := domSvcMonitorSvcGraphDTO.DriftGraphGetRequest{
+		InferenceName:       req.DeploymentID,
+		ModelHistoryID:      req.ModelHistoryID,
+		StartTime:           req.StartTime,
+		EndTime:             req.EndTime,
+		DriftThreshold:      domAggregateMonitor.DriftThreshold,
+		ImportanceThreshold: domAggregateMonitor.ImportanceThreshold,
+	}
+	res, err := domAggregateMonitor.GetDriftGraph(s.domMonitorGraphSvc, reqDomDriftGraphSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Script = strings.Replace(res.Script, "http://localhost:5006", "http://localhost:32022", -1)
+	resDTO := new(appDTO.DriftGraphGetResponseDTO)
+	resDTO.Script = res.Script
+
+	return resDTO, nil
 }
 
-func (s *MonitorService) GetFeatureDetailGraph(req *appDTO.FeatureDriftGetRequestDTO) (*appDTO.FeatureDriftGetResponseDTO, error) {
-	return nil, nil
-}
+func (s *MonitorService) GetFeatureDetailGraph(req *appDTO.DetailGraphGetRequestDTO) (*appDTO.DetailGraphGetResponseDTO, error) {
 
-func (s *MonitorService) GetMonitorStatusList(req *appDTO.MonitorGetStatusListRequestDTO) (*appDTO.MonitorGetStatusListResponseDTO, error) {
-	return nil, nil
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+	reqDomDetailGraphSvc := domSvcMonitorSvcGraphDTO.DetailGraphGetRequest{
+		InferenceName:  req.DeploymentID,
+		ModelHistoryID: req.ModelHistoryID,
+		StartTime:      req.StartTime,
+		EndTime:        req.EndTime,
+	}
+	res, err := domAggregateMonitor.GetDetailGraph(s.domMonitorGraphSvc, reqDomDetailGraphSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Script = strings.Replace(res.Script, "http://localhost:5006", "http://localhost:32022", -1)
+	resDTO := new(appDTO.DetailGraphGetResponseDTO)
+	resDTO.Script = res.Script
+	return resDTO, nil
 }

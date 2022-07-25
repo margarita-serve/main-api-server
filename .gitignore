@@ -1,3 +1,5 @@
 # Goland proejct files
 .idea
 .idea/*.xml
+.vscode
+docs/*

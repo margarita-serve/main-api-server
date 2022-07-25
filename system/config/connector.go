@@ -2,8 +2,13 @@ package config
 
 // Connectors represent available connectors
 type Connectors struct {
-	Identity Identity `json:"identity" yaml:"identity"`
-	Storages Storages `json:"storages" yaml:"storages"`
+	Identity       Identity        `json:"identity" yaml:"identity"`
+	Storages       Storages        `json:"storages" yaml:"storages"`
+	DriftServer    DataDriftServer `json:"driftServer" yaml:"driftServer"`
+	AccuracyServer AccuracyServer  `json:"accuracyServer" yaml:"accuracyServer"`
+	GraphServer    GraphServer     `json:"graphServer" yaml:"graphServer"`
+	BokehServer    BokehServer     `json:"bokehServer" yaml:"bokehServer"`
+	Kafka          KafkaServer     `json:"Kafka" yaml:"kafka"`
 }
 
 // Identity type
@@ -30,4 +35,26 @@ type Minio struct {
 	AccessKeyID     string `json:"accessKeyID" yaml:"accessKeyID"`
 	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
 	UseSSL          bool   `json:"useSSL" yaml:"useSSL"`
+}
+
+type DataDriftServer struct {
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+}
+
+type AccuracyServer struct {
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+}
+
+type GraphServer struct {
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+}
+
+type BokehServer struct {
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+}
+
+type KafkaServer struct {
+	Endpoint        string `json:"endpoint" yaml:"endpoint"`
+	GroupID         string `json:"groupID"`
+	AutoOffsetReset string `json:"autoOffsetReset"`
 }

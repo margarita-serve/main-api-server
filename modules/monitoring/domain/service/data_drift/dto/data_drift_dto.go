@@ -61,3 +61,12 @@ type DataDriftPatchResponse struct {
 	Message       string
 	InferenceName string
 }
+
+type DataDriftEnableRequest struct {
+	InferenceName string
+}
+
+type DataDriftEnableResponse struct {
+	Message       string
+	InferenceName string
+}

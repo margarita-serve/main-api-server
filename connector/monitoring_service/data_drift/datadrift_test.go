@@ -6,7 +6,7 @@ import (
 )
 
 func newDataDriftMonitor(t *testing.T) *DriftMonitor {
-	config := Config{Server: "http://192.168.88.151:30071"}
+	config := Config{Endpoint: "http://192.168.88.151:30071"}
 	return NewDriftMonitor(config, nil)
 }
 

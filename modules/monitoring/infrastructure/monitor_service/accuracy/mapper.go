@@ -55,14 +55,14 @@ func MapCreateRes(res *conMonitor.CreateAccuracyResponse) (*domSchema.AccuracyCr
 	return resDom, nil
 }
 
-func MapDeleteReq(req *domSchema.AccuracyDeleteRequest) (*conMonitor.DeleteAccuracyMonitorRequest, error) {
-	reqCon := new(conMonitor.DeleteAccuracyMonitorRequest)
+func MapDeleteReq(req *domSchema.AccuracyDeleteRequest) (*conMonitor.DisableMonitorRequest, error) {
+	reqCon := new(conMonitor.DisableMonitorRequest)
 	reqCon.InferenceName = req.InferenceName
 
 	return reqCon, nil
 }
 
-func MapDeleteRes(res *conMonitor.DeleteAccuracyMonitorResponse) (*domSchema.AccuracyDeleteResponse, error) {
+func MapDeleteRes(res *conMonitor.DisableMonitorResponse) (*domSchema.AccuracyDeleteResponse, error) {
 	resDom := new(domSchema.AccuracyDeleteResponse)
 	resDom.Message = res.Message
 	resDom.InferenceName = res.InferenceName
@@ -100,6 +100,22 @@ func MapPostReq(req *domSchema.AccuracyPostActualRequest) (*conMonitor.ActualReq
 
 func MapPostRes(res *conMonitor.ActualResponse) (*domSchema.AccuracyPostActualResponse, error) {
 	resDom := new(domSchema.AccuracyPostActualResponse)
+	resDom.Message = res.Message
+	resDom.InferenceName = res.InferenceName
+
+	return resDom, nil
+}
+
+func MapEnableReq(req *domSchema.AccuracyEnableRequest) (*conMonitor.EnableMonitorRequest, error) {
+	reqCon := new(conMonitor.EnableMonitorRequest)
+	reqCon.InferenceName = req.InferenceName
+
+	return reqCon, nil
+
+}
+
+func MapEnableRes(res *conMonitor.EnableMonitorResponse) (*domSchema.AccuracyEnableResponse, error) {
+	resDom := new(domSchema.AccuracyEnableResponse)
 	resDom.Message = res.Message
 	resDom.InferenceName = res.InferenceName
 

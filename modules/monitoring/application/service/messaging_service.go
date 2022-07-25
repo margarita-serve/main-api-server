@@ -8,46 +8,78 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 )
 
-type MessagingService struct {
-	BaseService
+type IMonitorService interface {
+	GetByID(req *appDTO.MonitorGetByIDRequestDTO) (*appDTO.MonitorGetByIDResponseDTO, error)
 }
 
-func NewMessagingService(h *handler.Handler) {
+type MessagingService struct {
+	BaseService
+	MonitorService IMonitorService
+}
+
+func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 
 	svc := new(MessagingService)
 
 	svc.handler = h
+	svc.MonitorService = monitorSvc
 	// base service init
 	if err := svc.initBaseService(); err != nil {
-		fmt.Errorf(err.Error())
+		return err
 	}
-	consumer := infMsgSvc.NewConsumerKafka()
 
-	consumer.SetTopic("datadrift-monitoring-data")
-	err := consumer.RegisterConsumer()
-	if err != nil {
-		fmt.Errorf(err.Error())
-	}
 	ch := make(chan infMsgSvc.OrgMsg, 1000)
 
-	go func() {
-		err := consumer.ConsumeMessage(ch)
+	cfg, err := h.GetConfig()
+	if err != nil {
+		return err
+	}
+	RegisterReq := new(appDTO.RegisterServer)
+	RegisterReq.Endpoint = cfg.Connectors.Kafka.Endpoint
+	RegisterReq.GroupID = cfg.Connectors.Kafka.GroupID
+	RegisterReq.AutoOffsetReset = cfg.Connectors.Kafka.AutoOffsetReset
+
+	// datadrift go routine
+	driftConsumer := infMsgSvc.NewConsumerKafka()
+	driftConsumer.SetTopic("datadrift-monitoring-data")
+	err = driftConsumer.RegisterConsumer(RegisterReq)
+	if err != nil {
+		return err
+	}
+	go func() error {
+		err := driftConsumer.ConsumeMessage(ch, "datadrift")
 		// 실행
 		if err != nil {
-			fmt.Errorf(err.Error())
+			return err
 		}
+		return nil
 	}()
 
+	// accuracy go routine
+	accuracyConsumer := infMsgSvc.NewConsumerKafka()
+	accuracyConsumer.SetTopic("accuracy-monitoring-data")
+	err = accuracyConsumer.RegisterConsumer(RegisterReq)
+	if err != nil {
+		return err
+	}
+	go func() error {
+		err := accuracyConsumer.ConsumeMessage(ch, "accuracy")
+		// 실행
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+
+	// Message Listener go routine
 	go func() {
 		svc.MessageListener(ch)
 	}()
+	return nil
 }
 
 func (m *MessagingService) MessageListener(ch chan infMsgSvc.OrgMsg) {
-	MonitorSvc, err := NewMonitorService(m.handler)
-	if err != nil {
-		fmt.Errorf(err.Error())
-	}
+
 	for n := range ch {
 		mapMsg := infMsgSvc.KafkaMsg{}
 		msgType := n.MsgType
@@ -58,21 +90,31 @@ func (m *MessagingService) MessageListener(ch chan infMsgSvc.OrgMsg) {
 		getByIdDTO := new(appDTO.MonitorGetByIDRequestDTO)
 		getByIdDTO.ID = deploymentID
 
-		domAggregateMonitor, err := MonitorSvc.GetByID(getByIdDTO)
+		domAggregateMonitor, err := m.MonitorService.GetByID(getByIdDTO)
 		if msgType == "datadrift" {
 			if err != nil {
 				fmt.Printf(err.Error())
 			} else if status == "pass" {
 				domAggregateMonitor.Monitor.SetDriftStatusPass()
-			} else if status == "warning" {
-				domAggregateMonitor.Monitor.SetDriftStatusWarning()
-			} else if status == "unknown" {
-				domAggregateMonitor.Monitor.SetDriftStatusUnknown()
+			} else if status == "atrisk" {
+				domAggregateMonitor.Monitor.SetDriftStatusAtRisk()
+			} else if status == "failing" {
+				domAggregateMonitor.Monitor.SetDriftStatusFailing()
 			} else {
 				domAggregateMonitor.Monitor.SetDriftStatusUnknown()
 			}
 		} else if msgType == "accuracy" {
-
+			if err != nil {
+				fmt.Printf(err.Error())
+			} else if status == "pass" {
+				domAggregateMonitor.Monitor.SetAccuracyStatusPass()
+			} else if status == "atrisk" {
+				domAggregateMonitor.Monitor.SetAccuracyStatusAtRisk()
+			} else if status == "failing" {
+				domAggregateMonitor.Monitor.SetAccuracyStatusFailing()
+			} else {
+				domAggregateMonitor.Monitor.SetAccuracyStatusUnknown()
+			}
 		}
 	}
 }

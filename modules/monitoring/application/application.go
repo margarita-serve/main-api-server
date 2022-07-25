@@ -5,16 +5,19 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 )
 
-func NewMonitorApp(h *handler.Handler) (*MonitorApp, error) {
+func NewMonitorApp(h *handler.Handler, modelPackageSvc appSvc.IModelPackageService) (*MonitorApp, error) {
 	var err error
 
 	app := new(MonitorApp)
 	app.handler = h
 
-	if app.MonitorSvc, err = appSvc.NewMonitorService(h); err != nil {
+	if app.MonitorSvc, err = appSvc.NewMonitorService(h, modelPackageSvc); err != nil {
 		return nil, err
 	}
-	appSvc.NewMessagingService(h)
+
+	if err = appSvc.NewMessagingService(h, app.MonitorSvc); err != nil {
+		return nil, err
+	}
 
 	return app, nil
 }

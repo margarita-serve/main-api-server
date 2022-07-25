@@ -27,7 +27,7 @@ import (
 	infInfSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/inference_service/kserve"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/repository"
 	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
-	appMonitoringDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/application/dto"
+	appMonitoringDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 
 	// appPredictionEnvDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/predictionEnv/application/dto"
 
@@ -39,6 +39,7 @@ type IMonitorService interface {
 	Create(req *appMonitoringDTO.MonitorCreateRequestDTO) (*appMonitoringDTO.MonitorCreateResponseDTO, error)
 	GetByID(req *appMonitoringDTO.MonitorGetByIDRequestDTO) (*appMonitoringDTO.MonitorGetByIDResponseDTO, error)
 	Delete(req *appMonitoringDTO.MonitorDeleteRequestDTO) (*appMonitoringDTO.MonitorDeleteResponseDTO, error)
+	MonitorReplaceModel(req *appMonitoringDTO.MonitorReplaceModelRequestDTO) (*appMonitoringDTO.MonitorReplaceModelResponseDTO, error)
 	SetDriftMonitorActive(req *appMonitoringDTO.MonitorDriftActiveRequestDTO) (*appMonitoringDTO.MonitorDriftActiveResponseDTO, error)
 	SetDriftMonitorInActive(req *appMonitoringDTO.MonitorDriftInActiveRequestDTO) (*appMonitoringDTO.MonitorDriftInActiveResponseDTO, error)
 	SetAccuracyMonitorActive(req *appMonitoringDTO.MonitorAccuracyActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyActiveResponseDTO, error)
@@ -205,6 +206,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 	}()
 
 	wait.Wait() //Go루틴 모두 끝날 때까지 대기
+	close(errs)
 
 	var checkErrMsg error = <-errs
 	if checkErrMsg != nil {
@@ -302,7 +304,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 		return nil, err
 	}
 
-	domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
+	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
 
 	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, userID)
 	if err != nil {
@@ -322,8 +324,16 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 	}
 
 	//Call Monitoring Service
-	//Send Replaced Model Info
-	//
+	//Send Replaced Model Info 수정
+	reqReplaceMonitoring := &appMonitoringDTO.MonitorReplaceModelRequestDTO{
+		DeploymentID:   req.DeploymentID,
+		ModelPackageID: req.ModelPackageID,
+		ModelHistoryID: newModelHistoryID,
+	}
+	_, err = s.monitoringSvc.MonitorReplaceModel(reqReplaceMonitoring)
+	if err != nil {
+		return nil, err
+	}
 
 	// response dto
 	resDTO := new(appDTO.ReplaceModelResponseDTO)
@@ -354,6 +364,11 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
+	resModelPackage, err := s.getModelPackageByID(domAggregateDeployment.ModelPackageID)
+	if err != nil {
+		return nil, err
+	}
+
 	if req.Name != "" {
 		domAggregateDeployment.UpdateDeploymentName(req.Name)
 	}
@@ -369,20 +384,45 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	}
 	if req.FeatureDriftTracking != "" {
 		if convStrToBoolType(req.FeatureDriftTracking) == true {
-			//To Be..
-			//SetDriftMonitorActive(reqDriftActive) (*appMonitoringDTO.MonitorDriftActiveResponseDTO)
+			reqDriftActive := new(appMonitoringDTO.MonitorDriftActiveRequestDTO)
+			reqDriftActive.DeploymentID = req.DeploymentID
+			reqDriftActive.ModelPackageID = resModelPackage.ModelPackageID
+			reqDriftActive.CurrentModelID = resModelPackage.ModelVersion
+
+			_, err = s.monitoringSvc.SetDriftMonitorActive(reqDriftActive)
+			if err != nil {
+				return nil, err
+			}
 		} else {
-			//To Be..
-			//SetDriftMonitorInActive(reqDriftActive) (*appMonitoringDTO.MonitorDriftInActiveResponseDTO)
+			reqDriftInActive := new(appMonitoringDTO.MonitorDriftInActiveRequestDTO)
+			reqDriftInActive.DeploymentID = req.DeploymentID
+
+			_, err = s.monitoringSvc.SetDriftMonitorInActive(reqDriftInActive)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	if req.AccuracyAnalyze != "" {
 		if convStrToBoolType(req.AccuracyAnalyze) == true {
-			//To Be..
-			//SetAccuracyMonitorActive(reqDriftActive) (*appMonitoringDTO.MonitorAccuracyActiveRequestDTO)
+			reqAccuracyActive := new(appMonitoringDTO.MonitorAccuracyActiveRequestDTO)
+			reqAccuracyActive.DeploymentID = req.DeploymentID
+			reqAccuracyActive.ModelPackageID = resModelPackage.ModelPackageID
+			reqAccuracyActive.AssociationID = req.AssociationID
+			reqAccuracyActive.CurrentModelID = resModelPackage.ModelVersion
+
+			_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracyActive)
+			if err != nil {
+				return nil, err
+			}
 		} else {
-			//To Be..
-			//SetAccuracyMonitorInActive(reqDriftActive) (*appMonitoringDTO.MonitorAccuracyInActiveRequestDTO)
+			reqAccuracyInActive := new(appMonitoringDTO.MonitorAccuracyInActiveRequestDTO)
+			reqAccuracyInActive.DeploymentID = req.DeploymentID
+
+			_, err = s.monitoringSvc.SetAccuracyMonitorInActive(reqAccuracyInActive)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -441,6 +481,11 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO) (*app
 	if err != nil {
 		return nil, err
 	}
+
+	//수정
+	reqMo := new(appMonitoringDTO.MonitorDeleteRequestDTO)
+	reqMo.DeploymentID = req.DeploymentID
+	_, err = s.monitoringSvc.Delete(reqMo)
 
 	err = s.repo.Delete(req.DeploymentID)
 	if err != nil {
@@ -600,6 +645,36 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 		return nil, err
 	}
 
+	//monitor active
+	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
+		ID: req.DeploymentID,
+	}
+
+	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	if resMonitor.Monitor.FeatureDriftTracking == true {
+		reqDrift := &appMonitoringDTO.MonitorDriftActiveRequestDTO{
+			DeploymentID:   req.DeploymentID,
+			ModelPackageID: "",
+			CurrentModelID: "",
+		}
+		_, err = s.monitoringSvc.SetDriftMonitorActive(reqDrift)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if resMonitor.Monitor.AccuracyMonitoring == true {
+		reqAccuracy := &appMonitoringDTO.MonitorAccuracyActiveRequestDTO{
+			DeploymentID:   req.DeploymentID,
+			ModelPackageID: "",
+			AssociationID:  "",
+			CurrentModelID: "",
+		}
+		_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracy)
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.repo.Save(domAggregateDeployment)
 	if err != nil {
 		return nil, err
@@ -654,6 +729,31 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 	}
 
 	err = domAggregateDeployment.SetDeploymentInActive(s.domInferenceSvc, reqDom)
+	if err != nil {
+		return nil, err
+	}
+
+	//monitor inactive
+	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
+		ID: req.DeploymentID,
+	}
+
+	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	if resMonitor.Monitor.FeatureDriftTracking == true {
+		reqDrift := &appMonitoringDTO.MonitorDriftInActiveRequestDTO{
+			DeploymentID: req.DeploymentID,
+		}
+		_, err = s.monitoringSvc.SetDriftMonitorInActive(reqDrift)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if resMonitor.Monitor.AccuracyMonitoring == true {
+		reqAccuracy := &appMonitoringDTO.MonitorAccuracyInActiveRequestDTO{
+			DeploymentID: req.DeploymentID,
+		}
+		_, err = s.monitoringSvc.SetAccuracyMonitorInActive(reqAccuracy)
+	}
 	if err != nil {
 		return nil, err
 	}

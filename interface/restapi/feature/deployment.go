@@ -11,7 +11,7 @@ import (
 	appDeployment "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application"
 	appDeploymentDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
 	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
-	appMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/application/service"
+	appMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
