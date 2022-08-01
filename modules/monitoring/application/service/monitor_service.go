@@ -18,6 +18,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"io"
 	"strings"
+	"time"
 
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/repository"
@@ -485,8 +486,8 @@ func (s *MonitorService) GetFeatureDetail(req *appDTO.FeatureDriftGetRequestDTO)
 	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftGetRequest{
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
-		StartTime:      req.StartTime,
-		EndTime:        req.EndTime,
+		StartTime:      convertTimestamp(req.StartTime),
+		EndTime:        convertTimestamp(req.EndTime),
 	}
 	res, err := domAggregateMonitor.GetFeatureDetail(s.domMonitorDriftSvc, reqDomDriftSvc)
 	if err != nil {
@@ -515,8 +516,8 @@ func (s *MonitorService) GetFeatureDrift(req *appDTO.FeatureDriftGetRequestDTO) 
 	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftGetRequest{
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
-		StartTime:      req.StartTime,
-		EndTime:        req.EndTime,
+		StartTime:      convertTimestamp(req.StartTime),
+		EndTime:        convertTimestamp(req.EndTime),
 	}
 	res, err := domAggregateMonitor.GetFeatureDrift(s.domMonitorDriftSvc, reqDomDriftSvc)
 	if err != nil {
@@ -671,8 +672,8 @@ func (s *MonitorService) GetAccuracy(req *appDTO.AccuracyGetRequestDTO) (*appDTO
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
 		DataType:       req.Type,
-		StartTime:      req.StartTime,
-		EndTime:        req.EndTime,
+		StartTime:      convertTimestamp(req.StartTime),
+		EndTime:        convertTimestamp(req.EndTime),
 	}
 
 	res, err := domAggregateMonitor.GetAccuracy(s.domMonitorAccuracySvc, reqDomAccuracySvc)
@@ -794,8 +795,8 @@ func (s *MonitorService) GetFeatureDriftGraph(req *appDTO.DriftGraphGetRequestDT
 	reqDomDriftGraphSvc := domSvcMonitorSvcGraphDTO.DriftGraphGetRequest{
 		InferenceName:       req.DeploymentID,
 		ModelHistoryID:      req.ModelHistoryID,
-		StartTime:           req.StartTime,
-		EndTime:             req.EndTime,
+		StartTime:           convertTimestamp(req.StartTime),
+		EndTime:             convertTimestamp(req.EndTime),
 		DriftThreshold:      domAggregateMonitor.DriftThreshold,
 		ImportanceThreshold: domAggregateMonitor.ImportanceThreshold,
 	}
@@ -824,8 +825,8 @@ func (s *MonitorService) GetFeatureDetailGraph(req *appDTO.DetailGraphGetRequest
 	reqDomDetailGraphSvc := domSvcMonitorSvcGraphDTO.DetailGraphGetRequest{
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
-		StartTime:      req.StartTime,
-		EndTime:        req.EndTime,
+		StartTime:      convertTimestamp(req.StartTime),
+		EndTime:        convertTimestamp(req.EndTime),
 	}
 	res, err := domAggregateMonitor.GetDetailGraph(s.domMonitorGraphSvc, reqDomDetailGraphSvc)
 	if err != nil {
@@ -836,4 +837,12 @@ func (s *MonitorService) GetFeatureDetailGraph(req *appDTO.DetailGraphGetRequest
 	resDTO := new(appDTO.DetailGraphGetResponseDTO)
 	resDTO.Script = res.Script
 	return resDTO, nil
+}
+
+func convertTimestamp(timeString string) string {
+	t, _ := time.Parse("2006-01-02:15", timeString)
+
+	t2 := t.UTC().Format("2006-01-02T15:04:05.00000000Z")
+
+	return t2
 }

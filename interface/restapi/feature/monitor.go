@@ -126,8 +126,8 @@ func (f *FMonitor) PatchAccuracySetting(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
-// @Param startTime query string true "example=2022-05-04T05:23:43.44980458Z"
-// @Param endTime query string true "example=2022-07-04T05:23:43.44980458Z"
+// @Param startTime query string true "example=2022-05-05:01"
+// @Param endTime query string true "example=2022-05-05:01"
 // @Success 200 {object} appMonitorDTO.FeatureDriftGetResponseDTO
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /deployments/{deploymentID}/monitor/detail [get]
@@ -158,8 +158,8 @@ func (f *FMonitor) GetDetail(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
-// @Param startTime query string true "example=2022-05-04T05:23:43.44980458Z"
-// @Param endTime query string true "example=2022-07-04T05:23:43.44980458Z"
+// @Param startTime query string true "example=2022-05-05:01"
+// @Param endTime query string true "example=2022-08-01:01"
 // @Success 200 {object} appMonitorDTO.FeatureDriftGetResponseDTO
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /deployments/{deploymentID}/monitor/drift [get]
@@ -191,8 +191,8 @@ func (f *FMonitor) GetDrift(c echo.Context) error {
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
 // @Param type query string true "timeline or aggregation"
-// @Param startTime query string true "example=2022-05-04T05:23:43.44980458Z"
-// @Param endTime query string true "example=2022-07-04T05:23:43.44980458Z"
+// @Param startTime query string true "example=2022-05-05:01"
+// @Param endTime query string true "example=2022-08-01:01"
 // @Success 200 {object} appMonitorDTO.AccuracyGetResponseDTO
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /deployments/{deploymentID}/monitor/accuracy [get]
@@ -311,8 +311,8 @@ func (f *FMonitor) UploadActual(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
-// @Param startTime query string true "example=2022-05-04T05:23:43.44980458Z"
-// @Param endTime query string true "example=2022-07-04T05:23:43.44980458Z"
+// @Param startTime query string true "example=2022-05-05:01"
+// @Param endTime query string true "example=2022-08-01:01"
 // @Success 200 {object} appMonitorDTO.DetailGraphGetResponseDTO
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /deployments/{deploymentID}/monitor/detail/graph [get]
@@ -343,8 +343,8 @@ func (f *FMonitor) GetFeatureDetailGraph(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
-// @Param startTime query string true "example=2022-05-04T05:23:43.44980458Z"
-// @Param endTime query string true "example=2022-07-04T05:23:43.44980458Z"
+// @Param startTime query string true "example=2022-05-05:01"
+// @Param endTime query string true "example=2022-08-01:01"
 // @Success 200 {object} appMonitorDTO.FeatureDriftGetResponseDTO
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
 // @Router       /deployments/{deploymentID}/monitor/drift/graph [get]
