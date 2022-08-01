@@ -122,53 +122,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "patch": {
-                "description": "모니터링 설정 변경",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Patch Monitor Setting",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Patch Monitor",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.MonitorPatchRequestDTO"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "default": "bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.MonitorPatchResponseDTO"
-                        }
-                    }
-                }
             }
         },
         "/deployments/{deploymentID}/monitor/accuracy": {
@@ -234,6 +187,53 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dto.AccuracyGetResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "정확도 모니터링 설정 변경",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Patch Accuracy Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch Accuracy Monitor",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorAccuracyPatchRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorAccuracyPatchResponseDTO"
                         }
                     }
                 }
@@ -474,6 +474,53 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "드리프트 모니터링 설정 변경",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Patch Drift Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch Drift Setting",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorDriftPatchRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorDriftPatchResponseDTO"
+                        }
+                    }
+                }
             }
         },
         "/deployments/{deploymentID}/monitor/drift/graph": {
@@ -531,7 +578,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.DriftGraphGetResponseDTO"
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
                         }
                     }
                 }
@@ -1664,6 +1711,21 @@ const docTemplate = `{
                 "metricType": {
                     "description": "Accuracy 측정 메트릭 종류",
                     "type": "string",
+                    "enum": [
+                        "rmse",
+                        " rmsle",
+                        " mae",
+                        " mad",
+                        " mape",
+                        " mean_tweedie_deviance",
+                        " gamma_deviance",
+                        " tpr",
+                        " accuracy",
+                        " f1",
+                        " ppv",
+                        " fnr",
+                        " fpr"
+                    ],
                     "x-order": "0",
                     "example": "rmse"
                 },
@@ -1769,17 +1831,17 @@ const docTemplate = `{
                     "x-order": "8",
                     "example": "True"
                 },
-                "accuracyAnalyze": {
-                    "description": "정확도 측정 설정",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "True"
-                },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
                     "type": "string",
                     "x-order": "9",
                     "example": "Index"
+                },
+                "accuracyAnalyze": {
+                    "description": "정확도 측정 설정",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "True"
                 }
             }
         },
@@ -1965,15 +2027,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.DriftGraphGetResponseDTO": {
-            "type": "object",
-            "properties": {
-                "script": {
-                    "description": "graph JS script",
-                    "type": "string"
-                }
-            }
-        },
         "dto.FeatureDriftGetResponseDTO": {
             "type": "object",
             "properties": {
@@ -2034,17 +2087,17 @@ const docTemplate = `{
                     "x-order": "8",
                     "example": "True"
                 },
-                "accuracyAnalyze": {
-                    "description": "정확도 측정 설정",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "True"
-                },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
                     "type": "string",
                     "x-order": "9",
                     "example": "Index"
+                },
+                "accuracyAnalyze": {
+                    "description": "정확도 측정 설정",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "True"
                 },
                 "accuracyStatus": {
                     "type": "string"
@@ -2230,6 +2283,44 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.MonitorAccuracyPatchRequestDTO": {
+            "type": "object",
+            "properties": {
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.PatchAccuracySetting"
+                }
+            }
+        },
+        "dto.MonitorAccuracyPatchResponseDTO": {
+            "type": "object",
+            "properties": {
+                "deploymentID": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.MonitorDriftPatchRequestDTO": {
+            "type": "object",
+            "properties": {
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.PatchDataDriftSetting"
+                }
+            }
+        },
+        "dto.MonitorDriftPatchResponseDTO": {
+            "type": "object",
+            "properties": {
+                "deploymentID": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.MonitorGetSettingResponseDTO": {
             "type": "object",
             "properties": {
@@ -2241,22 +2332,104 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.MonitorPatchRequestDTO": {
+        "dto.PatchAccuracySetting": {
             "type": "object",
             "properties": {
-                "accuracySetting": {
-                    "$ref": "#/definitions/dto.AccuracySetting"
+                "metricType": {
+                    "description": "Accuracy 측정 메트릭 종류",
+                    "type": "string",
+                    "enum": [
+                        "rmse",
+                        " rmsle",
+                        " mae",
+                        " mad",
+                        " mape",
+                        " mean_tweedie_deviance",
+                        " gamma_deviance",
+                        " tpr",
+                        " accuracy",
+                        " f1",
+                        " ppv",
+                        " fnr",
+                        " fpr"
+                    ],
+                    "x-order": "0",
+                    "example": "rmse"
                 },
-                "dataDriftSetting": {
-                    "$ref": "#/definitions/dto.DataDriftSetting"
+                "measurement": {
+                    "description": "메트릭 Value 타입",
+                    "type": "string",
+                    "enum": [
+                        "percent",
+                        " value"
+                    ],
+                    "x-order": "1",
+                    "example": "percent"
+                },
+                "atRiskValue": {
+                    "description": "메트릭의 AtRisk Value",
+                    "type": "number",
+                    "x-order": "2",
+                    "example": 5
+                },
+                "failingValue": {
+                    "description": "메트릭의 Failing Value",
+                    "type": "number",
+                    "x-order": "3",
+                    "example": 10
                 }
             }
         },
-        "dto.MonitorPatchResponseDTO": {
+        "dto.PatchDataDriftSetting": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
+                "monitorRange": {
+                    "description": "Monitoring 할 범위",
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "7d"
+                },
+                "driftMetricType": {
+                    "description": "DataDrift 측정 Metric",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "PSI"
+                },
+                "driftThreshold": {
+                    "description": "Drift 값 임계치",
+                    "type": "number",
+                    "x-order": "2",
+                    "example": 0.15
+                },
+                "importanceThreshold": {
+                    "description": "Importance 값 임계치",
+                    "type": "number",
+                    "x-order": "3",
+                    "example": 0.5
+                },
+                "lowImportanceAtRiskCount": {
+                    "description": "낮은 importance feature 수의 drift at risk 임계치",
+                    "type": "integer",
+                    "x-order": "4",
+                    "example": 1
+                },
+                "lowImportanceFailingCount": {
+                    "description": "낮은 importance feature 수의 drift failing 임계치",
+                    "type": "integer",
+                    "x-order": "5",
+                    "example": 0
+                },
+                "highImportanceAtRiskCount": {
+                    "description": "높은 importance feature 수의 drift at risk 임계치",
+                    "type": "integer",
+                    "x-order": "6",
+                    "example": 0
+                },
+                "highImportanceFailingCount": {
+                    "description": "높은 importance feature 수의 drift failing 임계치",
+                    "type": "integer",
+                    "x-order": "7",
+                    "example": 1
                 }
             }
         },

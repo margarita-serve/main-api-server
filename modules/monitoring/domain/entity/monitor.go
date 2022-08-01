@@ -90,6 +90,24 @@ func (m *Monitor) SetDataDriftSetting(monitorRange string, driftMetricType strin
 	} else {
 		m.HighImportanceFailingCount = highImportanceFailingCount
 	}
+}
+
+func (m *Monitor) UpdateDriftSetting(monitorRange string, driftMetricType string, driftThreshold float32, importanceThreshold float32, lowImportanceAtRiskCount int, lowImportanceFailingCount int, highImportanceAtRiskCount int, highImportanceFailingCount int) {
+	m.MonitorRange = monitorRange
+
+	m.DriftMetricType = driftMetricType
+
+	m.DriftThreshold = driftThreshold
+
+	m.ImportanceThreshold = importanceThreshold
+
+	m.LowImportanceAtRiskCount = lowImportanceAtRiskCount
+
+	m.LowImportanceFailingCount = lowImportanceFailingCount
+
+	m.HighImportanceAtRiskCount = highImportanceAtRiskCount
+
+	m.HighImportanceFailingCount = highImportanceFailingCount
 
 }
 
@@ -119,6 +137,16 @@ func (m *Monitor) SetAccuracySetting(metricType string, measurement string, atRi
 		m.FailingValue = failingValue
 	}
 
+}
+
+func (m *Monitor) UpdateAccuracySetting(metricType string, measurement string, atRiskValue float32, failingValue float32) {
+	m.MetricType = metricType
+
+	m.Measurement = measurement
+
+	m.AtRiskValue = atRiskValue
+
+	m.FailingValue = failingValue
 }
 
 func (m *Monitor) SetServiceHealthSetting() {
@@ -179,7 +207,7 @@ func (m *Monitor) PatchDataDriftSetting(domSvc domSvcMonitor.IExternalDriftMonit
 	//if m.FeatureDriftTracking == false {
 	//	return fmt.Errorf("drift tracking is not ready")
 	//}
-	m.SetDataDriftSetting(
+	m.UpdateDriftSetting(
 		reqDom.MonitorRange,
 		"PSI",
 		reqDom.DriftThreshold,
@@ -195,7 +223,7 @@ func (m *Monitor) PatchDataDriftSetting(domSvc domSvcMonitor.IExternalDriftMonit
 		if err != nil {
 			return fmt.Errorf("drift setting change failed")
 		}
-		m.DriftStatus = "unknown"
+
 		return err
 	}
 
@@ -291,12 +319,11 @@ func (m *Monitor) PatchAccuracySetting(domSvc domSvcMonitor.IExternalAccuracyMon
 	//if m.AccuracyMonitoring == false {
 	//	return fmt.Errorf("accuracy monitoring is not ready")
 	//}
-	m.SetAccuracySetting(
+	m.UpdateAccuracySetting(
 		reqDom.DriftMetrics,
 		reqDom.DriftMeasurement,
 		reqDom.AtriskValue,
 		reqDom.FailingValue,
-		reqDom.ModelType,
 	)
 	if m.AccuracyCreated == true {
 		res, err := domSvc.MonitorPatch(&reqDom)

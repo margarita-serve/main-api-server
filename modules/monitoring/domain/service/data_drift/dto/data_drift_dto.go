@@ -48,9 +48,9 @@ type DataDriftGetResponse struct {
 
 type DataDriftPatchRequest struct {
 	InferenceName              string
+	MonitorRange               string
 	DriftThreshold             float32
 	ImportanceThreshold        float32
-	MonitorRange               string
 	LowImportanceAtRiskCount   int
 	LowImportanceFailingCount  int
 	HighImportanceAtRiskCount  int

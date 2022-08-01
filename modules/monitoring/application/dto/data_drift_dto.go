@@ -11,9 +11,20 @@ type DataDriftSetting struct {
 	HighImportanceFailingCount int     `json:"highImportanceFailingCount" example:"1" extensions:"x-order=7"`                            // 높은 importance feature 수의 drift failing 임계치
 }
 
+type PatchDataDriftSetting struct {
+	MonitorRange               string   `json:"monitorRange" example:"7d" extensions:"x-order=0" enum:"2h, 1d, 7d, 30d, 90d, 180d, 365d"` // Monitoring 할 범위
+	DriftMetricType            string   `json:"driftMetricType" example:"PSI" extensions:"x-order=1" enum:"PSI"`                          // DataDrift 측정 Metric
+	DriftThreshold             *float32 `json:"driftThreshold" example:"0.15" extensions:"x-order=2"`                                     // Drift 값 임계치
+	ImportanceThreshold        *float32 `json:"importanceThreshold" example:"0.5" extensions:"x-order=3"`                                 // Importance 값 임계치
+	LowImportanceAtRiskCount   *int     `json:"lowImportanceAtRiskCount" example:"1" extensions:"x-order=4"`                              // 낮은 importance feature 수의 drift at risk 임계치
+	LowImportanceFailingCount  *int     `json:"lowImportanceFailingCount" example:"0" extensions:"x-order=5"`                             // 낮은 importance feature 수의 drift failing 임계치
+	HighImportanceAtRiskCount  *int     `json:"highImportanceAtRiskCount" example:"0" extensions:"x-order=6"`                             // 높은 importance feature 수의 drift at risk 임계치
+	HighImportanceFailingCount *int     `json:"highImportanceFailingCount" example:"1" extensions:"x-order=7"`                            // 높은 importance feature 수의 drift failing 임계치
+}
+
 type MonitorDriftPatchRequestDTO struct {
-	DeploymentID     string
-	DataDriftSetting DataDriftSetting
+	DeploymentID     string `json:"deploymentID" swaggerignore:"true"`
+	DataDriftSetting PatchDataDriftSetting
 }
 
 type MonitorDriftPatchResponseDTO struct {
@@ -22,12 +33,10 @@ type MonitorDriftPatchResponseDTO struct {
 }
 
 type FeatureDriftGetRequestDTO struct {
-	DeploymentID        string
-	ModelHistoryID      string
-	StartTime           string
-	EndTime             string
-	DriftThreshold      float32
-	ImportanceThreshold float32
+	DeploymentID   string
+	ModelHistoryID string
+	StartTime      string
+	EndTime        string
 }
 
 type FeatureDriftGetResponseDTO struct {

@@ -108,17 +108,17 @@ dirLocations:
   modelPackageFileRootPath: "koreserve-modelpackage"
   modelPath: "/model"
   trainingDatasetPath: "/training-dataset"
-  holdoutDatasetPath: "/holdout-dataset" 
+  holdoutDatasetPath: "/holdout-dataset"
   monitoringFileRootPath: "koreserve-monitoring"
   actualDataPath: "/actual-data"
 
 connectors:
   storages:
-      minio:
-        endpoint: "192.168.88.154:9000"
-        accessKeyID: "minioadmin"
-        secretAccessKey: "minioadmin"
-        useSSL: false
+    minio:
+      endpoint: "192.168.88.154:9000"
+      accessKeyID: "minioadmin"
+      secretAccessKey: "minioadmin"
+      useSSL: false
   driftServer:
     endpoint: "http://192.168.88.151:30071"
   accuracyServer:
@@ -134,7 +134,7 @@ connectors:
     groupID: "monitor-group"
     autoOffsetReset: "latest"
 
-       
+
 
 
 # SMTP Servers

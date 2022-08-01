@@ -40,6 +40,20 @@ definitions:
         x-order: "1"
       metricType:
         description: Accuracy 측정 메트릭 종류
+        enum:
+        - rmse
+        - ' rmsle'
+        - ' mae'
+        - ' mad'
+        - ' mape'
+        - ' mean_tweedie_deviance'
+        - ' gamma_deviance'
+        - ' tpr'
+        - ' accuracy'
+        - ' f1'
+        - ' ppv'
+        - ' fnr'
+        - ' fpr'
         example: rmse
         type: string
         x-order: "0"
@@ -257,12 +271,6 @@ definitions:
         description: graph JS script
         type: string
     type: object
-  dto.DriftGraphGetResponseDTO:
-    properties:
-      script:
-        description: graph JS script
-        type: string
-    type: object
   dto.FeatureDriftGetResponseDTO:
     properties:
       data:
@@ -438,6 +446,30 @@ definitions:
       tokenType:
         type: string
     type: object
+  dto.MonitorAccuracyPatchRequestDTO:
+    properties:
+      accuracySetting:
+        $ref: '#/definitions/dto.PatchAccuracySetting'
+    type: object
+  dto.MonitorAccuracyPatchResponseDTO:
+    properties:
+      deploymentID:
+        type: string
+      message:
+        type: string
+    type: object
+  dto.MonitorDriftPatchRequestDTO:
+    properties:
+      dataDriftSetting:
+        $ref: '#/definitions/dto.PatchDataDriftSetting'
+    type: object
+  dto.MonitorDriftPatchResponseDTO:
+    properties:
+      deploymentID:
+        type: string
+      message:
+        type: string
+    type: object
   dto.MonitorGetSettingResponseDTO:
     properties:
       accuracySetting:
@@ -445,17 +477,88 @@ definitions:
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
     type: object
-  dto.MonitorPatchRequestDTO:
+  dto.PatchAccuracySetting:
     properties:
-      accuracySetting:
-        $ref: '#/definitions/dto.AccuracySetting'
-      dataDriftSetting:
-        $ref: '#/definitions/dto.DataDriftSetting'
-    type: object
-  dto.MonitorPatchResponseDTO:
-    properties:
-      message:
+      atRiskValue:
+        description: 메트릭의 AtRisk Value
+        example: 5
+        type: number
+        x-order: "2"
+      failingValue:
+        description: 메트릭의 Failing Value
+        example: 10
+        type: number
+        x-order: "3"
+      measurement:
+        description: 메트릭 Value 타입
+        enum:
+        - percent
+        - ' value'
+        example: percent
         type: string
+        x-order: "1"
+      metricType:
+        description: Accuracy 측정 메트릭 종류
+        enum:
+        - rmse
+        - ' rmsle'
+        - ' mae'
+        - ' mad'
+        - ' mape'
+        - ' mean_tweedie_deviance'
+        - ' gamma_deviance'
+        - ' tpr'
+        - ' accuracy'
+        - ' f1'
+        - ' ppv'
+        - ' fnr'
+        - ' fpr'
+        example: rmse
+        type: string
+        x-order: "0"
+    type: object
+  dto.PatchDataDriftSetting:
+    properties:
+      driftMetricType:
+        description: DataDrift 측정 Metric
+        example: PSI
+        type: string
+        x-order: "1"
+      driftThreshold:
+        description: Drift 값 임계치
+        example: 0.15
+        type: number
+        x-order: "2"
+      highImportanceAtRiskCount:
+        description: 높은 importance feature 수의 drift at risk 임계치
+        example: 0
+        type: integer
+        x-order: "6"
+      highImportanceFailingCount:
+        description: 높은 importance feature 수의 drift failing 임계치
+        example: 1
+        type: integer
+        x-order: "7"
+      importanceThreshold:
+        description: Importance 값 임계치
+        example: 0.5
+        type: number
+        x-order: "3"
+      lowImportanceAtRiskCount:
+        description: 낮은 importance feature 수의 drift at risk 임계치
+        example: 1
+        type: integer
+        x-order: "4"
+      lowImportanceFailingCount:
+        description: 낮은 importance feature 수의 drift failing 임계치
+        example: 0
+        type: integer
+        x-order: "5"
+      monitorRange:
+        description: Monitoring 할 범위
+        example: 7d
+        type: string
+        x-order: "0"
     type: object
   dto.RegisterReqDTO:
     properties:
@@ -707,38 +810,6 @@ paths:
       summary: Get Monitor Setting
       tags:
       - Monitor
-    patch:
-      consumes:
-      - application/json
-      description: 모니터링 설정 변경
-      parameters:
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Patch Monitor
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.MonitorPatchResponseDTO'
-      summary: Patch Monitor Setting
-      tags:
-      - Monitor
   /deployments/{deploymentID}/monitor/accuracy:
     get:
       consumes:
@@ -784,6 +855,38 @@ paths:
           schema:
             $ref: '#/definitions/dto.AccuracyGetResponseDTO'
       summary: Get Accuracy
+      tags:
+      - Monitor
+    patch:
+      consumes:
+      - application/json
+      description: 정확도 모니터링 설정 변경
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch Accuracy Monitor
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorAccuracyPatchRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorAccuracyPatchResponseDTO'
+      summary: Patch Accuracy Monitor Setting
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/actual:
@@ -949,6 +1052,38 @@ paths:
       summary: Get Data Drift
       tags:
       - Monitor
+    patch:
+      consumes:
+      - application/json
+      description: 드리프트 모니터링 설정 변경
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch Drift Setting
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorDriftPatchRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MonitorDriftPatchResponseDTO'
+      summary: Patch Drift Monitor Setting
+      tags:
+      - Monitor
   /deployments/{deploymentID}/monitor/drift/graph:
     get:
       consumes:
@@ -987,7 +1122,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.DriftGraphGetResponseDTO'
+            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
       summary: Get Drift Graph
       tags:
       - Monitor

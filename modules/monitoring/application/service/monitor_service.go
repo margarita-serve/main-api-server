@@ -102,6 +102,7 @@ func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService)
 
 func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.MonitorCreateResponseDTO, error) {
 
+	// drift accuracy monitor 생성 request channel 로 변경하여 비동기 처리로 수정해야함함
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -297,22 +298,26 @@ func (s *MonitorService) Delete(req *appDTO.MonitorDeleteRequestDTO) (*appDTO.Mo
 		return nil, err
 	}
 
-	// Drift OFF
-	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
-		InferenceName: req.DeploymentID,
-	}
-	err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvc)
-	if err != nil {
-		return nil, err
+	if domAggregateMonitor.DriftCreated == true {
+		// Drift OFF
+		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
+			InferenceName: req.DeploymentID,
+		}
+		err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// Accuracy OFF
-	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
-		InferenceName: req.DeploymentID,
-	}
-	err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvc)
-	if err != nil {
-		return nil, err
+	if domAggregateMonitor.AccuracyMonitoring == true {
+		// Accuracy OFF
+		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
+			InferenceName: req.DeploymentID,
+		}
+		err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = s.repo.Delete(domAggregateMonitor.ID)
@@ -337,19 +342,57 @@ func (s *MonitorService) PatchDriftMonitorSetting(req *appDTO.MonitorDriftPatchR
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-
-	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftPatchRequest{
-		InferenceName:              req.DeploymentID,
-		DriftThreshold:             req.DataDriftSetting.DriftThreshold,
-		ImportanceThreshold:        req.DataDriftSetting.ImportanceThreshold,
-		MonitorRange:               req.DataDriftSetting.MonitorRange,
-		LowImportanceAtRiskCount:   req.DataDriftSetting.LowImportanceAtRiskCount,
-		LowImportanceFailingCount:  req.DataDriftSetting.LowImportanceFailingCount,
-		HighImportanceAtRiskCount:  req.DataDriftSetting.HighImportanceAtRiskCount,
-		HighImportanceFailingCount: req.DataDriftSetting.HighImportanceFailingCount,
+	if err = req.DataDriftSetting.Validate(); err != nil {
+		return nil, err
 	}
 
-	err = domAggregateMonitor.PatchDataDriftSetting(s.domMonitorDriftSvc, reqDomDriftSvc)
+	reqDomDriftSvc := new(domSvcMonitorSvcDriftDTO.DataDriftPatchRequest)
+
+	reqDomDriftSvc.InferenceName = req.DeploymentID
+
+	if req.DataDriftSetting.MonitorRange != "" {
+		reqDomDriftSvc.MonitorRange = req.DataDriftSetting.MonitorRange
+	} else {
+		reqDomDriftSvc.MonitorRange = domAggregateMonitor.MonitorRange
+	}
+
+	if req.DataDriftSetting.DriftThreshold != nil {
+		reqDomDriftSvc.DriftThreshold = *req.DataDriftSetting.DriftThreshold
+	} else {
+		reqDomDriftSvc.DriftThreshold = domAggregateMonitor.DriftThreshold
+	}
+
+	if req.DataDriftSetting.ImportanceThreshold != nil {
+		reqDomDriftSvc.ImportanceThreshold = *req.DataDriftSetting.ImportanceThreshold
+	} else {
+		reqDomDriftSvc.ImportanceThreshold = domAggregateMonitor.ImportanceThreshold
+	}
+
+	if req.DataDriftSetting.LowImportanceAtRiskCount != nil {
+		reqDomDriftSvc.LowImportanceAtRiskCount = *req.DataDriftSetting.LowImportanceAtRiskCount
+	} else {
+		reqDomDriftSvc.LowImportanceAtRiskCount = domAggregateMonitor.LowImportanceAtRiskCount
+	}
+
+	if req.DataDriftSetting.LowImportanceFailingCount != nil {
+		reqDomDriftSvc.LowImportanceFailingCount = *req.DataDriftSetting.LowImportanceFailingCount
+	} else {
+		reqDomDriftSvc.LowImportanceFailingCount = domAggregateMonitor.LowImportanceFailingCount
+	}
+
+	if req.DataDriftSetting.HighImportanceAtRiskCount != nil {
+		reqDomDriftSvc.HighImportanceAtRiskCount = *req.DataDriftSetting.HighImportanceAtRiskCount
+	} else {
+		reqDomDriftSvc.HighImportanceAtRiskCount = domAggregateMonitor.HighImportanceAtRiskCount
+	}
+
+	if req.DataDriftSetting.HighImportanceFailingCount != nil {
+		reqDomDriftSvc.HighImportanceFailingCount = *req.DataDriftSetting.HighImportanceFailingCount
+	} else {
+		reqDomDriftSvc.HighImportanceFailingCount = domAggregateMonitor.HighImportanceFailingCount
+	}
+
+	err = domAggregateMonitor.PatchDataDriftSetting(s.domMonitorDriftSvc, *reqDomDriftSvc)
 	if err != nil {
 		return nil, err
 	}
@@ -500,19 +543,39 @@ func (s *MonitorService) PatchAccuracyMonitorSetting(req *appDTO.MonitorAccuracy
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-
-	resModelPackage, err := s.getModelPackageByID(req.DeploymentID)
-
-	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyPatchRequest{
-		InferenceName:    req.DeploymentID,
-		DriftMetrics:     req.AccuracySetting.MetricType,
-		DriftMeasurement: req.AccuracySetting.Measurement,
-		ModelType:        resModelPackage.TargetType,
-		AtriskValue:      req.AccuracySetting.AtRiskValue,
-		FailingValue:     req.AccuracySetting.FailingValue,
+	if err = req.AccuracySetting.Validate(); err != nil {
+		return nil, err
 	}
 
-	err = domAggregateMonitor.PatchAccuracySetting(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+	reqDomAccuracySvc := new(domSvcMonitorSvcAccuracyDTO.AccuracyPatchRequest)
+
+	reqDomAccuracySvc.InferenceName = req.DeploymentID
+
+	if req.AccuracySetting.MetricType != "" {
+		reqDomAccuracySvc.DriftMetrics = req.AccuracySetting.MetricType
+	} else {
+		reqDomAccuracySvc.DriftMetrics = domAggregateMonitor.MetricType
+	}
+
+	if req.AccuracySetting.Measurement != "" {
+		reqDomAccuracySvc.DriftMeasurement = req.AccuracySetting.Measurement
+	} else {
+		reqDomAccuracySvc.DriftMeasurement = domAggregateMonitor.Measurement
+	}
+
+	if req.AccuracySetting.AtRiskValue != nil {
+		reqDomAccuracySvc.AtriskValue = *req.AccuracySetting.AtRiskValue
+	} else {
+		reqDomAccuracySvc.AtriskValue = domAggregateMonitor.AtRiskValue
+	}
+
+	if req.AccuracySetting.FailingValue != nil {
+		reqDomAccuracySvc.FailingValue = *req.AccuracySetting.FailingValue
+	} else {
+		reqDomAccuracySvc.FailingValue = domAggregateMonitor.FailingValue
+	}
+
+	err = domAggregateMonitor.PatchAccuracySetting(s.domMonitorAccuracySvc, *reqDomAccuracySvc)
 	if err != nil {
 		return nil, err
 	}

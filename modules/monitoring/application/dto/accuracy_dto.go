@@ -7,9 +7,16 @@ type AccuracySetting struct {
 	FailingValue float32 `json:"failingValue" example:"10" extensions:"x-order=3"`                                                                                                              // 메트릭의 Failing Value
 }
 
+type PatchAccuracySetting struct {
+	MetricType   string   `json:"metricType" example:"rmse" extensions:"x-order=0" enums:"rmse, rmsle, mae, mad, mape, mean_tweedie_deviance, gamma_deviance, tpr, accuracy, f1, ppv, fnr, fpr"` // Accuracy 측정 메트릭 종류
+	Measurement  string   `json:"measurement" example:"percent" extensions:"x-order=1" enums:"percent, value"`                                                                                   // 메트릭 Value 타입
+	AtRiskValue  *float32 `json:"atRiskValue" example:"5" extensions:"x-order=2"`                                                                                                                // 메트릭의 AtRisk Value
+	FailingValue *float32 `json:"failingValue" example:"10" extensions:"x-order=3"`                                                                                                              // 메트릭의 Failing Value
+}
+
 type MonitorAccuracyPatchRequestDTO struct {
-	DeploymentID    string
-	AccuracySetting AccuracySetting
+	DeploymentID    string `json:"deploymentID" swaggerignore:"true"`
+	AccuracySetting PatchAccuracySetting
 }
 
 type MonitorAccuracyPatchResponseDTO struct {

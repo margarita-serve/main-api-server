@@ -41,12 +41,6 @@ type MonitorGetByIDResponseDTO struct {
 	Monitor *domEntity.Monitor
 }
 
-type MonitorPatchRequestDTO struct {
-	DeploymentID     string `json:"deploymentID" swaggerignore:"true"`
-	DataDriftSetting DataDriftSetting
-	AccuracySetting  AccuracySetting
-}
-
 type MonitorGetSettingRequestDTO struct {
 	DeploymentID string `json:"deploymentID"`
 }
@@ -76,8 +70,4 @@ type MonitorReplaceModelRequestDTO struct {
 
 type MonitorReplaceModelResponseDTO struct {
 	DeploymentID string
-}
-
-type MonitorPatchResponseDTO struct {
-	Message string
 }
