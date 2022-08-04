@@ -80,3 +80,13 @@ type AccuracyEnableResponse struct {
 	Message       string
 	InferenceName string
 }
+
+type AccuracyUpdateAssociationIDRequest struct {
+	InferenceName string
+	AssociationID string
+}
+
+type AccuracyUpdateAssociationIDResponse struct {
+	Message       string
+	InferenceName string
+}

@@ -148,3 +148,23 @@ func (a *AccuracyAdapter) MonitorEnable(req *domSchema.AccuracyEnableRequest) (*
 
 	return resp, nil
 }
+
+func (a *AccuracyAdapter) MonitorAssociationIDPatch(req *domSchema.AccuracyUpdateAssociationIDRequest) (*domSchema.AccuracyUpdateAssociationIDResponse, error) {
+	resp := new(domSchema.AccuracyUpdateAssociationIDResponse)
+	connReq, err := MapUpdateReq(req)
+	if err != nil {
+		return nil, err
+	}
+
+	connResp, err := a.connector.UpdateAssociationID(connReq)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err = MapUpdateRes(connResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}

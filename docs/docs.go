@@ -161,14 +161,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-05-04T05:23:43.44980458Z",
+                        "description": "example=2022-05-05:01",
                         "name": "startTime",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-07-04T05:23:43.44980458Z",
+                        "description": "example=2022-08-01:01",
                         "name": "endTime",
                         "in": "query",
                         "required": true
@@ -293,6 +293,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/deployments/{deploymentID}/monitor/association-id": {
+            "patch": {
+                "description": "AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용 삭제예정.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Patch AssociationID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch AssociationID",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAssociationIDRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAssociationIDResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/deployments/{deploymentID}/monitor/detail": {
             "get": {
                 "description": "피쳐 드리프트 디테일",
@@ -323,14 +372,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-05-04T05:23:43.44980458Z",
+                        "description": "example=2022-05-05:01",
                         "name": "startTime",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-07-04T05:23:43.44980458Z",
+                        "description": "example=2022-05-05:01",
                         "name": "endTime",
                         "in": "query",
                         "required": true
@@ -384,14 +433,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-05-04T05:23:43.44980458Z",
+                        "description": "example=2022-05-05:01",
                         "name": "startTime",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-07-04T05:23:43.44980458Z",
+                        "description": "example=2022-08-01:01",
                         "name": "endTime",
                         "in": "query",
                         "required": true
@@ -445,14 +494,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-05-04T05:23:43.44980458Z",
+                        "description": "example=2022-05-05:01",
                         "name": "startTime",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-07-04T05:23:43.44980458Z",
+                        "description": "example=2022-08-01:01",
                         "name": "endTime",
                         "in": "query",
                         "required": true
@@ -553,14 +602,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-05-04T05:23:43.44980458Z",
+                        "description": "example=2022-05-05:01",
                         "name": "startTime",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "example=2022-07-04T05:23:43.44980458Z",
+                        "description": "example=2022-08-01:01",
                         "name": "endTime",
                         "in": "query",
                         "required": true
@@ -1831,17 +1880,17 @@ const docTemplate = `{
                     "x-order": "8",
                     "example": "True"
                 },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
-                },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
                     "type": "string",
                     "x-order": "9",
                     "example": "True"
+                },
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "Index"
                 }
             }
         },
@@ -2497,6 +2546,27 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateAssociationIDRequestDTO": {
+            "type": "object",
+            "properties": {
+                "associationID": {
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "index"
+                }
+            }
+        },
+        "dto.UpdateAssociationIDResponseDTO": {
+            "type": "object",
+            "properties": {
+                "deploymentID": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateDeploymentRequestDTO": {
             "type": "object",
             "properties": {
@@ -2530,17 +2600,17 @@ const docTemplate = `{
                     "x-order": "8",
                     "example": "True"
                 },
-                "accuracyAnalyze": {
-                    "description": "정확도 측정 설정",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "True"
-                },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
                     "type": "string",
                     "x-order": "9",
                     "example": "Index"
+                },
+                "accuracyAnalyze": {
+                    "description": "정확도 측정 설정",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "True"
                 },
                 "description": {
                     "description": "베포 설명",

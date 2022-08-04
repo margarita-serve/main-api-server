@@ -121,3 +121,19 @@ func MapEnableRes(res *conMonitor.EnableMonitorResponse) (*domSchema.AccuracyEna
 
 	return resDom, nil
 }
+
+func MapUpdateReq(req *domSchema.AccuracyUpdateAssociationIDRequest) (*conMonitor.UpdateAssociationIDRequest, error) {
+	reqCon := new(conMonitor.UpdateAssociationIDRequest)
+	reqCon.InferenceName = req.InferenceName
+	reqCon.AssociationID = req.AssociationID
+
+	return reqCon, nil
+}
+
+func MapUpdateRes(res *conMonitor.UpdateAssociationIDResponse) (*domSchema.AccuracyUpdateAssociationIDResponse, error) {
+	resDom := new(domSchema.AccuracyUpdateAssociationIDResponse)
+	resDom.Message = res.Message
+	resDom.InferenceName = res.InferenceName
+
+	return resDom, nil
+}

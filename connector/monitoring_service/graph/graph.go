@@ -41,7 +41,11 @@ func (c *GraphMonitor) doRequest(req *http.Request) ([]byte, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode > 201 {
-		return nil, fmt.Errorf("ERROR:[%v] %s; URL: %s", res.StatusCode, res.Status, req.URL)
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+		return body, fmt.Errorf("ERROR:[%v] %s; URL: %s; Body: %s", res.StatusCode, res.Status, req.URL, body)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -131,7 +135,7 @@ func (c *GraphMonitor) patchRequest(url string, body []byte) ([]byte, error) {
 }
 
 func (c *GraphMonitor) GetFeatureDetailGraph(req *monType.GetDetailGraphRequest) (*monType.GetDetailGraphResponse, error) {
-	module := fmt.Sprintf("detail/%s?start_time=%s&end_time=%s&model_history_id=%s", req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID)
+	module := fmt.Sprintf("graph-server/detail/%s?start_time=%s&end_time=%s&model_history_id=%s", req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID)
 	env := c.getGraphEnv()
 	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
 
@@ -149,7 +153,7 @@ func (c *GraphMonitor) GetFeatureDetailGraph(req *monType.GetDetailGraphRequest)
 }
 
 func (c *GraphMonitor) GetDataDriftGraph(req *monType.GetDriftGraphRequest) (*monType.GetDriftGraphResponse, error) {
-	module := fmt.Sprintf("drift/%s?start_time=%s&end_time=%s&model_history_id=%s&drift_threshold=%f&importance_threshold=%f",
+	module := fmt.Sprintf("graph-server/drift/%s?start_time=%s&end_time=%s&model_history_id=%s&drift_threshold=%f&importance_threshold=%f",
 		req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID, req.DriftThreshold, req.ImportanceThreshold)
 	env := c.getGraphEnv()
 	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)

@@ -45,7 +45,7 @@ type CreateDeploymentRequestDTO struct {
 	RequestMEM           float32 `json:"requestMEM" example:"2" extensions:"x-order=7"`                                                                //요청 MEM
 	FeatureDriftTracking string  `json:"featureDriftTracking" example:"True" extensions:"x-order=8"`                                                   //데이터 드리프트 설정
 	AccuracyAnalyze      string  `json:"accuracyAnalyze" example:"True" extensions:"x-order=9"`                                                        // 정확도 측정 설정
-	AssociationID        string  `json:"associationID" example:"Index" extensions:"x-order=9"`                                                         // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
+	AssociationID        *string `json:"associationID" example:"Index" extensions:"x-order=9"`                                                         // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
 }
 
 type CreateDeploymentResponseDTO struct {
@@ -74,7 +74,7 @@ type UpdateDeploymentRequestDTO struct {
 	RequestMEM           float32 `json:"requestMEM" example:"2" extensions:"x-order=7"`                                         // 요청 MEM
 	FeatureDriftTracking string  `json:"featureDriftTracking" example:"True" extensions:"x-order=8"`                            // 데이터 드리프트 설정
 	AccuracyAnalyze      string  `json:"accuracyAnalyze" example:"True" extensions:"x-order=9"`                                 // 정확도 측정 설정
-	AssociationID        string  `json:"associationID" example:"Index" extensions:"x-order=9"`                                  // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
+	AssociationID        *string `json:"associationID" example:"Index" extensions:"x-order=9"`                                  // 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
 }
 
 type UpdateDeploymentResponseDTO struct {

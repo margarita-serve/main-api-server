@@ -42,7 +42,7 @@ type AccuracyGetResponseDTO struct {
 type MonitorAccuracyActiveRequestDTO struct {
 	DeploymentID   string
 	ModelPackageID string
-	AssociationID  string
+	AssociationID  *string
 	CurrentModelID string
 }
 
@@ -64,4 +64,14 @@ type MonitorAccuracyGetSettingRequestDTO struct {
 
 type MonitorAccuracyGetSettingResponseDTO struct {
 	AccuracySetting AccuracySetting
+}
+
+type UpdateAssociationIDRequestDTO struct {
+	DeploymentID  string  `json:"deploymentID" swaggerignore:"true"`
+	AssociationID *string `json:"associationID" example:"index" extensions:"x-order=0"`
+}
+
+type UpdateAssociationIDResponseDTO struct {
+	DeploymentID string
+	Message      string
 }

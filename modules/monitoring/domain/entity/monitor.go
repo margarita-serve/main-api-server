@@ -266,10 +266,6 @@ func (m *Monitor) GetDriftGraph(domSvc domSvcMonitor.IExternalGraphMonitorAdapte
 
 func (m *Monitor) SetAccuracyMonitoringOn(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyCreateRequest) error {
 
-	if m.AssociationID != "None" {
-		reqDom.AssociationID = m.AssociationID
-	}
-
 	if m.AccuracyCreated == true {
 		// 만들어져 있을경우엔 단순 on
 		reqEnable := new(domAccuracySvcMonitorDTO.AccuracyEnableRequest)
@@ -292,7 +288,7 @@ func (m *Monitor) SetAccuracyMonitoringOn(domSvc domSvcMonitor.IExternalAccuracy
 		if err != nil {
 			return err
 		}
-
+		m.AssociationID = reqDom.AssociationID
 		m.AccuracyCreated = true
 		m.AccuracyMonitoring = true
 		m.AccuracyStatus = "unknown"
@@ -338,6 +334,20 @@ func (m *Monitor) PatchAccuracySetting(domSvc domSvcMonitor.IExternalAccuracyMon
 
 	return nil
 
+}
+
+func (m *Monitor) SetAssociationID(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyUpdateAssociationIDRequest) error {
+	m.AssociationID = reqDom.AssociationID
+
+	if m.AccuracyCreated == true {
+		res, err := domSvc.MonitorAssociationIDPatch(&reqDom)
+		fmt.Printf("res: %v\n", res)
+		if err != nil {
+			return fmt.Errorf("association ID change failed")
+		}
+		return err
+	}
+	return nil
 }
 
 func (m *Monitor) GetAccuracy(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyGetRequest) (*domAccuracySvcMonitorDTO.AccuracyGetResponse, error) {

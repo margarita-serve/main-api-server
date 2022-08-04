@@ -18,6 +18,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
@@ -113,7 +114,6 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 		req.ModelPackageID,
 	)
 	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -129,6 +129,25 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 		0,
 		1,
 	)
+
+	// accuracy 여부에 상관없이 셋팅값은 초기셋팅으로 설정 이후 패치만 받음
+	domAggregateMonitor.SetAccuracySetting(
+		"",
+		"",
+		5,
+		10,
+		resModelPackage.TargetType,
+	)
+
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	var wait sync.WaitGroup
+	wait.Add(2)
+
+	errs := make(chan error, 2)
 
 	if req.FeatureDriftTracking == true {
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
@@ -148,26 +167,18 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 			HighImportanceFailingCount: domAggregateMonitor.HighImportanceFailingCount,
 		}
 
-		err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
-		if err != nil {
-			return nil, err
-		}
-
-		domAggregateMonitor.SetDriftCreatedTrue()
-
-		err = s.repo.Save(domAggregateMonitor)
-		if err != nil {
-			return nil, err
-		}
+		go func() {
+			defer wait.Done()
+			err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
+			if err != nil {
+				errs <- err
+			} else {
+				domAggregateMonitor.SetDriftCreatedTrue()
+			}
+		}()
+	} else {
+		wait.Done()
 	}
-	// accuracy 여부에 상관없이 셋팅값은 초기셋팅으로 설정 이후 패치만 받음
-	domAggregateMonitor.SetAccuracySetting(
-		"",
-		"",
-		5,
-		10,
-		resModelPackage.TargetType,
-	)
 
 	if req.AccuracyMonitoring == true {
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
@@ -176,7 +187,6 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 			DatasetPath:      resModelPackage.HoldoutDatasetPath,
 			ModelPath:        resModelPackage.ModelFilePath,
 			TargetLabel:      resModelPackage.PredictionTargetName,
-			AssociationID:    req.AssociationID,
 			ModelType:        resModelPackage.TargetType,
 			Framework:        resModelPackage.ModelFrameWork,
 			DriftMetrics:     domAggregateMonitor.MetricType,
@@ -187,17 +197,33 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 			NegativeClass:    resModelPackage.NegativeClassLabel,
 			BinaryThreshold:  resModelPackage.PredictionThreshold,
 		}
-
-		err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
-		if err != nil {
-			return nil, err
+		if req.AssociationID != nil {
+			reqDomAccuracySvc.AssociationID = *req.AssociationID
 		}
-		domAggregateMonitor.SetAccuracyCreatedTrue()
+		go func() {
+			defer wait.Done()
+			err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+			if err != nil {
+				errs <- err
+			} else {
+				domAggregateMonitor.SetAccuracyCreatedTrue()
+			}
+		}()
+	} else {
+		wait.Done()
+	}
 
-		err = s.repo.Save(domAggregateMonitor)
-		if err != nil {
-			return nil, err
-		}
+	wait.Wait()
+	close(errs)
+
+	var checkErrMsg error = <-errs
+	if checkErrMsg != nil {
+		// 추후 에러에 따라 재시도 or 생성 불가 로직 추가 예정...    모니터가 생성실패하더라도 배포에는 문제가 없어야함. 실패시 실패 이유에 따라 재시도를 하거나 생성불가능하다는 결과를 보내줘야함
+	}
+
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
 	}
 
 	resDTO := new(appDTO.MonitorCreateResponseDTO)
@@ -310,7 +336,7 @@ func (s *MonitorService) Delete(req *appDTO.MonitorDeleteRequestDTO) (*appDTO.Mo
 		}
 	}
 
-	if domAggregateMonitor.AccuracyMonitoring == true {
+	if domAggregateMonitor.AccuracyCreated == true {
 		// Accuracy OFF
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
 			InferenceName: req.DeploymentID,
@@ -592,6 +618,35 @@ func (s *MonitorService) PatchAccuracyMonitorSetting(req *appDTO.MonitorAccuracy
 	return resDTO, nil
 }
 
+func (s *MonitorService) UpdateAssociationID(req *appDTO.UpdateAssociationIDRequestDTO) (*appDTO.UpdateAssociationIDResponseDTO, error) {
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	reqDomAccuracySvc := new(domSvcMonitorSvcAccuracyDTO.AccuracyUpdateAssociationIDRequest)
+	reqDomAccuracySvc.InferenceName = req.DeploymentID
+
+	if req.AssociationID != nil {
+		reqDomAccuracySvc.AssociationID = *req.AssociationID
+	}
+
+	err = domAggregateMonitor.SetAssociationID(s.domMonitorAccuracySvc, *reqDomAccuracySvc)
+	if err != nil {
+		return nil, err
+	}
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.UpdateAssociationIDResponseDTO)
+	resDTO.Message = "Association ID change Success"
+	resDTO.DeploymentID = domAggregateMonitor.ID
+
+	return resDTO, nil
+}
+
 func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyActiveRequestDTO) (*appDTO.MonitorAccuracyActiveResponseDTO, error) {
 	// drift와 동일하게 on 기능 + accuracy monitor가 없을 경우 생성 있을경우 on 만. accuracy monitor 생성 여부 상태 저장해야함
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
@@ -607,7 +662,6 @@ func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyAct
 		DatasetPath:      resModelPackage.HoldoutDatasetPath,
 		ModelPath:        resModelPackage.ModelFilePath,
 		TargetLabel:      resModelPackage.PredictionTargetName,
-		AssociationID:    req.AssociationID,
 		ModelType:        resModelPackage.TargetType,
 		Framework:        resModelPackage.ModelFrameWork,
 		DriftMetrics:     domAggregateMonitor.MetricType,
@@ -617,6 +671,9 @@ func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyAct
 		PositiveClass:    resModelPackage.PositiveClassLabel,
 		NegativeClass:    resModelPackage.NegativeClassLabel,
 		BinaryThreshold:  resModelPackage.PredictionThreshold,
+	}
+	if req.AssociationID != nil {
+		reqDomAccuracySvc.AssociationID = *req.AssociationID
 	}
 
 	err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)

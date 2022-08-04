@@ -249,6 +249,28 @@ func (c *AccuracyMonitor) DisableMonitor(req *monType.DisableMonitorRequest) (*m
 	return &respObj, nil
 }
 
+func (c *AccuracyMonitor) UpdateAssociationID(req *monType.UpdateAssociationIDRequest) (*monType.UpdateAssociationIDResponse, error) {
+	module := fmt.Sprintf("accuracy-monitor/%s/association-id", req.InferenceName)
+	env := c.getAccuracyEnv()
+	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
+
+	reqDto := monType.UpdateAssociationIDRequestDTO{
+		AssociationID: req.AssociationID,
+	}
+
+	resp, err := c.patchRequest(url, reqDto.ToJSON())
+	if err != nil {
+		return nil, err
+	}
+
+	respObj := monType.UpdateAssociationIDResponse{}
+	err = json.Unmarshal(resp, &respObj)
+	if err != nil {
+		return nil, err
+	}
+	return &respObj, nil
+}
+
 func (c *AccuracyMonitor) getAccuracyEnv() *monType.AccuracyServerEnv {
 	env := new(monType.AccuracyServerEnv)
 	env.ConnectionInfo = c.config.Endpoint

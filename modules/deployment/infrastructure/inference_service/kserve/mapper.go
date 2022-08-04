@@ -75,7 +75,7 @@ func MapActiveReq(req *domSvcDto.InferenceServiceActiveRequest) (*conInfSvcKserv
 	reqCon.Namespace = req.Namespace
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
-		Storageuri:     req.ModelURL,
+		Storageuri:     path.Dir(req.ModelURL),
 		RuntimeVersion: req.ModelFrameWorkVersion,
 	},
 		Logger:      "all",
@@ -112,7 +112,7 @@ func MapInActiveReq(req *domSvcDto.InferenceServiceInActiveRequest) (*conInfSvcK
 	reqCon.Namespace = req.Namespace
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
-		Storageuri:     req.ModelURL,
+		Storageuri:     path.Dir(req.ModelURL),
 		RuntimeVersion: req.ModelFrameWorkVersion,
 	},
 		Logger:      "all",
@@ -150,7 +150,7 @@ func MapReplaceModelReq(req *domSvcDto.InferenceServiceReplaceModelRequest) (*co
 	reqCon.Namespace = req.Namespace
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
-		Storageuri:     req.ModelURL,
+		Storageuri:     path.Dir(req.ModelURL),
 		RuntimeVersion: req.ModelFrameWorkVersion,
 	},
 		Logger:      "all",

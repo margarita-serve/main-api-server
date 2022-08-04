@@ -22,6 +22,7 @@ type IExternalAccuracyMonitorAdapter interface {
 	MonitorPostActual(req *domAccuracySvcDto.AccuracyPostActualRequest) (*domAccuracySvcDto.AccuracyPostActualResponse, error)
 	MonitorDisable(req *domAccuracySvcDto.AccuracyDeleteRequest) error
 	MonitorEnable(req *domAccuracySvcDto.AccuracyEnableRequest) (*domAccuracySvcDto.AccuracyEnableResponse, error)
+	MonitorAssociationIDPatch(req *domAccuracySvcDto.AccuracyUpdateAssociationIDRequest) (*domAccuracySvcDto.AccuracyUpdateAssociationIDResponse, error)
 }
 
 type IExternalGraphMonitorAdapter interface {

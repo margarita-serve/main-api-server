@@ -604,6 +604,20 @@ definitions:
       message:
         type: string
     type: object
+  dto.UpdateAssociationIDRequestDTO:
+    properties:
+      associationID:
+        example: index
+        type: string
+        x-order: "0"
+    type: object
+  dto.UpdateAssociationIDResponseDTO:
+    properties:
+      deploymentID:
+        type: string
+      message:
+        type: string
+    type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
@@ -831,12 +845,12 @@ paths:
         name: type
         required: true
         type: string
-      - description: example=2022-05-04T05:23:43.44980458Z
+      - description: example=2022-05-05:01
         in: query
         name: startTime
         required: true
         type: string
-      - description: example=2022-07-04T05:23:43.44980458Z
+      - description: example=2022-08-01:01
         in: query
         name: endTime
         required: true
@@ -926,6 +940,40 @@ paths:
       summary: Upload Actual file
       tags:
       - Monitor
+  /deployments/{deploymentID}/monitor/association-id:
+    patch:
+      consumes:
+      - application/json
+      description: AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용
+        삭제예정.
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch AssociationID
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAssociationIDRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
+      summary: Patch AssociationID
+      tags:
+      - Monitor
   /deployments/{deploymentID}/monitor/detail:
     get:
       consumes:
@@ -942,12 +990,12 @@ paths:
         name: modelHistoryID
         required: true
         type: string
-      - description: example=2022-05-04T05:23:43.44980458Z
+      - description: example=2022-05-05:01
         in: query
         name: startTime
         required: true
         type: string
-      - description: example=2022-07-04T05:23:43.44980458Z
+      - description: example=2022-05-05:01
         in: query
         name: endTime
         required: true
@@ -984,12 +1032,12 @@ paths:
         name: modelHistoryID
         required: true
         type: string
-      - description: example=2022-05-04T05:23:43.44980458Z
+      - description: example=2022-05-05:01
         in: query
         name: startTime
         required: true
         type: string
-      - description: example=2022-07-04T05:23:43.44980458Z
+      - description: example=2022-08-01:01
         in: query
         name: endTime
         required: true
@@ -1026,12 +1074,12 @@ paths:
         name: modelHistoryID
         required: true
         type: string
-      - description: example=2022-05-04T05:23:43.44980458Z
+      - description: example=2022-05-05:01
         in: query
         name: startTime
         required: true
         type: string
-      - description: example=2022-07-04T05:23:43.44980458Z
+      - description: example=2022-08-01:01
         in: query
         name: endTime
         required: true
@@ -1100,12 +1148,12 @@ paths:
         name: modelHistoryID
         required: true
         type: string
-      - description: example=2022-05-04T05:23:43.44980458Z
+      - description: example=2022-05-05:01
         in: query
         name: startTime
         required: true
         type: string
-      - description: example=2022-07-04T05:23:43.44980458Z
+      - description: example=2022-08-01:01
         in: query
         name: endTime
         required: true

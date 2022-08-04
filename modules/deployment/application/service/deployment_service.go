@@ -44,6 +44,7 @@ type IMonitorService interface {
 	SetDriftMonitorInActive(req *appMonitoringDTO.MonitorDriftInActiveRequestDTO) (*appMonitoringDTO.MonitorDriftInActiveResponseDTO, error)
 	SetAccuracyMonitorActive(req *appMonitoringDTO.MonitorAccuracyActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyActiveResponseDTO, error)
 	SetAccuracyMonitorInActive(req *appMonitoringDTO.MonitorAccuracyInActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyInActiveResponseDTO, error)
+	UpdateAssociationID(req *appMonitoringDTO.UpdateAssociationIDRequestDTO) (*appMonitoringDTO.UpdateAssociationIDResponseDTO, error)
 }
 
 type IModelPackageService interface {
@@ -378,9 +379,15 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	if req.Importance != "" {
 		domAggregateDeployment.UpdateDeploymentImportance(req.Importance)
 	}
-	if req.AssociationID != "" {
-		//To Be..
-		//s.monitoringSvc.UpdateAssociationID(req.DeploymentID, req.AssociationID)
+	if req.AssociationID != nil {
+		reqUpdateAssociationID := new(appMonitoringDTO.UpdateAssociationIDRequestDTO)
+		reqUpdateAssociationID.DeploymentID = req.DeploymentID
+		reqUpdateAssociationID.AssociationID = req.AssociationID
+
+		_, err = s.monitoringSvc.UpdateAssociationID(reqUpdateAssociationID)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if req.FeatureDriftTracking != "" {
 		if convStrToBoolType(req.FeatureDriftTracking) == true {
@@ -633,6 +640,10 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
 		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
+		RequestCPU:            domAggregateDeployment.RequestCPU,
+		LimitCPU:              domAggregateDeployment.LimitCPU,
+		RequestMEM:            domAggregateDeployment.RequestMEM,
+		LimitMEM:              domAggregateDeployment.LimitMEM,
 	}
 
 	err = domAggregateDeployment.AddEventHistory("Active", "Deployment is Activated", userID)
@@ -666,7 +677,7 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 		reqAccuracy := &appMonitoringDTO.MonitorAccuracyActiveRequestDTO{
 			DeploymentID:   req.DeploymentID,
 			ModelPackageID: "",
-			AssociationID:  "",
+			AssociationID:  nil,
 			CurrentModelID: "",
 		}
 		_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracy)
