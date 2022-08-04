@@ -5,8 +5,8 @@ import domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/doma
 //interface
 type IProjectRepo interface {
 	Save(req *domEntity.Project) error
-	GetByID(req string) (*domEntity.Project, error)
-	GetForUpdate(projectID string) (*domEntity.Project, error)
-	GetList(name string, pagination interface{}) ([]*domEntity.Project, interface{}, error)
+	GetByID(req string, identity interface{}) (*domEntity.Project, error)
+	GetForUpdate(projectID string, identity interface{}) (*domEntity.Project, error)
+	GetList(name string, pagination interface{}, identity interface{}) ([]*domEntity.Project, interface{}, error)
 	Delete(req string) error
 }

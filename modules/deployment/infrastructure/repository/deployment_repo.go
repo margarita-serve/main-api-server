@@ -51,7 +51,7 @@ func (r *DeploymentRepo) Save(req *domEntity.Deployment) error {
 	return nil
 }
 
-func (r *DeploymentRepo) GetByID(ID string) (*domEntity.Deployment, error) {
+func (r *DeploymentRepo) GetByID(ID string, projectIdList []string) (*domEntity.Deployment, error) {
 	// select db
 	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
 	if err != nil {
@@ -61,32 +61,7 @@ func (r *DeploymentRepo) GetByID(ID string) (*domEntity.Deployment, error) {
 	var entity = &domEntity.Deployment{}
 	var count int64
 
-	if err := dbCon.Where("id = ?", ID).Preload(clause.Associations).Find(&entity).Count(&count).Error; err != nil {
-		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
-	}
-
-	if count == 0 {
-		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid deployment id")}
-	}
-
-	// return response
-	resp := entity
-
-	return resp, nil
-
-}
-
-func (r *DeploymentRepo) GetGovernanceHistory(deploymentID string) (*domEntity.Deployment, error) {
-	// select db
-	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
-	if err != nil {
-		return nil, err
-	}
-
-	var entity = &domEntity.Deployment{}
-	var count int64
-
-	if err := dbCon.Where("id = ?", deploymentID).Preload(clause.Associations).Find(&entity).Count(&count).Error; err != nil {
+	if err := dbCon.Where("id = ? AND project_id in ?", ID, projectIdList).Preload(clause.Associations).Find(&entity).Count(&count).Error; err != nil {
 		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 
@@ -102,11 +77,11 @@ func (r *DeploymentRepo) GetGovernanceHistory(deploymentID string) (*domEntity.D
 }
 
 //Paging 및 Sorting을 위한 코드
-func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string) func(db *gorm.DB) *gorm.DB {
+func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string, projectIdList []string) func(db *gorm.DB) *gorm.DB {
 	var totalRows int64
 	var tmpLimit int
 
-	dbCon.Model(value).Where("name like ?", "%"+queryName+"%").Count(&totalRows)
+	dbCon.Model(value).Where("name like ? AND project_id in ?", "%"+queryName+"%", projectIdList).Count(&totalRows)
 	pagination.TotalRows = totalRows
 
 	if pagination.Limit <= 0 {
@@ -119,11 +94,11 @@ func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryNa
 	pagination.TotalPages = totalPages
 
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort()).Where("name like ?", "%"+queryName+"%")
+		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort()).Where("name like ? AND project_id in ?", "%"+queryName+"%", projectIdList)
 	}
 }
 
-func (r *DeploymentRepo) GetList(queryName string, pagination interface{}) ([]*domEntity.Deployment, interface{}, error) {
+func (r *DeploymentRepo) GetList(queryName string, pagination interface{}, projectIdList []string) ([]*domEntity.Deployment, interface{}, error) {
 	p := pagination.(Pagination)
 
 	var mapSort string
@@ -144,7 +119,7 @@ func (r *DeploymentRepo) GetList(queryName string, pagination interface{}) ([]*d
 
 	var entityModel []*domEntity.Deployment
 
-	if err := dbCon.Model(entityModel).Scopes(paginate(&entityModel, &p, dbCon, queryName)).Find(&entityModel).Error; err != nil {
+	if err := dbCon.Model(entityModel).Scopes(paginate(&entityModel, &p, dbCon, queryName, projectIdList)).Find(&entityModel).Error; err != nil {
 		return nil, p, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 

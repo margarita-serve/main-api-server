@@ -8,7 +8,7 @@ import (
 
 // SetDeployment Deployment Router
 func SetDeployment(eg *echo.Group, f *feature.FDeployment) {
-	gc := eg.Group("/projects/:projectID/deployments")
+	gc := eg.Group("/deployments")
 	gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
 
 	gc.POST("", f.Create)

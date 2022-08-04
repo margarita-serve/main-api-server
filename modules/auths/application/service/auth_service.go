@@ -44,12 +44,12 @@ type AuthenticationSvc struct {
 // Register user
 func (s *AuthenticationSvc) Register(req *appDTO.RegisterReqDTO, i identity.Identity) (*appDTO.RegisterResDTO, error) {
 	reqDom := domSchema.RegisterRequest{
-		Username:  req.Username,
-		Password:  req.Password,
-		Email:     req.Email,
-		NickName:  req.NickName,
-		Captcha:   req.Captcha,
-		CaptchaID: req.CaptchaID,
+		Username: req.Username,
+		Password: req.Password,
+		Email:    req.Email,
+		NickName: req.NickName,
+		// Captcha:   req.Captcha,
+		// CaptchaID: req.CaptchaID,
 	}
 
 	if err := reqDom.Validate(); err != nil {
@@ -164,10 +164,10 @@ func (s *AuthenticationSvc) _sendActivationResultEmail(reqActReg *appDTO.Activat
 // Login user
 func (s *AuthenticationSvc) Login(req *appDTO.LoginReqDTO, i identity.Identity) (*appDTO.LoginResDTO, error) {
 	reqDom := domSchema.LoginRequest{
-		Username:  req.Username,
-		Password:  req.Password,
-		Captcha:   req.Captcha,
-		CaptchaID: req.CaptchaID,
+		Username: req.Username,
+		Password: req.Password,
+		// Captcha:   req.Captcha,
+		// CaptchaID: req.CaptchaID,
 	}
 
 	if err := reqDom.Validate(); err != nil {

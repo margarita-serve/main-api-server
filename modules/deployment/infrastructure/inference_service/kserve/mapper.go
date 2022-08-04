@@ -38,7 +38,7 @@ func MapCreateReq(req *domSvcDto.InferenceServiceCreateRequest) (*conInfSvcKserv
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
 		Storageuri:     path.Dir(req.ModelURL),
-		RuntimeVersion: req.ModelFrameWorkVersion,
+		RuntimeVersion: fixRuntimeVersionForKserve(req.ModelFrameWork, req.ModelFrameWorkVersion),
 	},
 		Logger:      "all",
 		MinReplicas: 1,
@@ -76,7 +76,7 @@ func MapActiveReq(req *domSvcDto.InferenceServiceActiveRequest) (*conInfSvcKserv
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
 		Storageuri:     path.Dir(req.ModelURL),
-		RuntimeVersion: req.ModelFrameWorkVersion,
+		RuntimeVersion: fixRuntimeVersionForKserve(req.ModelFrameWork, req.ModelFrameWorkVersion),
 	},
 		Logger:      "all",
 		MinReplicas: 1,
@@ -113,7 +113,7 @@ func MapInActiveReq(req *domSvcDto.InferenceServiceInActiveRequest) (*conInfSvcK
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
 		Storageuri:     path.Dir(req.ModelURL),
-		RuntimeVersion: req.ModelFrameWorkVersion,
+		RuntimeVersion: fixRuntimeVersionForKserve(req.ModelFrameWork, req.ModelFrameWorkVersion),
 	},
 		Logger:      "all",
 		MinReplicas: 0,
@@ -151,7 +151,7 @@ func MapReplaceModelReq(req *domSvcDto.InferenceServiceReplaceModelRequest) (*co
 	reqCon.Predictor = &conInfSvcKserve.Predictor{Modelspec: &conInfSvcKserve.Modelspec{
 		Modelframwwork: strings.ToLower(req.ModelFrameWork),
 		Storageuri:     path.Dir(req.ModelURL),
-		RuntimeVersion: req.ModelFrameWorkVersion,
+		RuntimeVersion: fixRuntimeVersionForKserve(req.ModelFrameWork, req.ModelFrameWorkVersion),
 	},
 		Logger:      "all",
 		MinReplicas: 1,
@@ -196,4 +196,21 @@ func MapDeleteRes(res *conInfSvcKserve.DeleteInferenceServiceResponse) (*domSvcD
 	resDom.Message = res.Message
 
 	return resDom, nil
+}
+
+func fixRuntimeVersionForKserve(modelFrameWork string, modelFrameWorkVerion string) string {
+	switch modelFrameWork {
+	case "TensorFlow":
+		return "latest"
+	case "PyTorch":
+		return "latest"
+	case "SkLearn":
+		return "latest"
+	case "XGBoost":
+		return "latest"
+	case "LightGBM":
+		return "latest"
+	default:
+		return modelFrameWorkVerion
+	}
 }

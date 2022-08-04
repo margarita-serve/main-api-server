@@ -19,6 +19,7 @@ import (
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/repository"
 	domSchema "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/schema"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	"github.com/rs/xid"
 
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
@@ -28,8 +29,8 @@ import (
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/repository"
 	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
 	appMonitoringDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
-
-	// appPredictionEnvDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/predictionEnv/application/dto"
+	appProjectDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
+	appResourceDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/dto"
 
 	predictionSendSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/prediction_sender"
 )
@@ -51,19 +52,29 @@ type IModelPackageService interface {
 	GetByIDInternal(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
 }
 
+type IPredictionEnvService interface {
+	GetByIDInternal(req *appResourceDTO.InternalGetPredictionEnvRequestDTO, i identity.Identity) (*appResourceDTO.InternalGetPredictionEnvResponseDTO, error)
+}
+
+type IProjectService interface {
+	GetList(req *appProjectDTO.GetProjectListRequestDTO, i identity.Identity) (*appProjectDTO.GetProjectListResponseDTO, error)
+}
+
 // DeploymentService type
 type DeploymentService struct {
 	BaseService
-	domInferenceSvc domSvcInferenceSvc.IInferenceServiceAdapter
-	modelPackageSvc IModelPackageService
-	monitoringSvc   IMonitorService
-	// predictionEnvSvc   *appPredictionEnvSvc.PredictionEnvService
+	domInferenceSvc   domSvcInferenceSvc.IInferenceServiceAdapter
+	projectSvc        IProjectService
+	modelPackageSvc   IModelPackageService
+	monitoringSvc     IMonitorService
+	predictionEnvSvc  IPredictionEnvService
 	predictionSendSvc *predictionSendSvc.PredictionSender
-	repo              domRepo.IDeploymentRepo
+
+	repo domRepo.IDeploymentRepo
 }
 
 // NewDeploymentService new DeploymentService
-func NewDeploymentService(h *handler.Handler, modelPackageSvc IModelPackageService, monitorSvc IMonitorService) (*DeploymentService, error) {
+func NewDeploymentService(h *handler.Handler, predictionEnvSvc IPredictionEnvService, projectSvc IProjectService, modelPackageSvc IModelPackageService, monitorSvc IMonitorService) (*DeploymentService, error) {
 	var err error
 
 	svc := new(DeploymentService)
@@ -87,12 +98,14 @@ func NewDeploymentService(h *handler.Handler, modelPackageSvc IModelPackageServi
 
 	svc.modelPackageSvc = modelPackageSvc
 	svc.monitoringSvc = monitorSvc
+	svc.projectSvc = projectSvc
+	svc.predictionEnvSvc = predictionEnvSvc
 
 	return svc, nil
 }
 
 // Create
-func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*appDTO.CreateDeploymentResponseDTO, error) {
+func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i identity.Identity) (*appDTO.CreateDeploymentResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -109,21 +122,27 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 	//toBe...
 	userID := "testID"
 
+	//Find ModelPackage
+	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
+	if err != nil {
+		return nil, err
+	}
+
 	// New deployment domain Instance
 	domAggregateDeployment, err := domEntity.NewDeployment(
 		guid,
-		req.ProjectID,
+		resModelPackage.ProjectID,
 		req.ModelPackageID,
 		req.PredictionEnvID,
 		req.Name,
 		req.Description,
 		req.Importance,
 		"Normal",
-		req.RequestCPU,
-		req.RequestMEM,
+		*req.RequestCPU,
+		*req.RequestMEM,
 		0,
 		0,
-		userID,
+		i.Claims.Username,
 	)
 	if err != nil {
 		return nil, err
@@ -134,14 +153,8 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 		return nil, err
 	}
 
-	//Find ModelPackage
-	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
-	if err != nil {
-		return nil, err
-	}
-
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(req.PredictionEnvID)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(req.PredictionEnvID, i)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +166,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
 		ModelName:             resModelPackage.ModelName,
-		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
+		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
@@ -171,22 +184,31 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 		return nil, err
 	}
 
+	featureDriftTrackingBool := false
+	accuracyAnalyzeBool := false
+	if req.FeatureDriftTracking != nil {
+		featureDriftTrackingBool = *req.FeatureDriftTracking
+	}
+	if req.FeatureDriftTracking != nil {
+		accuracyAnalyzeBool = *req.AccuracyAnalyze
+	}
+
 	//Create Monitoring Service
 	reqMonitoring := &appMonitoringDTO.MonitorCreateRequestDTO{
 		DeploymentID:         domAggregateDeployment.ID,
 		ModelPackageID:       domAggregateDeployment.ModelPackageID,
-		FeatureDriftTracking: convStrToBoolType(req.FeatureDriftTracking),
-		AccuracyMonitoring:   convStrToBoolType(req.AccuracyAnalyze),
+		FeatureDriftTracking: featureDriftTrackingBool,
+		AccuracyMonitoring:   accuracyAnalyzeBool,
 		AssociationID:        req.AssociationID,
 		ModelHistoryID:       newModelHistoryID,
 	}
 
 	// WaitGroup 생성. 2개의 Go루틴을 기다림.
 	var wait sync.WaitGroup
+	var checkErrMsg error
 	wait.Add(2)
 
 	// ch생성
-	//var errCh chan string = make(chan string)
 	errs := make(chan error, 1)
 
 	go func() {
@@ -209,31 +231,21 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 	wait.Wait() //Go루틴 모두 끝날 때까지 대기
 	close(errs)
 
-	var checkErrMsg error = <-errs
+	checkErrMsg = <-errs
+
 	if checkErrMsg != nil {
 		reqDeleteInference := &appDTO.DeleteDeploymentRequestDTO{
-			ProjectID:    req.ProjectID,
+			//ProjectID:    req.ProjectID,
 			DeploymentID: guid,
 		}
 
-		_, err := s.Delete(reqDeleteInference)
-		if err != nil {
-			return nil, fmt.Errorf("deployment create error: %s, %s", checkErrMsg, err)
-		}
-
-		reqDeleteMonitoring := &appMonitoringDTO.MonitorDeleteRequestDTO{
-			DeploymentID: guid,
-		}
-
-		_, err = s.monitoringSvc.Delete(reqDeleteMonitoring)
+		_, err := s.Delete(reqDeleteInference, i)
 		if err != nil {
 			return nil, fmt.Errorf("deployment create error: %s, %s", checkErrMsg, err)
 		}
 
 		return nil, fmt.Errorf("deployment create error: %s", checkErrMsg)
 	}
-
-	//Go Routine run for Create Monitoring Service
 
 	err = s.repo.Save(domAggregateDeployment)
 	if err != nil {
@@ -248,7 +260,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 }
 
 // ReplaceModel
-func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*appDTO.ReplaceModelResponseDTO, error) {
+func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i identity.Identity) (*appDTO.ReplaceModelResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -256,15 +268,17 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	//toBe...
-	userID := "testID"
-
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
 
+	listProjectId, err := s.checkProjectList(i)
+	if err != nil {
+		return nil, err
+	}
+
 	//Find Domain Entity
-	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID)
+	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID, listProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +290,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +302,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
 		ModelName:             resModelPackage.ModelName,
-		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
+		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
@@ -307,7 +321,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 
 	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
 
-	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, userID)
+	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -343,17 +357,52 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO) (*a
 	return resDTO, nil
 }
 
+// UpdateResources
+func (s *DeploymentService) updateResources(domAggregateDeployment *domEntity.Deployment, i identity.Identity) error {
+	//Find ModelPackage
+	resModelPackage, err := s.getModelPackageByID(domAggregateDeployment.ModelPackageID)
+	if err != nil {
+		return err
+	}
+
+	//Find  PredictionEnv
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	if err != nil {
+		return err
+	}
+
+	reqDomSvc := domSvcInferenceSvcDto.InferenceServiceReplaceModelRequest{
+		Namespace:             resPredictionEnvInfo.Namespace,
+		DeploymentID:          domAggregateDeployment.ID,
+		ModelFrameWork:        resModelPackage.ModelFrameWork,
+		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
+		ModelURL:              resModelPackage.ModelFilePath,
+		ModelName:             resModelPackage.ModelName,
+		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		RequestCPU:            domAggregateDeployment.RequestCPU,
+		RequestMEM:            domAggregateDeployment.RequestMEM,
+		LimitCPU:              domAggregateDeployment.LimitCPU,
+		LimitMEM:              domAggregateDeployment.LimitMEM,
+	}
+
+	// domAggregateDeployment.SetServiceStatusReplacingModel()
+
+	err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ReplaceModel
-func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequestDTO) (*appDTO.UpdateDeploymentResponseDTO, error) {
+func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequestDTO, i identity.Identity) (*appDTO.UpdateDeploymentResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
-
-	//toBe...
-	userID := "testID"
 
 	if err := req.Validate(); err != nil {
 		return nil, err
@@ -379,18 +428,14 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	if req.Importance != "" {
 		domAggregateDeployment.UpdateDeploymentImportance(req.Importance)
 	}
-	if req.AssociationID != nil {
-		reqUpdateAssociationID := new(appMonitoringDTO.UpdateAssociationIDRequestDTO)
-		reqUpdateAssociationID.DeploymentID = req.DeploymentID
-		reqUpdateAssociationID.AssociationID = req.AssociationID
-
-		_, err = s.monitoringSvc.UpdateAssociationID(reqUpdateAssociationID)
-		if err != nil {
-			return nil, err
-		}
+	if req.AssociationID != "" {
+		//To Be..
+		//s.monitoringSvc.UpdateAssociationID(req.DeploymentID, req.AssociationID)
 	}
-	if req.FeatureDriftTracking != "" {
-		if convStrToBoolType(req.FeatureDriftTracking) == true {
+	if req.FeatureDriftTracking != nil {
+		if *req.FeatureDriftTracking {
+			println("FeatureDriftTracking true")
+
 			reqDriftActive := new(appMonitoringDTO.MonitorDriftActiveRequestDTO)
 			reqDriftActive.DeploymentID = req.DeploymentID
 			reqDriftActive.ModelPackageID = resModelPackage.ModelPackageID
@@ -400,6 +445,7 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 			if err != nil {
 				return nil, err
 			}
+
 		} else {
 			reqDriftInActive := new(appMonitoringDTO.MonitorDriftInActiveRequestDTO)
 			reqDriftInActive.DeploymentID = req.DeploymentID
@@ -410,8 +456,9 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 			}
 		}
 	}
-	if req.AccuracyAnalyze != "" {
-		if convStrToBoolType(req.AccuracyAnalyze) == true {
+	if req.AccuracyAnalyze != nil {
+		if *req.AccuracyAnalyze {
+			println("AccuracyAnalyze true")
 			reqAccuracyActive := new(appMonitoringDTO.MonitorAccuracyActiveRequestDTO)
 			reqAccuracyActive.DeploymentID = req.DeploymentID
 			reqAccuracyActive.ModelPackageID = resModelPackage.ModelPackageID
@@ -433,7 +480,21 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		}
 	}
 
-	err = domAggregateDeployment.AddEventHistory("Update", "Deployment is Updated", userID)
+	if (req.RequestCPU != nil) || (req.RequestMEM != nil) {
+		if req.RequestCPU != nil {
+			domAggregateDeployment.UpdateDeploymentRequestCPU(*req.RequestCPU)
+		}
+		if req.RequestMEM != nil {
+			domAggregateDeployment.UpdateDeploymentRequestMEM(*req.RequestMEM)
+		}
+
+		err := s.updateResources(domAggregateDeployment, i)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = domAggregateDeployment.AddEventHistory("Update", "Deployment is Updated", i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +511,7 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	return resDTO, nil
 }
 
-func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO) (*appDTO.DeleteDeploymentResponseDTO, error) {
+func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO, i identity.Identity) (*appDTO.DeleteDeploymentResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -458,28 +519,30 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO) (*app
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	//toBe...
-	userID := "testID"
+	listProjectId, err := s.checkProjectList(i)
+	if err != nil {
+		return nil, err
+	}
 
 	//Find Domain Entity
-	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID)
+	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID, listProjectId)
 	if err != nil {
 		return nil, err
 	}
 
 	//Find  PredictionEnv
-	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
+	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
 	if err != nil {
 		return nil, err
 	}
 
 	reqDomSvc := domSvcInferenceSvcDto.InferenceServiceDeleteRequest{
-		ConnectionInfo: predictionEnvInfo.ConnectionInfo,
+		ConnectionInfo: predictionEnvInfo.InfereceSvcAPISvrEndPoint,
 		Namespace:      predictionEnvInfo.Namespace,
 		DeploymentID:   domAggregateDeployment.ID,
 	}
 
-	err = domAggregateDeployment.AddEventHistory("Delete", "Deployment is Deleted", userID)
+	err = domAggregateDeployment.AddEventHistory("Delete", "Deployment is Deleted", i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -489,10 +552,14 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO) (*app
 		return nil, err
 	}
 
-	//수정
-	reqMo := new(appMonitoringDTO.MonitorDeleteRequestDTO)
-	reqMo.DeploymentID = req.DeploymentID
-	_, err = s.monitoringSvc.Delete(reqMo)
+	reqDeleteMonitoring := &appMonitoringDTO.MonitorDeleteRequestDTO{
+		DeploymentID: domAggregateDeployment.ID,
+	}
+
+	_, err = s.monitoringSvc.Delete(reqDeleteMonitoring)
+	if err != nil {
+		return nil, fmt.Errorf("monitoring delete error: %s", err)
+	}
 
 	err = s.repo.Delete(req.DeploymentID)
 	if err != nil {
@@ -505,7 +572,7 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO) (*app
 	return resDTO, nil
 }
 
-func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO) (*appDTO.GetDeploymentResponseDTO, error) {
+func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i identity.Identity) (*appDTO.GetDeploymentResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -513,19 +580,24 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO) (*appDT
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	res, err := s.repo.GetByID(req.DeploymentID)
+	listProjectId, err := s.checkProjectList(i)
 	if err != nil {
 		return nil, err
 	}
 
-	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
-		ID: req.DeploymentID,
-	}
-
-	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	res, err := s.repo.GetByID(req.DeploymentID, listProjectId)
 	if err != nil {
 		return nil, err
 	}
+
+	// reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
+	// 	ID: req.DeploymentID,
+	// }
+
+	// resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// response dto
 	resDTO := new(appDTO.GetDeploymentResponseDTO)
@@ -541,16 +613,16 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO) (*appDT
 	resDTO.ActiveStatus = res.ActiveStatus
 	resDTO.ServiceStatus = res.ServiceStatus
 	resDTO.ChangeRequested = res.ChangeRequested
-	resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
-	resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
+	// resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
+	// resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
 	// resDTO.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
-	resDTO.FeatureDriftTracking = convBoolToStrType(resMonitor.Monitor.FeatureDriftTracking)
-	resDTO.AccuracyAnalyze = convBoolToStrType(resMonitor.Monitor.AccuracyMonitoring)
+	// resDTO.FeatureDriftTracking = convBoolToStrType(resMonitor.Monitor.FeatureDriftTracking)
+	// resDTO.AccuracyAnalyze = convBoolToStrType(resMonitor.Monitor.AccuracyMonitoring)
 
 	return resDTO, nil
 }
 
-func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO) (*appDTO.GetDeploymentListResponseDTO, error) {
+func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO, i identity.Identity) (*appDTO.GetDeploymentListResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -558,13 +630,18 @@ func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO) (*a
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
+	listProjectId, err := s.checkProjectList(i)
+	if err != nil {
+		return nil, err
+	}
+
 	reqP := infRepo.Pagination{
 		Limit: req.Limit,
 		Page:  req.Page,
 		Sort:  req.Sort,
 	}
 
-	resultList, pagination, err := s.repo.GetList(req.Name, reqP)
+	resultList, pagination, err := s.repo.GetList(req.Name, reqP, listProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -606,16 +683,13 @@ func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO) (*a
 	return resDTO, nil
 }
 
-func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*appDTO.ActiveDeploymentResponseDTO, error) {
+func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO, i identity.Identity) (*appDTO.ActiveDeploymentResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
-
-	//toBe...
-	userID := "testID"
 
 	domAggregateDeployment, err := s.repo.GetForUpdate(req.DeploymentID)
 	if err != nil {
@@ -629,7 +703,7 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
 	if err != nil {
 		return nil, err
 	}
@@ -639,14 +713,14 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
-		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
+		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
 		LimitMEM:              domAggregateDeployment.LimitMEM,
 	}
 
-	err = domAggregateDeployment.AddEventHistory("Active", "Deployment is Activated", userID)
+	err = domAggregateDeployment.AddEventHistory("Active", "Deployment is Activated", i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -698,16 +772,13 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO) (*
 	return resDTO, nil
 }
 
-func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO) (*appDTO.InActiveDeploymentResponseDTO, error) {
+func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO, i identity.Identity) (*appDTO.InActiveDeploymentResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
-
-	//toBe...
-	userID := "testID"
 
 	domAggregateDeployment, err := s.repo.GetForUpdate(req.DeploymentID)
 	if err != nil {
@@ -721,7 +792,7 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
 	if err != nil {
 		return nil, err
 	}
@@ -731,10 +802,10 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
-		ConnectionInfo:        resPredictionEnvInfo.ConnectionInfo,
+		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
 	}
 
-	err = domAggregateDeployment.AddEventHistory("InActive", "Deployment is InActivated", userID)
+	err = domAggregateDeployment.AddEventHistory("InActive", "Deployment is InActivated", i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -781,7 +852,7 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 	return resDTO, nil
 }
 
-func (s *DeploymentService) SendPrediction(req *appDTO.SendPredictionRequestDTO) (*appDTO.SendPredictionResponseDTO, error) {
+func (s *DeploymentService) SendPrediction(req *appDTO.SendPredictionRequestDTO, i identity.Identity) (*appDTO.SendPredictionResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -789,20 +860,29 @@ func (s *DeploymentService) SendPrediction(req *appDTO.SendPredictionRequestDTO)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	//Find Domain Entity
-	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID)
+	listProjectId, err := s.checkProjectList(i)
 	if err != nil {
 		return nil, err
 	}
 
+	//Find Domain Entity
+	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID, listProjectId)
+	if err != nil {
+		return nil, err
+	}
+
+	if domAggregateDeployment.ActiveStatus == "InActive" {
+		return nil, fmt.Errorf("deployment is inactive")
+	}
+
 	//Find  PredictionEnv
-	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
+	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
 	if err != nil {
 		return nil, err
 	}
 
 	host := domAggregateDeployment.ID + "." + predictionEnvInfo.Namespace + "." + predictionEnvInfo.InfereceSvcHostName
-	URL := "http://" + predictionEnvInfo.InferenceSvcIngressHost + ":" + predictionEnvInfo.InferenceSvcIngressPort + "/v1/models/" + domAggregateDeployment.ID + ":predict"
+	URL := predictionEnvInfo.InferenceSvcIngressEndPoint + "/v1/models/" + domAggregateDeployment.ID + ":predict"
 
 	sendResult, err := s.predictionSendSvc.SendPrediction(URL, host, []byte(req.JsonData))
 	if err != nil {
@@ -829,21 +909,36 @@ func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*appMode
 	return resModelPackage, err
 }
 
-func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string) (*domSchema.PredictionEnv, error) {
+func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string, i identity.Identity) (*domSchema.PredictionEnv, error) {
+	// req := &appResourceDTO.InternalGetPredictionEnvRequestDTO{
+	// 	PredictionEnvID: predictionEnvID,
+	// }
+
+	// res, err := s.predictionEnvSvc.GetByIDInternal(req, i)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// //dev mode only
+	// predictionEnvInfo := &domSchema.PredictionEnv{
+	// 	Namespace:                   res.Namespace,
+	// 	InfereceSvcAPISvrEndPoint:   res.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
+	// 	InfereceSvcHostName:         res.ClusterInfo.InferenceSvcInfo.InfereceSvcHostName,
+	// 	InferenceSvcIngressEndPoint: res.ClusterInfo.InferenceSvcInfo.InferenceSvcIngressEndPoint,
+	// }
+
 	//dev mode only
 	predictionEnvInfo := &domSchema.PredictionEnv{
-		Namespace:      "koreserve",
-		ConnectionInfo: "http://192.168.88.161:30070",
-		//ConnectionInfo:          "http://localhost:5000",
-		InfereceSvcHostName:     "kserve.acornsoft.io",
-		InferenceSvcIngressHost: "192.168.88.161",
-		InferenceSvcIngressPort: "31000",
+		Namespace:                   "koreserve",
+		InfereceSvcAPISvrEndPoint:   "http://192.168.88.161:30070",
+		InfereceSvcHostName:         "kserve.acornsoft.io",
+		InferenceSvcIngressEndPoint: "http://192.168.88.161:31000",
 	}
 
 	return predictionEnvInfo, nil
 }
 
-func (s *DeploymentService) GetGovernanceHistory(req *appDTO.GetGovernanceHistoryRequestDTO) (*appDTO.GetGovernanceHistoryResponseDTO, error) {
+func (s *DeploymentService) GetGovernanceHistory(req *appDTO.GetGovernanceHistoryRequestDTO, i identity.Identity) (*appDTO.GetGovernanceHistoryResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -851,8 +946,13 @@ func (s *DeploymentService) GetGovernanceHistory(req *appDTO.GetGovernanceHistor
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
+	listProjectId, err := s.checkProjectList(i)
+	if err != nil {
+		return nil, err
+	}
+
 	//Find Domain Entity
-	domAggregateDeployment, err := s.repo.GetGovernanceHistory(req.DeploymentID)
+	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID, listProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -863,7 +963,7 @@ func (s *DeploymentService) GetGovernanceHistory(req *appDTO.GetGovernanceHistor
 	return resDTO, nil
 }
 
-func (s *DeploymentService) GetModelHistory(req *appDTO.GetModelHistoryRequestDTO) (*appDTO.GetModelHistoryResponseDTO, error) {
+func (s *DeploymentService) GetModelHistory(req *appDTO.GetModelHistoryRequestDTO, i identity.Identity) (*appDTO.GetModelHistoryResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -871,8 +971,13 @@ func (s *DeploymentService) GetModelHistory(req *appDTO.GetModelHistoryRequestDT
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
+	listProjectId, err := s.checkProjectList(i)
+	if err != nil {
+		return nil, err
+	}
+
 	//Find Domain Entity
-	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID)
+	domAggregateDeployment, err := s.repo.GetByID(req.DeploymentID, listProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -895,24 +1000,21 @@ func (s *DeploymentService) GetModelHistory(req *appDTO.GetModelHistoryRequestDT
 	return resDTO, nil
 }
 
-func convStrToBoolType(boolStr string) bool {
-	if (boolStr == "True") || (boolStr == "true") {
-		return true
-	} else if (boolStr == "False") || (boolStr == "false") {
-		return false
+func (s *DeploymentService) checkProjectList(i identity.Identity) ([]string, error) {
+	var listProjectId []string
+
+	projectReq := &appProjectDTO.GetProjectListRequestDTO{}
+	projectRes, err := s.projectSvc.GetList(projectReq, i)
+	if err != nil {
+		return listProjectId, err
 	}
 
-	return false
-}
+	projectIdList := projectRes.Rows.([]appProjectDTO.GetProjectResponseDTO)
 
-func convBoolToStrType(boolType bool) string {
-	if boolType {
-		return "True"
-	} else if !boolType {
-		return "False"
+	for _, rec := range projectIdList {
+		listProjectId = append(listProjectId, rec.ProjectID)
 	}
-
-	return "False"
+	return listProjectId, nil
 }
 
 // func (s *DeploymentService) checkApprovalProcess(req string) (*domSchema.PredictionEnv, error) {

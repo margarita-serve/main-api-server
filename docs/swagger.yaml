@@ -68,18 +68,60 @@ definitions:
       message:
         type: string
     type: object
+  dto.ClusterInfo:
+    properties:
+      clusterInfoID:
+        type: string
+      inferenceSvcInfo:
+        $ref: '#/definitions/dto.InferenceSvcInfo'
+      name:
+        description: 클러스터 명
+        type: string
+    type: object
+  dto.CreateClusterInfoRequestDTO:
+    properties:
+      infereceSvcAPISvrEndPoint:
+        description: Kserve API Server 접속주소
+        example: http://192.168.88.161:30070
+        type: string
+        x-order: "2"
+      infereceSvcHostName:
+        description: Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)
+        example: example.com
+        type: string
+        x-order: "3"
+      inferenceSvcIngressEndPoint:
+        description: Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)
+        example: http://192.168.88.161:31000
+        type: string
+        x-order: "4"
+      name:
+        description: 클러스터 명
+        example: ClusterInfo 01
+        type: string
+        x-order: "1"
+    type: object
+  dto.CreateClusterInfoResponseDTO:
+    properties:
+      clusterInfoID:
+        type: string
+    type: object
   dto.CreateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
         description: 정확도 측정 설정
-        example: "True"
-        type: string
+<<<<<<< HEAD
+        example: true
+=======
+        example: false
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+        type: boolean
         x-order: "9"
       associationID:
         description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
         example: Index
         type: string
-        x-order: "9"
+        x-order: "10"
       description:
         description: 배포 설명
         example: deploy best model
@@ -87,8 +129,12 @@ definitions:
         x-order: "3"
       featureDriftTracking:
         description: 데이터 드리프트 설정
-        example: "True"
-        type: string
+<<<<<<< HEAD
+        example: true
+=======
+        example: false
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+        type: boolean
         x-order: "8"
       importance:
         description: 배포중요도
@@ -102,7 +148,7 @@ definitions:
         x-order: "5"
       modelPackageID:
         description: 모델패키지 ID
-        example: ID-1234
+        example: cbjmmrvr2g4j4bjpq1a0
         type: string
         x-order: 1 x-nullable=false
       name:
@@ -112,9 +158,14 @@ definitions:
         x-order: 2 x-nullable=false
       predictionEnvID:
         description: 예측 환경
-        example: k8s-inference-staging
+        example: cbjmmqfr2g4j4bjpq19g
         type: string
         x-order: "4"
+      projectID:
+        description: 프로젝트 ID
+        example: cbjmlbnr2g4j4bjpq18g
+        type: string
+        x-order: 0 x-nullable=false
       requestCPU:
         description: 요청 CPU
         example: 1
@@ -129,6 +180,7 @@ definitions:
     - modelPackageID
     - name
     - predictionEnvID
+    - projectID
     type: object
   dto.CreateDeploymentResponseDTO:
     properties:
@@ -141,12 +193,12 @@ definitions:
         description: 모델패키지 설명
         example: New ModelPacakge
         type: string
-        x-order: "2"
+        x-order: "02"
       modelDescription:
         description: 모델 설명
         example: Best Accuracy
         type: string
-        x-order: "5"
+        x-order: "05"
       modelFrameWork:
         description: 모델 프레임워크
         enum:
@@ -157,27 +209,27 @@ definitions:
         - ' LightGBM'
         example: TensorFlow
         type: string
-        x-order: "8"
+        x-order: "08"
       modelFrameWorkVersion:
         description: 모델 프레임워크 버전
         example: 1.14.0
         type: string
-        x-order: "9"
+        x-order: "09"
       modelName:
         description: 모델명
         example: Example Model
         type: string
-        x-order: "3"
+        x-order: "03"
       modelVersion:
         description: 모델 버전
         example: "1.4"
         type: string
-        x-order: "4"
+        x-order: "04"
       name:
         description: 모델패키지 명
         example: ModelPacakge 01
         type: string
-        x-order: "1"
+        x-order: "01"
       negativeClassLabel:
         description: 이진분류 음성명칭 지정
         example: "False"
@@ -192,12 +244,17 @@ definitions:
         description: 예측 타켓명칭
         example: Target
         type: string
-        x-order: "7"
+        x-order: "07"
       predictionThreshold:
         description: 이진분류 예측임계값
         example: 0.5
         type: number
         x-order: "10"
+      projectID:
+        description: 프로젝트 ID
+        example: cbjmlbnr2g4j4bjpq18g
+        type: string
+        x-order: "0"
       targetType:
         description: 모델 예측타입
         enum:
@@ -205,11 +262,66 @@ definitions:
         - ' Regression'
         example: Binary
         type: string
-        x-order: "6"
+        x-order: "06"
+    required:
+    - projectID
     type: object
   dto.CreateModelPackageResponseDTO:
     properties:
       modelPackageID:
+        type: string
+    type: object
+  dto.CreatePredictionEnvRequestDTO:
+    properties:
+      clusterInfoID:
+        description: 클러스터정보 ID
+        example: "12345678901234567890"
+        type: string
+        x-order: "3"
+      description:
+        description: 설명
+        example: New PredictionEnv
+        type: string
+        x-order: "2"
+      name:
+        description: 배포환경 명
+        example: PredictionEnv 01
+        type: string
+        x-order: "1"
+      namespace:
+        description: 배포할 Kubernetes Namespace
+        example: default
+        type: string
+        x-order: "5"
+      useType:
+        description: 클러스터 등록 타입
+        enum:
+        - Default
+        - ' Custom'
+        - ' PackageTest'
+        type: string
+        x-order: "4"
+    type: object
+  dto.CreatePredictionEnvResponseDTO:
+    properties:
+      predictionEnvID:
+        type: string
+    type: object
+  dto.CreateProjectRequestDTO:
+    properties:
+      description:
+        example: New Project
+        type: string
+        x-order: "2"
+      name:
+        description: 프로젝트 명
+        example: Project 01
+        type: string
+        x-order: "1"
+    type: object
+  dto.CreateProjectResponseDTO:
+    properties:
+      projectID:
         type: string
     type: object
   dto.DataDriftSetting:
@@ -255,6 +367,11 @@ definitions:
         type: string
         x-order: "0"
     type: object
+  dto.DeleteClusterInfoResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
   dto.DeleteDeploymentResponseDTO:
     properties:
       message:
@@ -265,6 +382,28 @@ definitions:
       message:
         type: string
     type: object
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+  dto.DeletePredictionEnvResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.DeleteProjectResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.DetailGraphGetResponseDTO:
+    properties:
+      script:
+        description: graph JS script
+        type: string
+    type: object
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+>>>>>>> 5e8c14f (Add:Dockerfile, Project Module)
   dto.FeatureDriftGetResponseDTO:
     properties:
       data:
@@ -287,6 +426,25 @@ definitions:
         description: 검색 시작 시간
         type: string
         x-order: "2"
+    type: object
+  dto.GetClusterInfoListResponseDTO:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      rows: {}
+      sort:
+        type: string
+      totalPages:
+        type: integer
+      totalRows:
+        type: integer
+    type: object
+  dto.GetClusterInfoResponseDTO:
+    properties:
+      clusterInfo:
+        $ref: '#/definitions/dto.ClusterInfo'
     type: object
   dto.GetDeploymentListResponseDTO:
     properties:
@@ -415,17 +573,98 @@ definitions:
       trainingDatasetName:
         type: string
     type: object
+  dto.GetPredictionEnvListResponseDTO:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      rows: {}
+      sort:
+        type: string
+      totalPages:
+        type: integer
+      totalRows:
+        type: integer
+    type: object
+  dto.GetPredictionEnvResponseDTO:
+    properties:
+      clusterInfoID:
+        $ref: '#/definitions/dto.ClusterInfo'
+        description: 클러스터정보 ID
+        x-order: "3"
+      description:
+        description: 설명
+        type: string
+        x-order: "2"
+      name:
+        description: 배포환경 명
+        type: string
+        x-order: "1"
+      namespace:
+        description: 배포할 Kubernetes Namespace
+        type: string
+        x-order: "5"
+      predictionEnvID:
+        type: string
+      projects:
+        items: {}
+        type: array
+      useType:
+        description: 클러스터 등록 타입
+        type: string
+        x-order: "4"
+    type: object
+  dto.GetProjectListResponseDTO:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      rows: {}
+      sort:
+        type: string
+      totalPages:
+        type: integer
+      totalRows:
+        type: integer
+    type: object
+  dto.GetProjectResponseDTO:
+    properties:
+      deployments: {}
+      description:
+        type: string
+      modelPackages: {}
+      name:
+        type: string
+      projectID:
+        type: string
+    type: object
   dto.InActiveDeploymentResponseDTO:
     properties:
       message:
         type: string
     type: object
+  dto.InferenceSvcInfo:
+    properties:
+      infereceSvcAPISvrEndPoint:
+        description: Kserve API Server 접속주소
+        example: http://192.168.88.161:30070
+        type: string
+        x-order: "2"
+      infereceSvcHostName:
+        description: Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)
+        example: example.com
+        type: string
+        x-order: "3"
+      inferenceSvcIngressEndPoint:
+        description: Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)
+        example: http://192.168.88.161:31000
+        type: string
+        x-order: "4"
+    type: object
   dto.LoginReqDTO:
     properties:
-      captcha:
-        type: string
-      captchaID:
-        type: string
       password:
         type: string
       username:
@@ -443,7 +682,21 @@ definitions:
   dto.MonitorAccuracyPatchRequestDTO:
     properties:
       accuracySetting:
+<<<<<<< HEAD
+        $ref: '#/definitions/dto.AccuracySetting'
+      associationID:
+        type: string
+      dataDriftSetting:
+        $ref: '#/definitions/dto.DataDriftSetting'
+      featureDriftTracking:
+        type: boolean
+      modelPackageID:
+        type: string
+      serviceHealthSetting:
+        $ref: '#/definitions/dto.ServiceHealthSetting'
+=======
         $ref: '#/definitions/dto.PatchAccuracySetting'
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     type: object
   dto.MonitorAccuracyPatchResponseDTO:
     properties:
@@ -556,10 +809,6 @@ definitions:
     type: object
   dto.RegisterReqDTO:
     properties:
-      captcha:
-        type: string
-      captchaID:
-        type: string
       email:
         type: string
       nickName:
@@ -612,12 +861,43 @@ definitions:
       message:
         type: string
     type: object
+  dto.UpdateClusterInfoRequestDTO:
+    properties:
+      infereceSvcAPISvrEndPoint:
+        description: Kserve API Server 접속주소
+        example: http://192.168.88.161:30070
+        type: string
+        x-order: "2"
+      infereceSvcHostName:
+        description: Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)
+        example: example.com
+        type: string
+        x-order: "3"
+      inferenceSvcIngressEndPoint:
+        description: Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)
+        example: http://192.168.88.161:31000
+        type: string
+        x-order: "4"
+      name:
+        description: 클러스터 명
+        type: string
+    type: object
+  dto.UpdateClusterInfoResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
+<<<<<<< HEAD
+      description:
+        description: 베포 설명
+        type: string
+=======
       accuracyAnalyze:
         description: 정확도 측정 설정
-        example: "True"
-        type: string
+        example: true
+        type: boolean
         x-order: "9"
       associationID:
         description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
@@ -629,9 +909,10 @@ definitions:
         type: string
       featureDriftTracking:
         description: 데이터 드리프트 설정
-        example: "True"
-        type: string
+        example: true
+        type: boolean
         x-order: "8"
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       importance:
         description: 배포중요도
         enum:
@@ -737,6 +1018,62 @@ definitions:
       message:
         type: string
     type: object
+<<<<<<< HEAD
+=======
+  dto.UpdatePredictionEnvRequestDTO:
+    properties:
+      clusterInfoID:
+        description: 클러스터정보 ID
+        example: "12345678901234567890"
+        type: string
+        x-order: "3"
+      description:
+        description: 설명
+        example: New PredictionEnv
+        type: string
+        x-order: "2"
+      name:
+        description: 배포환경 명
+        example: PredictionEnv 01
+        type: string
+        x-order: "1"
+      namespace:
+        description: 배포할 Kubernetes Namespace
+        example: default
+        type: string
+        x-order: "5"
+      useType:
+        description: 클러스터 등록 타입
+        enum:
+        - Default
+        - ' Custom'
+        - ' PackageTest'
+        type: string
+        x-order: "4"
+    type: object
+  dto.UpdatePredictionEnvResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.UpdateProjectRequestDTO:
+    properties:
+      description:
+        description: 프로젝트 설명
+        example: this is Edited Project
+        type: string
+        x-order: "2"
+      name:
+        description: 프로젝트 명
+        example: Edited Project 01
+        type: string
+        x-order: "1"
+    type: object
+  dto.UpdateProjectResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
   dto.UploadActualResponseDTO:
     properties:
       deploymentID:
@@ -744,6 +1081,7 @@ definitions:
       message:
         type: string
     type: object
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
 info:
   contact: {}
 paths:
@@ -791,7 +1129,419 @@ paths:
       summary: register user
       tags:
       - Auth
+<<<<<<< HEAD
+  /projects/{projectID}/deployments:
+=======
+  /cluster-infos:
+    get:
+      consumes:
+      - application/json
+      description: 리스트
+      parameters:
+      - description: queryName
+        in: query
+        name: name
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetClusterInfoListResponseDTO'
+      summary: Get ClusterInfo List
+      tags:
+      - ClusterInfo
+    post:
+      consumes:
+      - application/json
+      description: 클러스터정보 생성
+      parameters:
+      - description: Create ClusterInfo
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateClusterInfoRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateClusterInfoResponseDTO'
+      summary: Create ClusterInfo
+      tags:
+      - ClusterInfo
+  /cluster-infos/{clusterInfoID}:
+    delete:
+      consumes:
+      - application/json
+      description: 프로젝트 삭제
+      parameters:
+      - description: predictionEnvID
+        in: path
+        name: predictionEnvID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DeleteClusterInfoResponseDTO'
+      summary: Delete ClusterInfo
+      tags:
+      - ClusterInfo
+    get:
+      consumes:
+      - application/json
+      description: 상세조회
+      parameters:
+      - description: clusterInfoID
+        in: path
+        name: clusterInfoID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetClusterInfoResponseDTO'
+      summary: Get ClusterInfo
+      tags:
+      - ClusterInfo
+    patch:
+      consumes:
+      - application/json
+      description: 정보수정
+      parameters:
+      - description: clusterInfoID
+        in: path
+        name: clusterInfoID
+        required: true
+        type: string
+      - description: Update ClusterInfo Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateClusterInfoRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateClusterInfoResponseDTO'
+      summary: Edit ClusterInfo
+      tags:
+      - ClusterInfo
+  /deployments:
+    get:
+      consumes:
+      - application/json
+      description: 배포 리스트
+      parameters:
+      - description: queryName
+        in: query
+        name: name
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetDeploymentListResponseDTO'
+      summary: Get Deployment List
+      tags:
+      - Deployment
+    post:
+      consumes:
+      - application/json
+      description: 배포 생성
+      parameters:
+      - description: Create Deployment
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDeploymentRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateDeploymentResponseDTO'
+      summary: Create Deployment
+      tags:
+      - Deployment
+  /deployments/{deploymentID}:
+    delete:
+      consumes:
+      - application/json
+      description: 배포 삭제
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DeleteDeploymentResponseDTO'
+      summary: Delete Deployment
+      tags:
+      - Deployment
+    get:
+      consumes:
+      - application/json
+      description: 배포 상세조회
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetDeploymentResponseDTO'
+      summary: Get Deployment
+      tags:
+      - Deployment
+    patch:
+      consumes:
+      - application/json
+      description: 배포 정보수정
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Update Deployment Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDeploymentRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateDeploymentResponseDTO'
+      summary: Edit Deployment
+      tags:
+      - Deployment
+  /deployments/{deploymentID}/active:
+    put:
+      consumes:
+      - application/json
+      description: 배포 활성화
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ActiveDeploymentResponseDTO'
+      summary: Active Deployment
+      tags:
+      - Deployment
+  /deployments/{deploymentID}/governance-log:
+    get:
+      consumes:
+      - application/json
+      description: 배포 거버넌스 로그 조회
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetGovernanceHistoryResponseDTO'
+      summary: Get Governance Log
+      tags:
+      - Deployment
+  /deployments/{deploymentID}/inactive:
+    put:
+      consumes:
+      - application/json
+      description: 배포 비활성화
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.InActiveDeploymentResponseDTO'
+      summary: Inactive Deployment
+      tags:
+      - Deployment
+  /deployments/{deploymentID}/model-history:
+    get:
+      consumes:
+      - application/json
+      description: 배포 모델 변경이력 조회
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetModelHistoryResponseDTO'
+      summary: Get Model History
+      tags:
+      - Deployment
   /deployments/{deploymentID}/monitor:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     get:
       consumes:
       - application/json
@@ -1137,27 +1887,6 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: example=2022-05-05:01
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: example=2022-08-01:01
-        in: query
-        name: endTime
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1168,8 +1897,8 @@ paths:
       summary: Get Drift Graph
       tags:
       - Monitor
-  /projects/{projectID}/deployments:
-    get:
+<<<<<<< HEAD
+    patch:
       consumes:
       - application/json
       description: 배포 리스트
@@ -1177,50 +1906,41 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        type: string
-      - description: queryName
-        in: query
-        name: name
-        type: string
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: sort
-        in: query
-        name: sort
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
         required: true
         type: string
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch Monitor
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
       produces:
       - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetDeploymentListResponseDTO'
-      summary: Get Deployment List
+      responses: {}
+      summary: Patch Monitor Setting
       tags:
-      - Deployment
+      - Monitor
     post:
       consumes:
       - application/json
-      description: 배포 생성
+      description: Test
       parameters:
       - description: projectID
         in: path
         name: projectID
         required: true
         type: string
-      - description: Create Deployment
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Create Monitor
         in: body
         name: body
         required: true
@@ -1241,9 +1961,9 @@ paths:
             $ref: '#/definitions/dto.CreateDeploymentResponseDTO'
       summary: Create Deployment
       tags:
-      - Deployment
-  /projects/{projectID}/deployments/{deploymentID}:
-    delete:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/accuracy:
+    get:
       consumes:
       - application/json
       description: 배포 삭제
@@ -1338,9 +2058,9 @@ paths:
             $ref: '#/definitions/dto.UpdateDeploymentResponseDTO'
       summary: Edit Deployment
       tags:
-      - Deployment
-  /projects/{projectID}/deployments/{deploymentID}/active:
-    put:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/detail/graph:
+    get:
       consumes:
       - application/json
       description: 배포 활성화
@@ -1348,6 +2068,7 @@ paths:
       - description: projectID
         in: path
         name: projectID
+        required: true
         type: string
       - description: deploymentID
         in: path
@@ -1369,8 +2090,8 @@ paths:
             $ref: '#/definitions/dto.ActiveDeploymentResponseDTO'
       summary: Active Deployment
       tags:
-      - Deployment
-  /projects/{projectID}/deployments/{deploymentID}/governance-log:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/drift:
     get:
       consumes:
       - application/json
@@ -1379,6 +2100,7 @@ paths:
       - description: projectID
         in: path
         name: projectID
+        required: true
         type: string
       - description: deploymentID
         in: path
@@ -1400,16 +2122,17 @@ paths:
             $ref: '#/definitions/dto.GetGovernanceHistoryResponseDTO'
       summary: Get Governance Log
       tags:
-      - Deployment
-  /projects/{projectID}/deployments/{deploymentID}/inactive:
-    put:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/drift/graph:
+    get:
       consumes:
       - application/json
-      description: 배포 비활성화
+      description: 드리프트 그래프
       parameters:
       - description: projectID
         in: path
         name: projectID
+        required: true
         type: string
       - description: deploymentID
         in: path
@@ -1431,8 +2154,8 @@ paths:
             $ref: '#/definitions/dto.InActiveDeploymentResponseDTO'
       summary: Inactive Deployment
       tags:
-      - Deployment
-  /projects/{projectID}/deployments/{deploymentID}/model-history:
+      - Monitor
+  /projects/{projectID}/deployments/{deploymentID}/monitor/statuses:
     get:
       consumes:
       - application/json
@@ -1441,10 +2164,6 @@ paths:
       - description: projectID
         in: path
         name: projectID
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
         required: true
         type: string
       - default: bearer <Add access token here>
@@ -1462,17 +2181,23 @@ paths:
             $ref: '#/definitions/dto.GetModelHistoryResponseDTO'
       summary: Get Model History
       tags:
-      - Deployment
+      - Monitor
   /projects/{projectID}/deployments/{deploymentID}/predict:
+=======
+  /deployments/{deploymentID}/predict:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 예측 요청
       parameters:
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: deploymentID
         in: path
         name: deploymentID
@@ -1504,16 +2229,23 @@ paths:
       summary: Send Prediction
       tags:
       - Deployment
+<<<<<<< HEAD
   /projects/{projectID}/deployments/{deploymentID}/replace-model:
+=======
+  /deployments/{deploymentID}/replace-model:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     patch:
       consumes:
       - application/json
       description: 배포 모델변경
       parameters:
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: deploymentID
         in: path
         name: deploymentID
@@ -1541,17 +2273,24 @@ paths:
       summary: Replace Model
       tags:
       - Deployment
+<<<<<<< HEAD
   /projects/{projectID}/model-packages:
+=======
+  /model-packages:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     get:
       consumes:
       - application/json
       description: 모델 패키지 리스트
       parameters:
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         required: true
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: queryName
         in: query
         name: name
@@ -1589,11 +2328,14 @@ paths:
       - application/json
       description: 모델 패키지 생성
       parameters:
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         required: true
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: Create ModelPackage
         in: body
         name: body
@@ -1616,16 +2358,16 @@ paths:
       summary: Create ModelPackage
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}:
+=======
+  /model-packages/{modelPackageID}:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     delete:
       consumes:
       - application/json
       description: 모델 패키지 삭제
       parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1652,10 +2394,14 @@ paths:
       - application/json
       description: 모델 패키지 상세조회
       parameters:
+<<<<<<< HEAD
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1682,10 +2428,14 @@ paths:
       - application/json
       description: 모델 패키지 정보수정
       parameters:
+<<<<<<< HEAD
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1713,16 +2463,24 @@ paths:
       summary: Edit ModelPackage
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/archive:
+=======
+  /model-packages/{modelPackageID}/archive:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     put:
       consumes:
       - application/json
       description: 모델 패키지 보관
       parameters:
+<<<<<<< HEAD
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1744,6 +2502,7 @@ paths:
       summary: Archive ModelPackage
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/download-holdout-dataset:
     get:
       description: 홀드아웃 데이터셋 파일 다운로드
@@ -1752,6 +2511,12 @@ paths:
         in: path
         name: projectID
         type: string
+=======
+  /model-packages/{modelPackageID}/download-holdout-dataset:
+    get:
+      description: 홀드아웃 데이터셋 파일 다운로드
+      parameters:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1769,6 +2534,7 @@ paths:
       summary: Download Holdout Dataset File
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/download-model:
     get:
       description: 모델 파일 다운로드
@@ -1777,6 +2543,12 @@ paths:
         in: path
         name: projectID
         type: string
+=======
+  /model-packages/{modelPackageID}/download-model:
+    get:
+      description: 모델 파일 다운로드
+      parameters:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1794,6 +2566,7 @@ paths:
       summary: Download Model File
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/download-training-dataset:
     get:
       description: 훈련 데이터셋 파일 다운로드
@@ -1802,6 +2575,12 @@ paths:
         in: path
         name: projectID
         type: string
+=======
+  /model-packages/{modelPackageID}/download-training-dataset:
+    get:
+      description: 훈련 데이터셋 파일 다운로드
+      parameters:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1819,16 +2598,24 @@ paths:
       summary: Download Training Dataset File
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/upload-holdout-dataset:
+=======
+  /model-packages/{modelPackageID}/upload-holdout-dataset:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 훈련 검증 데이터셋 파일 업로드
       parameters:
+<<<<<<< HEAD
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1851,16 +2638,24 @@ paths:
       summary: Upload Holdout Dataset File
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/upload-model:
+=======
+  /model-packages/{modelPackageID}/upload-model:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 모델 파일 업로드
       parameters:
+<<<<<<< HEAD
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1883,16 +2678,24 @@ paths:
       summary: Upload Model File
       tags:
       - ModelPackage
+<<<<<<< HEAD
   /projects/{projectID}/model-packages/{modelPackageID}/upload-training-dataset:
+=======
+  /model-packages/{modelPackageID}/upload-training-dataset:
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 훈련 데이터셋 파일 업로드
       parameters:
+<<<<<<< HEAD
+<<<<<<< HEAD
       - description: projectID
         in: path
         name: projectID
         type: string
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -1915,4 +2718,307 @@ paths:
       summary: Upload Training Dataset File
       tags:
       - ModelPackage
+<<<<<<< HEAD
+=======
+  /prediction-envs:
+    get:
+      consumes:
+      - application/json
+      description: 프로젝트 리스트
+      parameters:
+      - description: queryName
+        in: query
+        name: name
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetPredictionEnvListResponseDTO'
+      summary: Get PredictionEnv List
+      tags:
+      - PredictionEnv
+    post:
+      consumes:
+      - application/json
+      description: 프로젝트 생성
+      parameters:
+      - description: Create PredictionEnv
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePredictionEnvRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreatePredictionEnvResponseDTO'
+      summary: Create PredictionEnv
+      tags:
+      - PredictionEnv
+  /prediction-envs/{predictionEnvID}:
+    delete:
+      consumes:
+      - application/json
+      description: 프로젝트 삭제
+      parameters:
+      - description: predictionEnvID
+        in: path
+        name: predictionEnvID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DeletePredictionEnvResponseDTO'
+      summary: Delete PredictionEnv
+      tags:
+      - PredictionEnv
+    get:
+      consumes:
+      - application/json
+      description: 프로젝트 상세조회
+      parameters:
+      - description: predictionEnvID
+        in: path
+        name: predictionEnvID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetPredictionEnvResponseDTO'
+      summary: Get PredictionEnv
+      tags:
+      - PredictionEnv
+    patch:
+      consumes:
+      - application/json
+      description: 프로젝트 정보수정
+      parameters:
+      - description: predictionEnvID
+        in: path
+        name: predictionEnvID
+        required: true
+        type: string
+      - description: Update PredictionEnv Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePredictionEnvRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdatePredictionEnvResponseDTO'
+      summary: Edit PredictionEnv
+      tags:
+      - PredictionEnv
+  /projects:
+    get:
+      consumes:
+      - application/json
+      description: 프로젝트 리스트
+      parameters:
+      - description: queryName
+        in: query
+        name: name
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetProjectListResponseDTO'
+      summary: Get Project List
+      tags:
+      - Project
+    post:
+      consumes:
+      - application/json
+      description: 프로젝트 생성
+      parameters:
+      - description: Create Project
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProjectRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateProjectResponseDTO'
+      summary: Create Project
+      tags:
+      - Project
+  /projects/{projectID}:
+    delete:
+      consumes:
+      - application/json
+      description: 프로젝트 삭제
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DeleteProjectResponseDTO'
+      summary: Delete Project
+      tags:
+      - Project
+    get:
+      consumes:
+      - application/json
+      description: 프로젝트 상세조회
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetProjectResponseDTO'
+      summary: Get Project
+      tags:
+      - Project
+    patch:
+      consumes:
+      - application/json
+      description: 프로젝트 정보수정
+      parameters:
+      - description: projectID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Update Project Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProjectRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateProjectResponseDTO'
+      summary: Edit Project
+      tags:
+      - Project
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
 swagger: "2.0"

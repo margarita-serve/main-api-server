@@ -19,7 +19,15 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	if f.ModelPackage, err = NewModelPackage(h); err != nil {
+	if f.Resource, err = NewResource(h); err != nil {
+		return nil, err
+	}
+
+	if f.Project, err = NewProject(h); err != nil {
+		return nil, err
+	}
+
+	if f.ModelPackage, err = NewModelPackage(h, f.Project.appProject.ProjectSvc); err != nil {
 		return nil, err
 	}
 
@@ -31,7 +39,7 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	if f.Deployment, err = NewDeployment(h, f.ModelPackage.appModelPackage.ModelPackageSvc, f.Monitor.appMonitor.MonitorSvc); err != nil {
+	if f.Deployment, err = NewDeployment(h, f.Resource.appResource.PredictionEnvSvc, f.Project.appProject.ProjectSvc, f.ModelPackage.appModelPackage.ModelPackageSvc, f.Monitor.appMonitor.MonitorSvc); err != nil {
 		return nil, err
 	}
 
@@ -57,4 +65,6 @@ type Feature struct {
 	Monitor      *FMonitor
 	Auths        *FAuths
 	Email        *FEmail
+	Project      *FProject
+	Resource     *FResource
 }

@@ -7,6 +7,9 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/initialize"
+
+	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
+	appMonitoringSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/application/service"
 )
 
 func newDeploymentSvc(t *testing.T) (*DeploymentService, *handler.Handler, error) {
@@ -25,7 +28,17 @@ func newDeploymentSvc(t *testing.T) (*DeploymentService, *handler.Handler, error
 		return nil, nil, err
 	}
 
-	r, err := NewDeploymentService(h)
+	modelPackageSvc, err := appModelPackageSvc.NewModelPackageService(h)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	monitorSvc, err := appMonitoringSvc.NewMonitorService(h, modelPackageSvc)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	r, err := NewDeploymentService(h, modelPackageSvc, monitorSvc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -47,7 +60,6 @@ func TestDeploymentSvc_Create(t *testing.T) {
 	req.Importance = "Low"
 	req.ModelPackageID = "calvv97r2g4o4gmdmre0"
 	req.PredictionEnvID = "12345678901234567890"
-	req.ProjectID = "12345678901234567890"
 	req.RequestCPU = 0.1
 	req.RequestMEM = 0.5
 

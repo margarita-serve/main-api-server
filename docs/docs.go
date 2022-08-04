@@ -84,6 +84,610 @@ const docTemplate = `{
                 }
             }
         },
+        "/cluster-infos": {
+            "get": {
+                "description": "리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Get ClusterInfo List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetClusterInfoListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "클러스터정보 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Create ClusterInfo",
+                "parameters": [
+                    {
+                        "description": "Create ClusterInfo",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateClusterInfoRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/cluster-infos/{clusterInfoID}": {
+            "get": {
+                "description": "상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Get ClusterInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "clusterInfoID",
+                        "name": "clusterInfoID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "프로젝트 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Delete ClusterInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Edit ClusterInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "clusterInfoID",
+                        "name": "clusterInfoID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update ClusterInfo Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateClusterInfoRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments": {
+            "get": {
+                "description": "배포 리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Get Deployment List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetDeploymentListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "배포 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Create Deployment",
+                "parameters": [
+                    {
+                        "description": "Create Deployment",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateDeploymentRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateDeploymentResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}": {
+            "get": {
+                "description": "배포 상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Get Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetDeploymentResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "배포 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Delete Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteDeploymentResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "배포 정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Edit Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Deployment Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDeploymentRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDeploymentResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/active": {
+            "put": {
+                "description": "배포 활성화",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Active Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ActiveDeploymentResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/governance-log": {
+            "get": {
+                "description": "배포 거버넌스 로그 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Get Governance Log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetGovernanceHistoryResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/inactive": {
+            "put": {
+                "description": "배포 비활성화",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Inactive Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.InActiveDeploymentResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/model-history": {
+            "get": {
+                "description": "배포 모델 변경이력 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "Get Model History",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetModelHistoryResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/deployments/{deploymentID}/monitor": {
             "get": {
                 "description": "모니터 설정 조회",
@@ -633,7 +1237,11 @@ const docTemplate = `{
                 }
             }
         },
+<<<<<<< HEAD
         "/projects/{projectID}/deployments": {
+=======
+        "/deployments": {
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
             "get": {
                 "description": "배포 리스트",
                 "consumes": [
@@ -647,12 +1255,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get Deployment List",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
                     {
                         "type": "string",
                         "description": "queryName",
@@ -709,13 +1311,6 @@ const docTemplate = `{
                 "summary": "Create Deployment",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
                         "description": "Create Deployment",
                         "name": "body",
                         "in": "body",
@@ -743,7 +1338,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/deployments/{deploymentID}": {
+        "/deployments/{deploymentID}": {
             "get": {
                 "description": "배포 상세조회",
                 "consumes": [
@@ -886,7 +1481,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/deployments/{deploymentID}/active": {
+        "/deployments/{deploymentID}/active": {
             "put": {
                 "description": "배포 활성화",
                 "consumes": [
@@ -900,12 +1495,6 @@ const docTemplate = `{
                 ],
                 "summary": "Active Deployment",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
                     {
                         "type": "string",
                         "description": "deploymentID",
@@ -932,7 +1521,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/deployments/{deploymentID}/governance-log": {
+        "/deployments/{deploymentID}/governance-log": {
             "get": {
                 "description": "배포 거버넌스 로그 조회",
                 "consumes": [
@@ -946,12 +1535,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get Governance Log",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
                     {
                         "type": "string",
                         "description": "deploymentID",
@@ -978,7 +1561,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/deployments/{deploymentID}/inactive": {
+        "/deployments/{deploymentID}/inactive": {
             "put": {
                 "description": "배포 비활성화",
                 "consumes": [
@@ -992,12 +1575,6 @@ const docTemplate = `{
                 ],
                 "summary": "Inactive Deployment",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
                     {
                         "type": "string",
                         "description": "deploymentID",
@@ -1024,7 +1601,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/deployments/{deploymentID}/model-history": {
+        "/deployments/{deploymentID}/model-history": {
             "get": {
                 "description": "배포 모델 변경이력 조회",
                 "consumes": [
@@ -1038,12 +1615,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get Model History",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
                     {
                         "type": "string",
                         "description": "deploymentID",
@@ -1070,7 +1641,14 @@ const docTemplate = `{
                 }
             }
         },
+<<<<<<< HEAD
         "/projects/{projectID}/deployments/{deploymentID}/predict": {
+=======
+        "/deployments/{deploymentID}/predict": {
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+        "/deployments/{deploymentID}/predict": {
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "post": {
                 "description": "예측 요청",
                 "consumes": [
@@ -1086,12 +1664,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "deploymentID",
                         "name": "deploymentID",
                         "in": "path",
@@ -1126,7 +1710,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/deployments/{deploymentID}/replace-model": {
+        "/deployments/{deploymentID}/replace-model": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "patch": {
                 "description": "배포 모델변경",
                 "consumes": [
@@ -1142,12 +1730,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "deploymentID",
                         "name": "deploymentID",
                         "in": "path",
@@ -1181,7 +1775,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/model-packages": {
+        "/model-packages": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "get": {
                 "description": "모델 패키지 리스트",
                 "consumes": [
@@ -1197,6 +1795,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path",
@@ -1204,6 +1804,10 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "queryName",
                         "name": "name",
                         "in": "query"
@@ -1258,6 +1862,8 @@ const docTemplate = `{
                 "summary": "Create ModelPackage",
                 "parameters": [
                     {
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "type": "string",
                         "description": "projectID",
                         "name": "projectID",
@@ -1265,6 +1871,10 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "Create ModelPackage",
                         "name": "body",
                         "in": "body",
@@ -1292,7 +1902,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}": {
+        "/model-packages/{modelPackageID}": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "get": {
                 "description": "모델 패키지 상세조회",
                 "consumes": [
@@ -1308,12 +1922,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1350,12 +1970,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete ModelPackage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
-                    },
                     {
                         "type": "string",
                         "description": "modelPackageID",
@@ -1396,12 +2010,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1435,7 +2055,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/archive": {
+        "/model-packages/{modelPackageID}/archive": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "put": {
                 "description": "모델 패키지 보관",
                 "consumes": [
@@ -1451,12 +2075,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1481,7 +2111,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/download-holdout-dataset": {
+        "/model-packages/{modelPackageID}/download-holdout-dataset": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "get": {
                 "description": "홀드아웃 데이터셋 파일 다운로드",
                 "produces": [
@@ -1494,12 +2128,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1517,7 +2157,11 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/download-model": {
+        "/model-packages/{modelPackageID}/download-model": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "get": {
                 "description": "모델 파일 다운로드",
                 "produces": [
@@ -1530,12 +2174,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1553,7 +2203,11 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/download-training-dataset": {
+        "/model-packages/{modelPackageID}/download-training-dataset": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "get": {
                 "description": "훈련 데이터셋 파일 다운로드",
                 "produces": [
@@ -1566,12 +2220,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1589,7 +2249,11 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/upload-holdout-dataset": {
+        "/model-packages/{modelPackageID}/upload-holdout-dataset": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "post": {
                 "description": "훈련 검증 데이터셋 파일 업로드",
                 "consumes": [
@@ -1605,12 +2269,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+<<<<<<< HEAD
+<<<<<<< HEAD
                         "description": "projectID",
                         "name": "projectID",
                         "in": "path"
                     },
                     {
                         "type": "string",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "description": "modelPackageID",
                         "name": "modelPackageID",
                         "in": "path",
@@ -1635,7 +2305,11 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/upload-model": {
+        "/model-packages/{modelPackageID}/upload-model": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
             "post": {
                 "description": "모델 파일 업로드",
                 "consumes": [
@@ -1651,11 +2325,49 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+                        "in": "path",
+                        "required": true
                     },
                     {
+                        "type": "file",
+                        "description": "file upload",
+                        "name": "upfile",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/model-packages/{modelPackageID}/upload-training-dataset": {
+            "post": {
+                "description": "훈련 데이터셋 파일 업로드",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelPackage"
+                ],
+                "summary": "Upload Training Dataset File",
+                "parameters": [
+                    {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                         "type": "string",
                         "description": "modelPackageID",
                         "name": "modelPackageID",
@@ -1681,9 +2393,13 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/projects/{projectID}/model-packages/{modelPackageID}/upload-training-dataset": {
-            "post": {
-                "description": "훈련 데이터셋 파일 업로드",
+        "/prediction-envs": {
+            "get": {
+                "description": "프로젝트 리스트",
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                 "consumes": [
                     "application/json"
                 ],
@@ -1691,28 +2407,112 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ModelPackage"
+                    "PredictionEnv"
                 ],
-                "summary": "Upload Training Dataset File",
+                "summary": "Get PredictionEnv List",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "projectID",
-                        "name": "projectID",
-                        "in": "path"
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "modelPackageID",
-                        "name": "modelPackageID",
-                        "in": "path",
-                        "required": true
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
                     },
                     {
-                        "type": "file",
-                        "description": "file upload",
-                        "name": "upfile",
-                        "in": "formData",
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetPredictionEnvListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "프로젝트 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Create PredictionEnv",
+                "parameters": [
+                    {
+                        "description": "Create PredictionEnv",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePredictionEnvRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/prediction-envs/{predictionEnvID}": {
+            "get": {
+                "description": "프로젝트 상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Get PredictionEnv",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -1724,8 +2524,871 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetPredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "프로젝트 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Delete PredictionEnv",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeletePredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "프로젝트 정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Edit PredictionEnv",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update PredictionEnv Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePredictionEnvRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects": {
+            "get": {
+                "description": "프로젝트 리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Get Project List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetProjectListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "프로젝트 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Create Project",
+                "parameters": [
+                    {
+                        "description": "Create Project",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProjectRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProjectResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}": {
+            "get": {
+                "description": "프로젝트 상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Get Project",
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+<<<<<<< HEAD
+<<<<<<< HEAD
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelPackageID",
+                        "name": "modelPackageID",
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+<<<<<<< HEAD
+<<<<<<< HEAD
+                        "type": "file",
+                        "description": "file upload",
+                        "name": "upfile",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+=======
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetProjectResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "프로젝트 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Delete Project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteProjectResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "프로젝트 정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Edit Project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Project Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateProjectRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateProjectResponseDTO"
+                        }
+                    }
+                }
+            }
+<<<<<<< HEAD
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor": {
+            "get": {
+                "description": "모니터 설정 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorGetSettingResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Test",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Test Create",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Monitor",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorCreateRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorCreateResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "모니터링 설정 변경",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Patch Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch Monitor",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorPatchRequestDTO"
+                        }
+                    }
+                ],
                 "responses": {}
             }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/accuracy": {
+            "get": {
+                "description": "정확도 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Accuracy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "type",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AccuracyGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/actual": {
+            "post": {
+                "description": "upload Actual file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Upload Actual file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "actual file upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "actualResponse",
+                        "name": "actualResponse",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/detail": {
+            "get": {
+                "description": "피쳐 드리프트 디테일",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Feature Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/detail/graph": {
+            "get": {
+                "description": "피쳐 디테일 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Feature Detail Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/drift": {
+            "get": {
+                "description": "데이터 드리프트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Data Drift",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/drift/graph": {
+            "get": {
+                "description": "드리프트 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Drift Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "startTime",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endTime",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectID}/deployments/{deploymentID}/monitor/statuses": {
+            "get": {
+                "description": "모니터 상태 리스트 조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Monitor Status List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "projectID",
+                        "name": "projectID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "deploymentsID",
+                        "name": "deploymentsID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorGetStatusListResponseDTO"
+                        }
+                    }
+                }
+            }
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
         }
     },
     "definitions": {
@@ -1818,19 +3481,84 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ClusterInfo": {
+            "type": "object",
+            "properties": {
+                "clusterInfoID": {
+                    "type": "string"
+                },
+                "inferenceSvcInfo": {
+                    "$ref": "#/definitions/dto.InferenceSvcInfo"
+                },
+                "name": {
+                    "description": "클러스터 명",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateClusterInfoRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "클러스터 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "ClusterInfo 01"
+                },
+                "infereceSvcAPISvrEndPoint": {
+                    "description": "Kserve API Server 접속주소",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "http://192.168.88.161:30070"
+                },
+                "infereceSvcHostName": {
+                    "description": "Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "example.com"
+                },
+                "inferenceSvcIngressEndPoint": {
+                    "description": "Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)",
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "http://192.168.88.161:31000"
+                }
+            }
+        },
+        "dto.CreateClusterInfoResponseDTO": {
+            "type": "object",
+            "properties": {
+                "clusterInfoID": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateDeploymentRequestDTO": {
             "type": "object",
             "required": [
                 "modelPackageID",
                 "name",
-                "predictionEnvID"
+                "predictionEnvID",
+                "projectID"
             ],
             "properties": {
+                "projectID": {
+                    "description": "프로젝트 ID",
+                    "type": "string",
+                    "x-order": "0 x-nullable=false",
+                    "example": "cbjmlbnr2g4j4bjpq18g"
+                },
                 "modelPackageID": {
                     "description": "모델패키지 ID",
                     "type": "string",
                     "x-order": "1 x-nullable=false",
-                    "example": "ID-1234"
+                    "example": "cbjmmrvr2g4j4bjpq1a0"
+                },
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "10",
+                    "example": "Index"
                 },
                 "name": {
                     "description": "배포 명",
@@ -1848,7 +3576,7 @@ const docTemplate = `{
                     "description": "예측 환경",
                     "type": "string",
                     "x-order": "4",
-                    "example": "k8s-inference-staging"
+                    "example": "cbjmmqfr2g4j4bjpq19g"
                 },
                 "importance": {
                     "description": "배포중요도",
@@ -1876,21 +3604,19 @@ const docTemplate = `{
                 },
                 "featureDriftTracking": {
                     "description": "데이터 드리프트 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "8",
-                    "example": "True"
+                    "example": false
                 },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "9",
-                    "example": "True"
-                },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
+                    "example": false
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                 }
             }
         },
@@ -1904,12 +3630,80 @@ const docTemplate = `{
         },
         "dto.CreateModelPackageRequestDTO": {
             "type": "object",
+            "required": [
+                "projectID"
+            ],
             "properties": {
+                "projectID": {
+                    "description": "프로젝트 ID",
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "cbjmlbnr2g4j4bjpq18g"
+                },
                 "name": {
                     "description": "모델패키지 명",
                     "type": "string",
-                    "x-order": "1",
+                    "x-order": "01",
                     "example": "ModelPacakge 01"
+                },
+                "description": {
+                    "description": "모델패키지 설명",
+                    "type": "string",
+                    "x-order": "02",
+                    "example": "New ModelPacakge"
+                },
+                "modelName": {
+                    "description": "모델명",
+                    "type": "string",
+                    "x-order": "03",
+                    "example": "Example Model"
+                },
+                "modelVersion": {
+                    "description": "모델 버전",
+                    "type": "string",
+                    "x-order": "04",
+                    "example": "1.4"
+                },
+                "modelDescription": {
+                    "description": "모델 설명",
+                    "type": "string",
+                    "x-order": "05",
+                    "example": "Best Accuracy"
+                },
+                "targetType": {
+                    "description": "모델 예측타입",
+                    "type": "string",
+                    "enum": [
+                        "Binary",
+                        " Regression"
+                    ],
+                    "x-order": "06",
+                    "example": "Binary"
+                },
+                "predictionTargetName": {
+                    "description": "예측 타켓명칭",
+                    "type": "string",
+                    "x-order": "07",
+                    "example": "Target"
+                },
+                "modelFrameWork": {
+                    "description": "모델 프레임워크",
+                    "type": "string",
+                    "enum": [
+                        "TensorFlow",
+                        " PyTorch",
+                        " SkLearn",
+                        " XGBoost",
+                        " LightGBM"
+                    ],
+                    "x-order": "08",
+                    "example": "TensorFlow"
+                },
+                "modelFrameWorkVersion": {
+                    "description": "모델 프레임워크 버전",
+                    "type": "string",
+                    "x-order": "09",
+                    "example": "1.14.0"
                 },
                 "predictionThreshold": {
                     "description": "이진분류 예측임계값",
@@ -1928,65 +3722,6 @@ const docTemplate = `{
                     "type": "string",
                     "x-order": "12",
                     "example": "False"
-                },
-                "description": {
-                    "description": "모델패키지 설명",
-                    "type": "string",
-                    "x-order": "2",
-                    "example": "New ModelPacakge"
-                },
-                "modelName": {
-                    "description": "모델명",
-                    "type": "string",
-                    "x-order": "3",
-                    "example": "Example Model"
-                },
-                "modelVersion": {
-                    "description": "모델 버전",
-                    "type": "string",
-                    "x-order": "4",
-                    "example": "1.4"
-                },
-                "modelDescription": {
-                    "description": "모델 설명",
-                    "type": "string",
-                    "x-order": "5",
-                    "example": "Best Accuracy"
-                },
-                "targetType": {
-                    "description": "모델 예측타입",
-                    "type": "string",
-                    "enum": [
-                        "Binary",
-                        " Regression"
-                    ],
-                    "x-order": "6",
-                    "example": "Binary"
-                },
-                "predictionTargetName": {
-                    "description": "예측 타켓명칭",
-                    "type": "string",
-                    "x-order": "7",
-                    "example": "Target"
-                },
-                "modelFrameWork": {
-                    "description": "모델 프레임워크",
-                    "type": "string",
-                    "enum": [
-                        "TensorFlow",
-                        " PyTorch",
-                        " SkLearn",
-                        " XGBoost",
-                        " LightGBM"
-                    ],
-                    "x-order": "8",
-                    "example": "TensorFlow"
-                },
-                "modelFrameWorkVersion": {
-                    "description": "모델 프레임워크 버전",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "1.14.0"
                 }
             }
         },
@@ -1994,6 +3729,77 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "modelPackageID": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreatePredictionEnvRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "배포환경 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "PredictionEnv 01"
+                },
+                "description": {
+                    "description": "설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "New PredictionEnv"
+                },
+                "clusterInfoID": {
+                    "description": "클러스터정보 ID",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "12345678901234567890"
+                },
+                "useType": {
+                    "description": "클러스터 등록 타입",
+                    "type": "string",
+                    "enum": [
+                        "Default",
+                        " Custom",
+                        " PackageTest"
+                    ],
+                    "x-order": "4"
+                },
+                "namespace": {
+                    "description": "배포할 Kubernetes Namespace",
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "default"
+                }
+            }
+        },
+        "dto.CreatePredictionEnvResponseDTO": {
+            "type": "object",
+            "properties": {
+                "predictionEnvID": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateProjectRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "프로젝트 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "Project 01"
+                },
+                "description": {
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "New Project"
+                }
+            }
+        },
+        "dto.CreateProjectResponseDTO": {
+            "type": "object",
+            "properties": {
+                "projectID": {
                     "type": "string"
                 }
             }
@@ -2051,6 +3857,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.DeleteClusterInfoResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DeleteDeploymentResponseDTO": {
             "type": "object",
             "properties": {
@@ -2067,6 +3881,43 @@ const docTemplate = `{
                 }
             }
         },
+<<<<<<< HEAD
+=======
+        "dto.DeletePredictionEnvResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DeleteProjectResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DetailGraphGetResponseDTO": {
+            "type": "object",
+            "properties": {
+                "script": {
+                    "description": "graph JS script",
+<<<<<<< HEAD
+=======
+        "dto.DeleteProjectResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+                    "type": "string"
+                }
+            }
+        },
+>>>>>>> 5e8c14f (Add:Dockerfile, Project Module)
         "dto.FeatureDriftGetResponseDTO": {
             "type": "object",
             "properties": {
@@ -2094,6 +3945,35 @@ const docTemplate = `{
                     "description": "검색 시간 사이의 총 예측 수",
                     "type": "integer",
                     "x-order": "4"
+                }
+            }
+        },
+        "dto.GetClusterInfoListResponseDTO": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "rows": {},
+                "sort": {
+                    "type": "string"
+                },
+                "totalPages": {
+                    "type": "integer"
+                },
+                "totalRows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetClusterInfoResponseDTO": {
+            "type": "object",
+            "properties": {
+                "clusterInfo": {
+                    "$ref": "#/definitions/dto.ClusterInfo"
                 }
             }
         },
@@ -2284,6 +4164,101 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.GetPredictionEnvListResponseDTO": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "rows": {},
+                "sort": {
+                    "type": "string"
+                },
+                "totalPages": {
+                    "type": "integer"
+                },
+                "totalRows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetPredictionEnvResponseDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "배포환경 명",
+                    "type": "string",
+                    "x-order": "1"
+                },
+                "description": {
+                    "description": "설명",
+                    "type": "string",
+                    "x-order": "2"
+                },
+                "clusterInfoID": {
+                    "description": "클러스터정보 ID",
+                    "x-order": "3",
+                    "$ref": "#/definitions/dto.ClusterInfo"
+                },
+                "useType": {
+                    "description": "클러스터 등록 타입",
+                    "type": "string",
+                    "x-order": "4"
+                },
+                "namespace": {
+                    "description": "배포할 Kubernetes Namespace",
+                    "type": "string",
+                    "x-order": "5"
+                },
+                "predictionEnvID": {
+                    "type": "string"
+                },
+                "projects": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
+        "dto.GetProjectListResponseDTO": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "rows": {},
+                "sort": {
+                    "type": "string"
+                },
+                "totalPages": {
+                    "type": "integer"
+                },
+                "totalRows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetProjectResponseDTO": {
+            "type": "object",
+            "properties": {
+                "deployments": {},
+                "description": {
+                    "type": "string"
+                },
+                "modelPackages": {},
+                "name": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.InActiveDeploymentResponseDTO": {
             "type": "object",
             "properties": {
@@ -2292,15 +4267,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.InferenceSvcInfo": {
+            "type": "object",
+            "properties": {
+                "infereceSvcAPISvrEndPoint": {
+                    "description": "Kserve API Server 접속주소",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "http://192.168.88.161:30070"
+                },
+                "infereceSvcHostName": {
+                    "description": "Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "example.com"
+                },
+                "inferenceSvcIngressEndPoint": {
+                    "description": "Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)",
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "http://192.168.88.161:31000"
+                }
+            }
+        },
         "dto.LoginReqDTO": {
             "type": "object",
             "properties": {
-                "captcha": {
-                    "type": "string"
-                },
-                "captchaID": {
-                    "type": "string"
-                },
                 "password": {
                     "type": "string"
                 },
@@ -2328,6 +4320,30 @@ const docTemplate = `{
             "properties": {
                 "accuracySetting": {
                     "$ref": "#/definitions/dto.PatchAccuracySetting"
+<<<<<<< HEAD
+=======
+                    "$ref": "#/definitions/dto.AccuracySetting"
+                },
+                "associationID": {
+                    "type": "string"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.DataDriftSetting"
+                },
+                "featureDriftTracking": {
+                    "type": "boolean"
+                },
+                "modelHistoryID": {
+                    "type": "string"
+                },
+                "modelPackageID": {
+                    "type": "string"
+                },
+                "serviceHealthSetting": {
+                    "$ref": "#/definitions/dto.ServiceHealthSetting"
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                 }
             }
         },
@@ -2476,12 +4492,6 @@ const docTemplate = `{
         "dto.RegisterReqDTO": {
             "type": "object",
             "properties": {
-                "captcha": {
-                    "type": "string"
-                },
-                "captchaID": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
@@ -2558,6 +4568,41 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateClusterInfoRequestDTO": {
+            "type": "object",
+            "properties": {
+                "infereceSvcAPISvrEndPoint": {
+                    "description": "Kserve API Server 접속주소",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "http://192.168.88.161:30070"
+                },
+                "infereceSvcHostName": {
+                    "description": "Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "example.com"
+                },
+                "inferenceSvcIngressEndPoint": {
+                    "description": "Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)",
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "http://192.168.88.161:31000"
+                },
+                "name": {
+                    "description": "클러스터 명",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateClusterInfoResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateDeploymentRequestDTO": {
             "type": "object",
             "properties": {
@@ -2587,9 +4632,19 @@ const docTemplate = `{
                 },
                 "featureDriftTracking": {
                     "description": "데이터 드리프트 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "8",
-                    "example": "True"
+                    "example": true
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+                },
+                "accuracyAnalyze": {
+                    "description": "정확도 측정 설정",
+                    "type": "boolean",
+                    "x-order": "9",
+                    "example": true
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                 },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
@@ -2597,12 +4652,21 @@ const docTemplate = `{
                     "x-order": "9",
                     "example": "Index"
                 },
+<<<<<<< HEAD
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
+<<<<<<< HEAD
                     "type": "string",
                     "x-order": "9",
                     "example": "True"
+=======
+                    "type": "boolean",
+                    "x-order": "9",
+                    "example": true
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
                 },
+=======
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                 "description": {
                     "description": "베포 설명",
                     "type": "string"
@@ -2716,12 +4780,88 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdatePredictionEnvRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "배포환경 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "PredictionEnv 01"
+                },
+                "description": {
+                    "description": "설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "New PredictionEnv"
+                },
+                "clusterInfoID": {
+                    "description": "클러스터정보 ID",
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "12345678901234567890"
+                },
+                "useType": {
+                    "description": "클러스터 등록 타입",
+                    "type": "string",
+                    "enum": [
+                        "Default",
+                        " Custom",
+                        " PackageTest"
+                    ],
+                    "x-order": "4"
+                },
+                "namespace": {
+                    "description": "배포할 Kubernetes Namespace",
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "default"
+                }
+            }
+        },
+        "dto.UpdatePredictionEnvResponseDTO": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateProjectRequestDTO": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "프로젝트 명",
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "Edited Project 01"
+                },
+                "description": {
+                    "description": "프로젝트 설명",
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "this is Edited Project"
+                }
+            }
+        },
+        "dto.UpdateProjectResponseDTO": {
+            "type": "object",
+            "properties": {
+<<<<<<< HEAD
+>>>>>>> e0af63f (Add:Dockerfile, Project Module)
+=======
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UploadActualResponseDTO": {
             "type": "object",
             "properties": {
                 "deploymentID": {
                     "type": "string"
                 },
+>>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
                 "message": {
                     "type": "string"
                 }

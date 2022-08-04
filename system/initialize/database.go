@@ -86,7 +86,6 @@ func LoadDatabaseConnection(dbConfig config.Database, h *handler.Handler) error 
 }
 
 func openDBConnection(driverName, dataSourceName string) (*gorm.DB, error) {
-	print("driverName:" + driverName)
 	var err error
 	var db *gorm.DB
 	if driverName == "postgres" {

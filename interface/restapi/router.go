@@ -1,14 +1,15 @@
 package restapi
 
 import (
+	"html/template"
+	"io"
+	"net/http"
+
 	feature "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/feature"
 	router "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/router"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"html/template"
-	"io"
-	"net/http"
 )
 
 // Template html Template
@@ -33,11 +34,11 @@ func SetRouters(e *echo.Echo, h *handler.Handler) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
 
-	// html template
-	// t := &Template{
-	// 	templates: template.Must(template.ParseGlob("www/templates/**/*.*ml")),
-	// }
-	// e.Renderer = t
+	//html template
+	t := &Template{
+		templates: template.Must(template.ParseGlob("www/templates/**/*.*ml")),
+	}
+	e.Renderer = t
 
 	// Set CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -68,5 +69,6 @@ func SetRouters(e *echo.Echo, h *handler.Handler) {
 	router.SetMonitor(ga, h, features.Monitor)
 	router.SetAuths(ga, features.Auths)
 	router.SetEmail(ga, features.Email)
+	router.SetProject(ga, features.Project)
 	router.SetGraph(ga, h)
 }

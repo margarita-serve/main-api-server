@@ -15,17 +15,28 @@ import (
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/domain/repository"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	"github.com/rs/xid"
 
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
+	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
+	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/infrastructure/repository"
 )
 
 // ProjectService type
+type IModelPackageService interface {
+	GetListByProject(req *appModelPackageDTO.GetModelPackageListByProjectRequestDTO) (*appModelPackageDTO.GetModelPackageListByProjectResponseDTO, error)
+}
+
+type IDeploymentService interface {
+	GetListByProject(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
+}
 
 type ProjectService struct {
 	BaseService
-	repo domRepo.IProjectRepo
+	repo            domRepo.IProjectRepo
+	modelPackageSvc IModelPackageService
 }
 
 // NewProjectService new ProjectService
@@ -42,11 +53,15 @@ func NewProjectService(h *handler.Handler) (*ProjectService, error) {
 		return nil, err
 	}
 
+	if svc.modelPackageSvc, err = appModelPackageSvc.NewModelPackageService(h, svc); err != nil {
+		return nil, err
+	}
+
 	return svc, nil
 }
 
 // Create
-func (s *ProjectService) Create(req *appDTO.CreateProjectRequestDTO) (*appDTO.CreateProjectResponseDTO, error) {
+func (s *ProjectService) Create(req *appDTO.CreateProjectRequestDTO, i identity.Identity) (*appDTO.CreateProjectResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -60,15 +75,12 @@ func (s *ProjectService) Create(req *appDTO.CreateProjectRequestDTO) (*appDTO.Cr
 
 	guid := xid.New().String()
 
-	//toBe...
-	OwnerID := "testID"
-
 	// New deployment domain Instance
 	domAggregateProject, err := domEntity.NewProject(
 		guid,
 		req.Name,
 		req.Description,
-		OwnerID,
+		i.Claims.Username,
 	)
 	if err != nil {
 		return nil, err
@@ -91,14 +103,14 @@ func (s *ProjectService) Create(req *appDTO.CreateProjectRequestDTO) (*appDTO.Cr
 	return resDTO, nil
 }
 
-func (s *ProjectService) Delete(req *appDTO.DeleteProjectRequestDTO) (*appDTO.DeleteProjectResponseDTO, error) {
+func (s *ProjectService) Delete(req *appDTO.DeleteProjectRequestDTO, i identity.Identity) (*appDTO.DeleteProjectResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
-	domAggregateProject, err := s.repo.GetByID(req.ProjectID)
+	domAggregateProject, err := s.repo.GetByID(req.ProjectID, i)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +127,7 @@ func (s *ProjectService) Delete(req *appDTO.DeleteProjectRequestDTO) (*appDTO.De
 	return resDTO, nil
 }
 
-func (s *ProjectService) UpdateProject(req *appDTO.UpdateProjectRequestDTO) (*appDTO.UpdateProjectResponseDTO, error) {
+func (s *ProjectService) UpdateProject(req *appDTO.UpdateProjectRequestDTO, i identity.Identity) (*appDTO.UpdateProjectResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -127,7 +139,7 @@ func (s *ProjectService) UpdateProject(req *appDTO.UpdateProjectRequestDTO) (*ap
 	//userID := "testID"
 
 	//Find Domain Entity
-	domAggregateProject, err := s.repo.GetForUpdate(req.ProjectID)
+	domAggregateProject, err := s.repo.GetForUpdate(req.ProjectID, i)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +169,7 @@ func (s *ProjectService) UpdateProject(req *appDTO.UpdateProjectRequestDTO) (*ap
 	return resDTO, nil
 }
 
-func (s *ProjectService) GetByID(req *appDTO.GetProjectRequestDTO) (*appDTO.GetProjectResponseDTO, error) {
+func (s *ProjectService) GetByID(req *appDTO.GetProjectRequestDTO, i identity.Identity) (*appDTO.GetProjectResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -165,20 +177,30 @@ func (s *ProjectService) GetByID(req *appDTO.GetProjectRequestDTO) (*appDTO.GetP
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	res, err := s.repo.GetByID(req.ProjectID)
+	res, err := s.repo.GetByID(req.ProjectID, i)
+	if err != nil {
+		return nil, err
+	}
+	reqByProject := &appModelPackageDTO.GetModelPackageListByProjectRequestDTO{
+		ProjectID: res.ID,
+	}
+
+	resModelPackage, err := s.modelPackageSvc.GetListByProject(reqByProject)
 	if err != nil {
 		return nil, err
 	}
 
 	// response dto
 	resDTO := new(appDTO.GetProjectResponseDTO)
+	resDTO.ProjectID = reqByProject.ProjectID
 	resDTO.Name = res.Name
 	resDTO.Description = res.Description
+	resDTO.ModelPackages = resModelPackage.Rows
 
 	return resDTO, nil
 }
 
-func (s *ProjectService) GetList(req *appDTO.GetProjectListRequestDTO) (*appDTO.GetProjectListResponseDTO, error) {
+func (s *ProjectService) GetList(req *appDTO.GetProjectListRequestDTO, i identity.Identity) (*appDTO.GetProjectListResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -192,7 +214,7 @@ func (s *ProjectService) GetList(req *appDTO.GetProjectListRequestDTO) (*appDTO.
 		Sort:  req.Sort,
 	}
 
-	resultList, pagination, err := s.repo.GetList(req.Name, reqP)
+	resultList, pagination, err := s.repo.GetList(req.Name, reqP, i)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +230,7 @@ func (s *ProjectService) GetList(req *appDTO.GetProjectListRequestDTO) (*appDTO.
 	resDTO.TotalRows = p.TotalRows
 	resDTO.TotalPages = p.TotalPages
 
-	var listProject []*appDTO.GetProjectResponseDTO
+	var listProject []appDTO.GetProjectResponseDTO
 	for _, rec := range resultList {
 		tmp := new(appDTO.GetProjectResponseDTO)
 
@@ -216,7 +238,7 @@ func (s *ProjectService) GetList(req *appDTO.GetProjectListRequestDTO) (*appDTO.
 		tmp.Name = rec.Name
 		tmp.Description = rec.Description
 
-		listProject = append(listProject, tmp)
+		listProject = append(listProject, *tmp)
 	}
 
 	resDTO.Rows = listProject

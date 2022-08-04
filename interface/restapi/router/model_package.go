@@ -8,7 +8,7 @@ import (
 
 // SetModelPackage set Modelpackage Router
 func SetModelPackage(eg *echo.Group, f *feature.FModelPackage) {
-	gc := eg.Group("/projects/:projectID/model-packages")
+	gc := eg.Group("/model-packages")
 	gc.Use(internalMiddleware.JWTVerifier(f.GetHandler()))
 
 	gc.POST("", f.Create)

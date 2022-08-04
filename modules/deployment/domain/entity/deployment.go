@@ -223,6 +223,16 @@ func (d *Deployment) UpdateDeploymentImportance(req string) {
 	d.Importance = req
 }
 
+func (d *Deployment) UpdateDeploymentRequestCPU(req float32) {
+	d.RequestCPU = req
+	d.LimitCPU = req
+}
+
+func (d *Deployment) UpdateDeploymentRequestMEM(req float32) {
+	d.RequestMEM = req
+	d.LimitMEM = req
+}
+
 func (d *Deployment) ChangeModelPackage(req string) {
 	d.ModelPackageID = req
 }

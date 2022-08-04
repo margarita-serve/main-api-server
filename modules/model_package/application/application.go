@@ -6,13 +6,13 @@ import (
 )
 
 // NewModelPackageApp new ModelPackageApp
-func NewModelPackageApp(h *handler.Handler) (*ModelPackageApp, error) {
+func NewModelPackageApp(h *handler.Handler, projectSvc appSvc.IProjectService) (*ModelPackageApp, error) {
 	var err error
 
 	app := new(ModelPackageApp)
 	app.handler = h
 
-	if app.ModelPackageSvc, err = appSvc.NewModelPackageService(h); err != nil {
+	if app.ModelPackageSvc, err = appSvc.NewModelPackageService(h, projectSvc); err != nil {
 		return nil, err
 	}
 

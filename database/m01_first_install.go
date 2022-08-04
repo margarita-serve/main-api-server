@@ -97,5 +97,11 @@ func M01FirstInstall(h *handler.Handler) error {
 		}
 	}
 
+	if err := geoMig.Run(migrations.NewCreateStructureProject(h)); err != nil {
+		if err := geoMig.Rollback(migrations.NewCreateStructureProject(h)); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

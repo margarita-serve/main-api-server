@@ -21,6 +21,7 @@ import (
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/domain/repository"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
@@ -28,6 +29,8 @@ import (
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	infStorageClient "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/storage/minio"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/infrastructure/repository"
+
+	appProjectDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
 )
 
 // ModelPackageService type
@@ -42,10 +45,15 @@ type ModelPackageService struct {
 	BaseService
 	repo          domRepo.IModelPackageRepo
 	storageClient StorageClient
+	projectSvc    IProjectService
+}
+
+type IProjectService interface {
+	GetList(req *appProjectDTO.GetProjectListRequestDTO, i identity.Identity) (*appProjectDTO.GetProjectListResponseDTO, error)
 }
 
 // NewModelPackageService new ModelPackageService
-func NewModelPackageService(h *handler.Handler) (*ModelPackageService, error) {
+func NewModelPackageService(h *handler.Handler, projectSvc IProjectService) (*ModelPackageService, error) {
 	var err error
 
 	svc := new(ModelPackageService)
@@ -74,11 +82,13 @@ func NewModelPackageService(h *handler.Handler) (*ModelPackageService, error) {
 		return nil, err
 	}
 
+	svc.projectSvc = projectSvc
+
 	return svc, nil
 }
 
 // Create
-func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO) (*appDTO.CreateModelPackageResponseDTO, error) {
+func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO, i identity.Identity) (*appDTO.CreateModelPackageResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -93,7 +103,7 @@ func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO) (
 	guid := xid.New().String()
 
 	//toBe...
-	OwnerID := "testID"
+	//OwnerID := "testID"
 
 	// New deployment domain Instance
 	domAggregateModelPackage, err := domEntity.NewModelPackage(
@@ -111,7 +121,7 @@ func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO) (
 		req.PredictionThreshold,
 		req.PositiveClassLabel,
 		req.NegativeClassLabel,
-		OwnerID,
+		i.Claims.Username,
 	)
 	if err != nil {
 		return nil, err
@@ -296,13 +306,21 @@ func (s *ModelPackageService) GetByID(req *appDTO.GetModelPackageRequestDTO) (*a
 	return resDTO, nil
 }
 
-func (s *ModelPackageService) GetList(req *appDTO.GetModelPackageListRequestDTO) (*appDTO.GetModelPackageListResponseDTO, error) {
+func (s *ModelPackageService) GetList(req *appDTO.GetModelPackageListRequestDTO, i identity.Identity) (*appDTO.GetModelPackageListResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
+	projectReq := &appProjectDTO.GetProjectListRequestDTO{}
+	projectRes, err := s.projectSvc.GetList(projectReq, i)
+	projectIdList := projectRes.Rows.([]appProjectDTO.GetProjectResponseDTO)
+
+	var listProjectId []string
+	for _, rec := range projectIdList {
+		listProjectId = append(listProjectId, rec.ProjectID)
+	}
 
 	reqP := infRepo.Pagination{
 		Limit: req.Limit,
@@ -310,7 +328,7 @@ func (s *ModelPackageService) GetList(req *appDTO.GetModelPackageListRequestDTO)
 		Sort:  req.Sort,
 	}
 
-	resultList, pagination, err := s.repo.GetList(req.Name, reqP)
+	resultList, pagination, err := s.repo.GetList(req.Name, reqP, listProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -325,6 +343,53 @@ func (s *ModelPackageService) GetList(req *appDTO.GetModelPackageListRequestDTO)
 	resDTO.Page = p.Page
 	resDTO.TotalRows = p.TotalRows
 	resDTO.TotalPages = p.TotalPages
+
+	var listModelPackage []*appDTO.GetModelPackageResponseDTO
+	for _, rec := range resultList {
+		tmp := new(appDTO.GetModelPackageResponseDTO)
+
+		tmp.ModelPackageID = rec.ID
+		tmp.ProjectID = rec.ProjectID
+		tmp.Name = rec.Name
+		tmp.Description = rec.Description
+		tmp.ModelName = rec.ModelName
+		tmp.ModelVersion = rec.ModelVersion
+		tmp.ModelDescription = rec.ModelDescription
+		tmp.TargetType = rec.TargetType
+		tmp.PredictionTargetName = rec.PredictionTargetName
+		tmp.ModelFrameWork = rec.ModelFrameWork
+		tmp.ModelFrameWorkVersion = rec.ModelFrameWorkVersion
+		tmp.PredictionThreshold = rec.PredictionThreshold
+		tmp.PositiveClassLabel = rec.PositiveClassLabel
+		tmp.NegativeClassLabel = rec.NegativeClassLabel
+		tmp.ModelFileName = path.Base(rec.ModelFilePath)
+		tmp.TrainingDatasetName = path.Base(rec.TrainingDatasetPath)
+		tmp.HoldoutDatasetName = path.Base(rec.HoldoutDatasetPath)
+		tmp.Archived = rec.Archived
+
+		listModelPackage = append(listModelPackage, tmp)
+	}
+
+	resDTO.Rows = listModelPackage
+
+	return resDTO, nil
+}
+
+func (s *ModelPackageService) GetListByProject(req *appDTO.GetModelPackageListByProjectRequestDTO) (*appDTO.GetModelPackageListByProjectResponseDTO, error) {
+	// //authorization
+	// if i.CanAccessCurrentRequest() == false {
+	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
+	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
+	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
+	// }
+
+	resultList, err := s.repo.GetListByProject(req.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	// response dto
+	resDTO := new(appDTO.GetModelPackageListByProjectResponseDTO)
 
 	var listModelPackage []*appDTO.GetModelPackageResponseDTO
 	for _, rec := range resultList {

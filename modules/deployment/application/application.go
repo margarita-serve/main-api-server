@@ -6,13 +6,13 @@ import (
 )
 
 // NewDeploymentApp new DeploymentApp
-func NewDeploymentApp(h *handler.Handler, modelPackageSvc appSvc.IModelPackageService, monitorSvc appSvc.IMonitorService) (*DeploymentApp, error) {
+func NewDeploymentApp(h *handler.Handler, predictionEnvSvc appSvc.IPredictionEnvService, projectSvc appSvc.IProjectService, modelPackageSvc appSvc.IModelPackageService, monitorSvc appSvc.IMonitorService) (*DeploymentApp, error) {
 	var err error
 
 	app := new(DeploymentApp)
 	app.handler = h
 
-	if app.DeploymentSvc, err = appSvc.NewDeploymentService(h, modelPackageSvc, monitorSvc); err != nil {
+	if app.DeploymentSvc, err = appSvc.NewDeploymentService(h, predictionEnvSvc, projectSvc, modelPackageSvc, monitorSvc); err != nil {
 		return nil, err
 	}
 

@@ -4,6 +4,9 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/database/base"
 	monitorModel "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/entity"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
+	_ "gorm.io/driver/postgres"
+	_ "gorm.io/driver/sqlite"
+	_ "gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 )
 

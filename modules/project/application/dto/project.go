@@ -14,9 +14,11 @@ type GetProjectRequestDTO struct {
 }
 
 type GetProjectResponseDTO struct {
-	ProjectID   string
-	Name        string
-	Description string
+	ProjectID     string
+	Name          string
+	Description   string
+	ModelPackages interface{}
+	Deployments   interface{}
 }
 
 type GetProjectListRequestDTO struct {

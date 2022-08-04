@@ -33,6 +33,8 @@ func (r *UpdateDeploymentRequestDTO) Validate() error {
 		validation.Field(&r.Name, validation.Length(0, 255)),
 		validation.Field(&r.Description, validation.Length(0, 255)),
 		validation.Field(&r.Importance, validation.In("Low", "Moderate", "High", "Critical")),
+		validation.Field(&r.RequestCPU, validation.Min(0.1), validation.Max(2.0)),
+		validation.Field(&r.RequestMEM, validation.Min(0.1), validation.Max(2.0)),
 	)
 }
 

@@ -1,0 +1,312 @@
+--
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pv-claim
+  namespace: koreserve
+spec:
+  storageClassName: default-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-secret
+  namespace: koreserve
+data:
+  password: a29yZXNlcnZl
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: koreserve
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - image: mariadb:10.7.3 # MariaDB 이미지
+        name: mariadb
+        ports:
+        - containerPort: 3306 # Container 포트
+          name: mariadb
+        volumeMounts:
+        - name: mariadb-persistent-storage
+          mountPath: /var/lib/mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret # Secret의 이름
+              key: password # Secret의 data에 들어간 key:value
+        - name: "MYSQL_DATABASE"
+          value: "koreserve"
+        - name: "MYSQL_USER"
+          value: "gorm"
+        - name: "MYSQL_PASSWORD"
+          value: "gorm"
+      volumes:
+      - name: mariadb-persistent-storage
+        persistentVolumeClaim:
+          claimName: mariadb-pv-claim
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: koreserve
+  labels:
+    app: redis
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: koreserve
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - image: redis:7.0 # 이미지
+        name: redis
+        ports:
+        - containerPort: 6379 # Container 포트
+          name: redis
+    
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koreserve-main-rest-api
+  namespace: koreserve
+  labels:
+    app: koreserve
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: koreserve-main-api-svr
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: koreserve-main-api-svr
+  namespace: koreserve
+spec:
+  selector:
+    matchLabels:
+      app: koreserve-main-api-svr
+  template:
+    metadata:
+      labels:
+        app: koreserve-main-api-svr
+    spec:
+      containers:
+      - image: 192.168.88.155/koreserve/main-api-svr:latest # 이미지
+        name: koreserve-main-api-svr
+        volumeMounts:
+         - name: config-volume
+           mountPath: /app/conf/config.yaml
+        ports:
+        - containerPort: 8080 # Container 포트
+          name: rest-api
+        command: ["/koreserve"]
+        args: ["server","restapi"]    
+      initContainers:  
+      - image: 192.168.88.155/koreserve/main-api-svr:latest # 이미지
+        name: koreserve-main-init-db-migrate
+        volumeMounts:
+         - name: config-volume
+           mountPath: /app/conf/config.yaml
+        command: ["/koreserve"]
+        args: ["db","migrate"]  
+      volumes:
+        - name: config-volume
+          configMap:
+            name: koreserve-main-api-svr-config        
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: koreserve-main-api-svr-config
+  namespace: koreserve
+data:
+  config.yaml: |
+    # Applications
+    applications:
+      servers:
+        restapi:
+          options:
+            showEngineHeader: true
+            displayOpenAPI: true
+            hostname: "http://localhost"
+            listener:
+              port: 8080
+            middlewares:
+              logger:
+                enable: true
+            openAPIDefinition: # OpenAPIDefinition
+              info:
+                title: "KoreServe REST API Server"
+                description: "KoreServe Main API Definition."
+                version: 0.1.0
+                basePath: "/api/v1"
+
+    # Databases
+    databases:
+      identityDB:
+        connectionName: "db-identity"
+        driver: "mysql" # mysql, postgres, sqlserver, sqlite3
+        # mysql
+        username: "gorm"
+        password: "gorm"
+        hostName: "mariadb:3306" # hostname:port OR path
+        dbName: "koreserve"
+        config: "charset=utf8&parseTime=True&loc=Local"
+        maxIdleConns: 10
+        maxOpenConns: 10
+        logMode: true # shoud be "false" on production
+      mainDB:
+        connectionName: "db-main"
+        driver: "mysql" # mysql, postgres, sqlserver, sqlite3
+        # mysql
+        username: "gorm"
+        password: "gorm"
+        hostName: "mariadb:3306" # hostname:port OR path
+        dbName: "koreserve"
+        config: "charset=utf8&parseTime=True&loc=Local"
+        maxIdleConns: 10
+        maxOpenConns: 10
+        logMode: true # shoud be "false" on production
+      # logDB:
+      #   connectionName: "db-log"
+      #   driver: "mysql" # mysql, postgres, sqlserver, sqlite3
+      #   # mysql
+      #   username: "gorm"
+      #   password: "gorm"
+      #   hostName: "127.0.0.1:3306" # hostname:port OR path
+      #   dbName: "a_d3ta_logs"
+      #   config: "charset=utf8&parseTime=True&loc=Local"
+      #   maxIdleConns: 10
+      #   maxOpenConns: 10
+      #   logMode: true # shoud be "false" on production
+      emailDB:
+        connectionName: "db-email"
+        driver: "mysql" # mysql, postgres, sqlserver, sqlite3
+        # mysql
+        username: "gorm"
+        password: "gorm"
+        hostName: "mariadb:3306" # hostname:port OR path
+        dbName: "koreserve"
+        config: "charset=utf8&parseTime=True&loc=Local"
+        maxIdleConns: 10
+        maxOpenConns: 10
+        logMode: true # shoud be "false" on production
+
+    # IAM
+    IAM:
+      defaultAdmin:
+        username: "admin.koreserve"
+        password: "koreserve"
+        nickName: "super admin"
+        email: "koreserve.acornsoft@gmail.com"
+        authorityID: "group:admin"
+      registration:
+        activationURL: "http://%s/api/v1/auths/registration/activate"
+        defaultAuthorityID: "group:default"
+      JWT:
+        issuer: "KORESERVE"
+        signingKey: "KORESERVE-SigningKey"
+      casbin:
+        modelPath: "casbin/casbin_rbac_rest_model.conf"
+        enforcers:
+          defaultEnforcerID: "default-casbin-enforcer"
+          systemEnforcerID: "system-casbin-enforcer"
+
+    # Directory Locations
+    dirLocations:
+      conf: "./conf"
+      www: "./www"
+      temp: "./temp"
+      log: "./logs"
+      cache: "./caches"
+      modelPackageFileRootPath: "koreserve-modelpackage"
+      modelPath: "/model"
+      trainingDatasetPath: "/training-dataset"
+      holdoutDatasetPath: "/holdout-dataset" 
+      monitoringFileRootPath: "koreserve-monitoring"
+      actualDataPath: "/actual-data"
+
+    connectors:
+      storages:
+          minio:
+            endpoint: "192.168.88.154:9000"
+            accessKeyID: "minioadmin"
+            secretAccessKey: "minioadmin"
+            useSSL: false
+
+    # SMTP Servers
+    SMTPServers:
+      defaultSMTP:
+        server: "smtp.gmail.com"
+        port: "587"
+        username: "koreserve.acornsoft@gmail.com"
+        password: "coqaxngvrbrhzset"
+        senderEmail: "no-reply@gmail.com"
+        senderName: "KoreServe NoReply"
+
+    # Caches
+    caches:
+      # Cache with Redis engine Sample
+      sessionCache:
+        connectionName: "session-cache"
+        engine: "redis"
+        driver: "redis"
+        configurations: # Following redis engine
+          network: "tcp"
+          host: "redis"
+          port: "6379"
+          username: ""
+          password: ""
+          db: 1
+          maxRetries: 3
+          poolSize: 10
+          minIdleConns: 5
+
