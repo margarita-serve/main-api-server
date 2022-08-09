@@ -7,7 +7,6 @@ type Connectors struct {
 	DriftServer    DataDriftServer `json:"driftServer" yaml:"driftServer"`
 	AccuracyServer AccuracyServer  `json:"accuracyServer" yaml:"accuracyServer"`
 	GraphServer    GraphServer     `json:"graphServer" yaml:"graphServer"`
-	BokehServer    BokehServer     `json:"bokehServer" yaml:"bokehServer"`
 	Kafka          KafkaServer     `json:"Kafka" yaml:"kafka"`
 }
 
@@ -46,10 +45,6 @@ type AccuracyServer struct {
 }
 
 type GraphServer struct {
-	Endpoint string `json:"endpoint" yaml:"endpoint"`
-}
-
-type BokehServer struct {
 	Endpoint string `json:"endpoint" yaml:"endpoint"`
 }
 

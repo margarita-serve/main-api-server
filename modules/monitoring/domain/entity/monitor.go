@@ -66,7 +66,7 @@ func (m *Monitor) SetDataDriftSetting(monitorRange string, driftMetricType strin
 		m.DriftThreshold = driftThreshold
 	}
 	if importanceThreshold == 0 {
-		m.ImportanceThreshold = 0
+		m.ImportanceThreshold = 0.5
 	} else {
 		m.ImportanceThreshold = importanceThreshold
 	}

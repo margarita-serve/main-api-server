@@ -191,7 +191,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO) (*app
 
 	go func() {
 		defer wait.Done() //끝나면 .Done() 호출
-		_, err := s.monitoringSvc.Create(reqMonitoring)
+		_, err = s.monitoringSvc.Create(reqMonitoring)
 		if err != nil {
 			errs <- err
 		}

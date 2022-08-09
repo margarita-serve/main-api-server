@@ -125,10 +125,6 @@ connectors:
     endpoint: "http://192.168.88.151:30072"
   graphServer:
     endpoint: "http://192.168.88.151:30073"
-  bokehServer:
-    endpoint: "http://192.168.88.151:30074"
-  bokehLocal:
-    endpoint: "http://localhost:5006"
   kafka:
     endpoint: "192.168.88.151:32038"
     groupID: "monitor-group"

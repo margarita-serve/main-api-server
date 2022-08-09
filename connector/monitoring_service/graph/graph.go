@@ -135,7 +135,7 @@ func (c *GraphMonitor) patchRequest(url string, body []byte) ([]byte, error) {
 }
 
 func (c *GraphMonitor) GetFeatureDetailGraph(req *monType.GetDetailGraphRequest) (*monType.GetDetailGraphResponse, error) {
-	module := fmt.Sprintf("graph-server/detail/%s?start_time=%s&end_time=%s&model_history_id=%s", req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID)
+	module := fmt.Sprintf("graph-server/detail/%s?start_time=%s&end_time=%s&model_history_id=%s&host_endpoint=%s", req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID, req.HostEndpoint)
 	env := c.getGraphEnv()
 	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
 
@@ -153,8 +153,8 @@ func (c *GraphMonitor) GetFeatureDetailGraph(req *monType.GetDetailGraphRequest)
 }
 
 func (c *GraphMonitor) GetDataDriftGraph(req *monType.GetDriftGraphRequest) (*monType.GetDriftGraphResponse, error) {
-	module := fmt.Sprintf("graph-server/drift/%s?start_time=%s&end_time=%s&model_history_id=%s&drift_threshold=%f&importance_threshold=%f",
-		req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID, req.DriftThreshold, req.ImportanceThreshold)
+	module := fmt.Sprintf("graph-server/drift/%s?start_time=%s&end_time=%s&model_history_id=%s&host_endpoint=%s&drift_threshold=%f&importance_threshold=%f",
+		req.InferenceName, req.StartTime, req.EndTime, req.ModelHistoryID, req.HostEndpoint, req.DriftThreshold, req.ImportanceThreshold)
 	env := c.getGraphEnv()
 	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
 
@@ -174,6 +174,5 @@ func (c *GraphMonitor) GetDataDriftGraph(req *monType.GetDriftGraphRequest) (*mo
 func (c *GraphMonitor) getGraphEnv() *monType.GraphServerEnv {
 	env := new(monType.GraphServerEnv)
 	env.ConnectionInfo = c.config.Endpoint
-
 	return env
 }

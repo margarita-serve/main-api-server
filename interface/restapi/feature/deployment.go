@@ -36,8 +36,6 @@ type FDeployment struct {
 	appDeployment *appDeployment.DeploymentApp
 }
 
-//bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MiwiVVVJRCI6IjM1MzlkNTQ1LWU2YmUtNDI0Yi1hYTZhLTcyMmQ4OTE0NGZmYiIsIlVzZXJuYW1lIjoiSkggSFdBTkcxIiwiTmlja05hbWUiOiJqaHl1biIsIkF1dGhvcml0eUlEIjoiZ3JvdXA6ZGVmYXVsdCIsImV4cCI6MTY1ODQ3MDM2OCwiaXNzIjoiS09SRVNFUlZFIiwibmJmIjoxNjU3ODY0NTY4fQ.uA7Pg_yMAXC1hGTGk_p1vcNxulk0GZyVEcyeSBE1NsA
-
 // @Summary Create Deployment
 // @Description  배포 생성
 // @Tags Deployment

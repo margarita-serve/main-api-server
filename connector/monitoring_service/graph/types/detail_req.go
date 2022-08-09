@@ -5,4 +5,5 @@ type GetDetailGraphRequest struct {
 	ModelHistoryID string `json:"model_history_id"`
 	StartTime      string `json:"start_time"`
 	EndTime        string `json:"end_time"`
+	HostEndpoint   string `json:"host_endpoint"`
 }

@@ -265,12 +265,6 @@ definitions:
       message:
         type: string
     type: object
-  dto.DetailGraphGetResponseDTO:
-    properties:
-      script:
-        description: graph JS script
-        type: string
-    type: object
   dto.FeatureDriftGetResponseDTO:
     properties:
       data:
@@ -1016,48 +1010,6 @@ paths:
       summary: Get Feature Detail
       tags:
       - Monitor
-  /deployments/{deploymentID}/monitor/detail/graph:
-    get:
-      consumes:
-      - application/json
-      description: 피쳐 디테일 그래프
-      parameters:
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: modelHistoryID
-        in: query
-        name: modelHistoryID
-        required: true
-        type: string
-      - description: example=2022-05-05:01
-        in: query
-        name: startTime
-        required: true
-        type: string
-      - description: example=2022-08-01:01
-        in: query
-        name: endTime
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.DetailGraphGetResponseDTO'
-      summary: Get Feature Detail Graph
-      tags:
-      - Monitor
   /deployments/{deploymentID}/monitor/drift:
     get:
       consumes:
@@ -1132,7 +1084,49 @@ paths:
       summary: Patch Drift Monitor Setting
       tags:
       - Monitor
-  /deployments/{deploymentID}/monitor/drift/graph:
+  /deployments/{deploymentID}/monitor/graph/detail:
+    get:
+      consumes:
+      - application/json
+      description: 피쳐 디테일 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01
+        in: query
+        name: endTime
+        required: true
+        type: string
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get Feature Detail Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/drift:
     get:
       consumes:
       - application/json
@@ -1170,7 +1164,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+            type: string
       summary: Get Drift Graph
       tags:
       - Monitor

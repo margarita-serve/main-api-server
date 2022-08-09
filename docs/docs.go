@@ -403,67 +403,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/{deploymentID}/monitor/detail/graph": {
-            "get": {
-                "description": "피쳐 디테일 그래프",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Get Feature Detail Graph",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "modelHistoryID",
-                        "name": "modelHistoryID",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "example=2022-05-05:01",
-                        "name": "startTime",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "example=2022-08-01:01",
-                        "name": "endTime",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.DetailGraphGetResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/deployments/{deploymentID}/monitor/drift": {
             "get": {
                 "description": "데이터 드리프트",
@@ -572,7 +511,68 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/{deploymentID}/monitor/drift/graph": {
+        "/deployments/{deploymentID}/monitor/graph/detail": {
+            "get": {
+                "description": "피쳐 디테일 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Feature Detail Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/drift": {
             "get": {
                 "description": "드리프트 그래프",
                 "consumes": [
@@ -627,7 +627,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                            "type": "string"
                         }
                     }
                 }
@@ -2063,15 +2063,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DetailGraphGetResponseDTO": {
-            "type": "object",
-            "properties": {
-                "script": {
-                    "description": "graph JS script",
                     "type": "string"
                 }
             }

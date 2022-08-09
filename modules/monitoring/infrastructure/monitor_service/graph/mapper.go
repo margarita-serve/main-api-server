@@ -11,6 +11,7 @@ func MapGetDetailGraphReq(req *domSchema.DetailGraphGetRequest) (*conMonitor.Get
 	reqCon.StartTime = req.StartTime
 	reqCon.EndTime = req.EndTime
 	reqCon.ModelHistoryID = req.ModelHistoryID
+	reqCon.HostEndpoint = req.HostEndpoint
 
 	return reqCon, nil
 }
@@ -28,6 +29,7 @@ func MapGetDriftGraphReq(req *domSchema.DriftGraphGetRequest) (*conMonitor.GetDr
 	reqCon.ModelHistoryID = req.ModelHistoryID
 	reqCon.StartTime = req.StartTime
 	reqCon.EndTime = req.EndTime
+	reqCon.HostEndpoint = req.HostEndpoint
 	reqCon.DriftThreshold = req.DriftThreshold
 	reqCon.ImportanceThreshold = req.ImportanceThreshold
 

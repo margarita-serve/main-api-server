@@ -10,17 +10,13 @@ import (
 	domSvcMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domSvcMonitorSvcDriftDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
-	domSvcMonitorSvcGraphDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/graph/dto"
 	infAccuracySvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/accuracy"
 	infDriftSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/data_drift"
 	infGraphSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/graph"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/minio/minio-go/v7"
 	"io"
-	"strings"
 	"sync"
-	"time"
-
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/repository"
 )
@@ -218,7 +214,7 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 
 	var checkErrMsg error = <-errs
 	if checkErrMsg != nil {
-		// 추후 에러에 따라 재시도 or 생성 불가 로직 추가 예정...    모니터가 생성실패하더라도 배포에는 문제가 없어야함. 실패시 실패 이유에 따라 재시도를 하거나 생성불가능하다는 결과를 보내줘야함
+		return nil, checkErrMsg
 	}
 
 	err = s.repo.Save(domAggregateMonitor)
@@ -512,8 +508,8 @@ func (s *MonitorService) GetFeatureDetail(req *appDTO.FeatureDriftGetRequestDTO)
 	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftGetRequest{
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
-		StartTime:      convertTimestamp(req.StartTime),
-		EndTime:        convertTimestamp(req.EndTime),
+		StartTime:      req.StartTime,
+		EndTime:        req.EndTime,
 	}
 	res, err := domAggregateMonitor.GetFeatureDetail(s.domMonitorDriftSvc, reqDomDriftSvc)
 	if err != nil {
@@ -542,8 +538,8 @@ func (s *MonitorService) GetFeatureDrift(req *appDTO.FeatureDriftGetRequestDTO) 
 	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftGetRequest{
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
-		StartTime:      convertTimestamp(req.StartTime),
-		EndTime:        convertTimestamp(req.EndTime),
+		StartTime:      req.StartTime,
+		EndTime:        req.EndTime,
 	}
 	res, err := domAggregateMonitor.GetFeatureDrift(s.domMonitorDriftSvc, reqDomDriftSvc)
 	if err != nil {
@@ -729,8 +725,8 @@ func (s *MonitorService) GetAccuracy(req *appDTO.AccuracyGetRequestDTO) (*appDTO
 		InferenceName:  req.DeploymentID,
 		ModelHistoryID: req.ModelHistoryID,
 		DataType:       req.Type,
-		StartTime:      convertTimestamp(req.StartTime),
-		EndTime:        convertTimestamp(req.EndTime),
+		StartTime:      req.StartTime,
+		EndTime:        req.EndTime,
 	}
 
 	res, err := domAggregateMonitor.GetAccuracy(s.domMonitorAccuracySvc, reqDomAccuracySvc)
@@ -838,68 +834,68 @@ func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appD
 	return resDTO, nil
 }
 
-func (s *MonitorService) GetFeatureDriftGraph(req *appDTO.DriftGraphGetRequestDTO) (*appDTO.DriftGraphGetResponseDTO, error) {
+//func (s *MonitorService) GetFeatureDriftGraph(req *appDTO.DriftGraphGetRequestDTO) (*appDTO.DriftGraphGetResponseDTO, error) {
+//
+//	if err := req.Validate(); err != nil {
+//		return nil, err
+//	}
+//
+//	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+//
+//	if err != nil {
+//		return nil, err
+//	}
+//	reqDomDriftGraphSvc := domSvcMonitorSvcGraphDTO.DriftGraphGetRequest{
+//		InferenceName:       req.DeploymentID,
+//		ModelHistoryID:      req.ModelHistoryID,
+//		StartTime:           convertTimestamp(req.StartTime),
+//		EndTime:             convertTimestamp(req.EndTime),
+//		HostEndpoint:        req.HostEndpoint,
+//		DriftThreshold:      domAggregateMonitor.DriftThreshold,
+//		ImportanceThreshold: domAggregateMonitor.ImportanceThreshold,
+//	}
+//	res, err := domAggregateMonitor.GetDriftGraph(s.domMonitorGraphSvc, reqDomDriftGraphSvc)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	resDTO := new(appDTO.DriftGraphGetResponseDTO)
+//	resDTO.Script = res.Script
+//
+//	return resDTO, nil
+//}
 
-	if err := req.Validate(); err != nil {
-		return nil, err
-	}
+//func (s *MonitorService) GetFeatureDetailGraph(req *appDTO.DetailGraphGetRequestDTO) (*appDTO.DetailGraphGetResponseDTO, error) {
+//
+//	if err := req.Validate(); err != nil {
+//		return nil, err
+//	}
+//
+//	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+//	if err != nil {
+//		return nil, err
+//	}
+//	reqDomDetailGraphSvc := domSvcMonitorSvcGraphDTO.DetailGraphGetRequest{
+//		InferenceName:  req.DeploymentID,
+//		ModelHistoryID: req.ModelHistoryID,
+//		StartTime:      convertTimestamp(req.StartTime),
+//		EndTime:        convertTimestamp(req.EndTime),
+//		HostEndpoint:   req.HostEndpoint,
+//	}
+//	res, err := domAggregateMonitor.GetDetailGraph(s.domMonitorGraphSvc, reqDomDetailGraphSvc)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	resDTO := new(appDTO.DetailGraphGetResponseDTO)
+//	resDTO.Script = res.Script
+//	return resDTO, nil
+//}
 
-	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-
-	if err != nil {
-		return nil, err
-	}
-	reqDomDriftGraphSvc := domSvcMonitorSvcGraphDTO.DriftGraphGetRequest{
-		InferenceName:       req.DeploymentID,
-		ModelHistoryID:      req.ModelHistoryID,
-		StartTime:           convertTimestamp(req.StartTime),
-		EndTime:             convertTimestamp(req.EndTime),
-		DriftThreshold:      domAggregateMonitor.DriftThreshold,
-		ImportanceThreshold: domAggregateMonitor.ImportanceThreshold,
-	}
-	res, err := domAggregateMonitor.GetDriftGraph(s.domMonitorGraphSvc, reqDomDriftGraphSvc)
-	if err != nil {
-		return nil, err
-	}
-
-	res.Script = strings.Replace(res.Script, "http://localhost:5006", "http://localhost:32022", -1)
-	resDTO := new(appDTO.DriftGraphGetResponseDTO)
-	resDTO.Script = res.Script
-
-	return resDTO, nil
-}
-
-func (s *MonitorService) GetFeatureDetailGraph(req *appDTO.DetailGraphGetRequestDTO) (*appDTO.DetailGraphGetResponseDTO, error) {
-
-	if err := req.Validate(); err != nil {
-		return nil, err
-	}
-
-	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-	if err != nil {
-		return nil, err
-	}
-	reqDomDetailGraphSvc := domSvcMonitorSvcGraphDTO.DetailGraphGetRequest{
-		InferenceName:  req.DeploymentID,
-		ModelHistoryID: req.ModelHistoryID,
-		StartTime:      convertTimestamp(req.StartTime),
-		EndTime:        convertTimestamp(req.EndTime),
-	}
-	res, err := domAggregateMonitor.GetDetailGraph(s.domMonitorGraphSvc, reqDomDetailGraphSvc)
-	if err != nil {
-		return nil, err
-	}
-
-	res.Script = strings.Replace(res.Script, "http://localhost:5006", "http://localhost:32022", -1)
-	resDTO := new(appDTO.DetailGraphGetResponseDTO)
-	resDTO.Script = res.Script
-	return resDTO, nil
-}
-
-func convertTimestamp(timeString string) string {
-	t, _ := time.Parse("2006-01-02:15", timeString)
-
-	t2 := t.UTC().Format("2006-01-02T15:04:05.00000000Z")
-
-	return t2
-}
+//func convertTimestamp(timeString string) string {
+//	t, _ := time.Parse("2006-01-02:15", timeString)
+//
+//	t2 := t.UTC().Format("2006-01-02T15:04:05.00000000Z")
+//
+//	return t2
+//}

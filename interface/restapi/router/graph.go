@@ -8,100 +8,22 @@ import (
 	"net/url"
 )
 
+// SetGraph Graph Router
 func SetGraph(eg *echo.Group, h *handler.Handler) {
 	cfg, _ := h.GetConfig()
-	ProxyServer := cfg.Connectors.BokehServer.Endpoint
+	ProxyServer := cfg.Connectors.GraphServer.Endpoint
 
-	eg.GET("/featuredetail/autoload.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
+	gc := eg.Group("/deployments/graph-svr", ACAOHeaderOverwriteMiddleware)
 
-	eg.GET("/featuredetail/ws",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
+	url1, _ := url.Parse(ProxyServer)
+	targets := []*middleware.ProxyTarget{
+		{
+			URL: url1,
+		},
+	}
 
-	eg.GET("/featuredrift/autoload.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
+	gc.Use(middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
 
-	eg.GET("/featuredrift/ws",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
-}
-
-func SetGraphJS(eg *echo.Group, h *handler.Handler) {
-	cfg, _ := h.GetConfig()
-	ProxyServer := cfg.Connectors.BokehServer.Endpoint
-
-	eg.GET("/bokeh.min.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
-
-	eg.GET("/bokeh-gl.min.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
-
-	eg.GET("/bokeh-widgets.min.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
-
-	eg.GET("/bokeh-tables.min.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
-
-	eg.GET("/bokeh-mathjax.min.js",
-		Noop,
-		ACAOHeaderOverwriteMiddleware,
-		middleware.ProxyWithConfig(middleware.ProxyConfig{
-			Balancer: singleTargetBalancer(ProxyServer),
-		}),
-	)
-}
-
-func Noop(ctx echo.Context) (err error) {
-	ctx.String(
-		http.StatusNotImplemented,
-		"No op handler should never be reached!",
-	)
-
-	return err
-}
-
-func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
-	resp.Header().Set(echo.HeaderAccessControlAllowOrigin,
-		"*")
 }
 
 func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -113,12 +35,7 @@ func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func singleTargetBalancer(server string) middleware.ProxyBalancer {
-	url, _ := url.Parse(server)
-	targetURL := []*middleware.ProxyTarget{
-		{
-			URL: url,
-		},
-	}
-	return middleware.NewRoundRobinBalancer(targetURL)
+func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
+	resp.Header().Set(echo.HeaderAccessControlAllowOrigin,
+		"*")
 }

@@ -391,67 +391,6 @@
                 }
             }
         },
-        "/deployments/{deploymentID}/monitor/detail/graph": {
-            "get": {
-                "description": "피쳐 디테일 그래프",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Get Feature Detail Graph",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "modelHistoryID",
-                        "name": "modelHistoryID",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "example=2022-05-05:01",
-                        "name": "startTime",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "example=2022-08-01:01",
-                        "name": "endTime",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.DetailGraphGetResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/deployments/{deploymentID}/monitor/drift": {
             "get": {
                 "description": "데이터 드리프트",
@@ -560,7 +499,68 @@
                 }
             }
         },
-        "/deployments/{deploymentID}/monitor/drift/graph": {
+        "/deployments/{deploymentID}/monitor/graph/detail": {
+            "get": {
+                "description": "피쳐 디테일 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Feature Detail Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/drift": {
             "get": {
                 "description": "드리프트 그래프",
                 "consumes": [
@@ -615,7 +615,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
+                            "type": "string"
                         }
                     }
                 }
@@ -2055,15 +2055,6 @@
                 }
             }
         },
-        "dto.DetailGraphGetResponseDTO": {
-            "type": "object",
-            "properties": {
-                "script": {
-                    "description": "graph JS script",
-                    "type": "string"
-                }
-            }
-        },
         "dto.FeatureDriftGetResponseDTO": {
             "type": "object",
             "properties": {
@@ -2588,17 +2579,17 @@
                     "x-order": "8",
                     "example": "True"
                 },
-                "accuracyAnalyze": {
-                    "description": "정확도 측정 설정",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "True"
-                },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
                     "type": "string",
                     "x-order": "9",
                     "example": "Index"
+                },
+                "accuracyAnalyze": {
+                    "description": "정확도 측정 설정",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "True"
                 },
                 "description": {
                     "description": "베포 설명",

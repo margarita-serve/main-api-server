@@ -192,12 +192,12 @@ func (f *FMonitor) GetAccuracy(c echo.Context) error {
 	req := new(appMonitorDTO.AccuracyGetRequestDTO)
 	deploymentID := c.Param("deploymentID")
 	modelHistoryID := c.QueryParam("modelHistoryID")
-	Mtype := c.QueryParam("type")
+	mType := c.QueryParam("type")
 	startTime := c.QueryParam("startTime")
 	endTime := c.QueryParam("endTime")
 	req.DeploymentID = deploymentID
 	req.ModelHistoryID = modelHistoryID
-	req.Type = Mtype
+	req.Type = mType
 	req.StartTime = startTime
 	req.EndTime = endTime
 
@@ -305,26 +305,12 @@ func (f *FMonitor) UploadActual(c echo.Context) error {
 // @Param modelHistoryID query string true "modelHistoryID"
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-08-01:01"
-// @Success 200 {object} appMonitorDTO.DetailGraphGetResponseDTO
+// @Success 200 string html
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Router       /deployments/{deploymentID}/monitor/detail/graph [get]
+// @Router       /deployments/{deploymentID}/monitor/graph/detail [get]
 func (f *FMonitor) GetFeatureDetailGraph(c echo.Context) error {
-	req := new(appMonitorDTO.DetailGraphGetRequestDTO)
-	deploymentID := c.Param("deploymentID")
-	modelHistoryID := c.QueryParam("modelHistoryID")
-	startTime := c.QueryParam("startTime")
-	endTime := c.QueryParam("endTime")
-	req.DeploymentID = deploymentID
-	req.ModelHistoryID = modelHistoryID
-	req.StartTime = startTime
-	req.EndTime = endTime
 
-	resp, err := f.appMonitor.MonitorSvc.GetFeatureDetailGraph(req)
-	if err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-
-	return response.OkWithData(resp, c)
+	return response.Ok(c)
 }
 
 // GetDriftGraph
@@ -337,26 +323,12 @@ func (f *FMonitor) GetFeatureDetailGraph(c echo.Context) error {
 // @Param modelHistoryID query string true "modelHistoryID"
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-08-01:01"
-// @Success 200 {object} appMonitorDTO.FeatureDriftGetResponseDTO
+// @Success 200 string html
 // @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Router       /deployments/{deploymentID}/monitor/drift/graph [get]
+// @Router       /deployments/{deploymentID}/monitor/graph/drift [get]
 func (f *FMonitor) GetDriftGraph(c echo.Context) error {
-	req := new(appMonitorDTO.DriftGraphGetRequestDTO)
-	deploymentID := c.Param("deploymentID")
-	modelHistoryID := c.QueryParam("modelHistoryID")
-	startTime := c.QueryParam("startTime")
-	endTime := c.QueryParam("endTime")
-	req.DeploymentID = deploymentID
-	req.ModelHistoryID = modelHistoryID
-	req.StartTime = startTime
-	req.EndTime = endTime
 
-	resp, err := f.appMonitor.MonitorSvc.GetFeatureDriftGraph(req)
-	if err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-
-	return response.OkWithData(resp, c)
+	return response.Ok(c)
 }
 
 // UpdateAssociationID

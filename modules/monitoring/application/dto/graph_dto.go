@@ -5,6 +5,7 @@ type DetailGraphGetRequestDTO struct {
 	ModelHistoryID string
 	StartTime      string
 	EndTime        string
+	HostEndpoint   string
 }
 
 type DetailGraphGetResponseDTO struct {
@@ -16,6 +17,7 @@ type DriftGraphGetRequestDTO struct {
 	ModelHistoryID string
 	StartTime      string
 	EndTime        string
+	HostEndpoint   string
 }
 
 type DriftGraphGetResponseDTO struct {
