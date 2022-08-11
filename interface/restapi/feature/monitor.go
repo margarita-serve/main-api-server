@@ -1,13 +1,14 @@
 package feature
 
 import (
+	"mime/multipart"
+
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	appMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application"
 	appMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
-	"mime/multipart"
 )
 
 func NewMonitor(h *handler.Handler, modelPackageSvc *appModelPackageSvc.ModelPackageService) (*FMonitor, error) {
@@ -37,7 +38,7 @@ type FMonitor struct {
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appMonitorDTO.MonitorCreateRequestDTO true "Create Monitor"
 // @Success 200 {object} appMonitorDTO.MonitorCreateResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor [post]
 //func (f *FMonitor) Create(c echo.Context) error {
 //	req := new(appMonitorDTO.MonitorCreateRequestDTO)
@@ -64,9 +65,9 @@ type FMonitor struct {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appMonitorDTO.MonitorDriftPatchRequestDTO true "Patch Drift Setting"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Success 200 {object} appMonitorDTO.MonitorDriftPatchResponseDTO
+// @Security BearerAuth
 // @Router        /deployments/{deploymentID}/monitor/drift [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.MonitorDriftPatchResponseDTO}}
 func (f *FMonitor) PatchDriftSetting(c echo.Context) error {
 	req := new(appMonitorDTO.MonitorDriftPatchRequestDTO)
 	if err := c.Bind(req); err != nil {
@@ -91,9 +92,9 @@ func (f *FMonitor) PatchDriftSetting(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appMonitorDTO.MonitorAccuracyPatchRequestDTO true "Patch Accuracy Monitor"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Success 200 {object} appMonitorDTO.MonitorAccuracyPatchResponseDTO
+// @Security BearerAuth
 // @Router        /deployments/{deploymentID}/monitor/accuracy [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.MonitorAccuracyPatchResponseDTO}}
 func (f *FMonitor) PatchAccuracySetting(c echo.Context) error {
 	req := new(appMonitorDTO.MonitorAccuracyPatchRequestDTO)
 	if err := c.Bind(req); err != nil {
@@ -120,9 +121,9 @@ func (f *FMonitor) PatchAccuracySetting(c echo.Context) error {
 // @Param modelHistoryID query string true "modelHistoryID"
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-05-05:01"
-// @Success 200 {object} appMonitorDTO.FeatureDriftGetResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/detail [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.FeatureDriftGetResponseDTO}}
 func (f *FMonitor) GetDetail(c echo.Context) error {
 	req := new(appMonitorDTO.FeatureDriftGetRequestDTO)
 	deploymentID := c.Param("deploymentID")
@@ -152,9 +153,9 @@ func (f *FMonitor) GetDetail(c echo.Context) error {
 // @Param modelHistoryID query string true "modelHistoryID"
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-08-01:01"
-// @Success 200 {object} appMonitorDTO.FeatureDriftGetResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/drift [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.FeatureDriftGetResponseDTO}}
 func (f *FMonitor) GetDrift(c echo.Context) error {
 	req := new(appMonitorDTO.FeatureDriftGetRequestDTO)
 	deploymentID := c.Param("deploymentID")
@@ -185,9 +186,9 @@ func (f *FMonitor) GetDrift(c echo.Context) error {
 // @Param type query string true "timeline or aggregation"
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-08-01:01"
-// @Success 200 {object} appMonitorDTO.AccuracyGetResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/accuracy [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.AccuracyGetResponseDTO}}
 func (f *FMonitor) GetAccuracy(c echo.Context) error {
 	req := new(appMonitorDTO.AccuracyGetRequestDTO)
 	deploymentID := c.Param("deploymentID")
@@ -230,9 +231,9 @@ func (f *FMonitor) GetByID(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appMonitorDTO.MonitorGetSettingResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.MonitorGetSettingResponseDTO}}
 func (f *FMonitor) GetMonitorSetting(c echo.Context) error {
 	req := new(appMonitorDTO.MonitorGetSettingRequestDTO)
 
@@ -256,9 +257,9 @@ func (f *FMonitor) GetMonitorSetting(c echo.Context) error {
 // @Param file formData file true "actual file upload"
 // @Param deploymentID path string true "deploymentID"
 // @Param targetLabel query string true "target column name"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Success 200 {object} appMonitorDTO.UploadActualResponseDTO
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID}/monitor/actual [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.UploadActualResponseDTO}}
 func (f *FMonitor) UploadActual(c echo.Context) error {
 	deploymentID := c.Param("deploymentID")
 	actualResponse := c.QueryParam("targetLabel")
@@ -306,7 +307,7 @@ func (f *FMonitor) UploadActual(c echo.Context) error {
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-08-01:01"
 // @Success 200 string html
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/graph/detail [get]
 func (f *FMonitor) GetFeatureDetailGraph(c echo.Context) error {
 
@@ -324,7 +325,7 @@ func (f *FMonitor) GetFeatureDetailGraph(c echo.Context) error {
 // @Param startTime query string true "example=2022-05-05:01"
 // @Param endTime query string true "example=2022-08-01:01"
 // @Success 200 string html
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/graph/drift [get]
 func (f *FMonitor) GetDriftGraph(c echo.Context) error {
 
@@ -339,9 +340,9 @@ func (f *FMonitor) GetDriftGraph(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appMonitorDTO.UpdateAssociationIDRequestDTO true "Patch AssociationID"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Success 200 {object} appMonitorDTO.UpdateAssociationIDResponseDTO
+// @Security BearerAuth
 // @Router        /deployments/{deploymentID}/monitor/association-id [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.UpdateAssociationIDResponseDTO}}
 func (f *FMonitor) UpdateAssociationID(c echo.Context) error {
 	req := new(appMonitorDTO.UpdateAssociationIDRequestDTO)
 	if err := c.Bind(req); err != nil {

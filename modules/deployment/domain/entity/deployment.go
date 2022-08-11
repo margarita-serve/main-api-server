@@ -61,6 +61,11 @@ func NewDeployment(id string, projectID string, modelPackageID string, predictio
 		return nil, err
 	}
 
+	// Default Importance
+	if importance == "" {
+		importance = "Moderate"
+	}
+
 	// Default CPU, MEM Resource Setting
 	if requestCPU == 0 {
 		requestCPU = 1

@@ -44,9 +44,9 @@ type FDeployment struct {
 // @Accept json
 // @Produce json
 // @Param body body appDeploymentDTO.CreateDeploymentRequestDTO true "Create Deployment"
-// @Success 200 {object} appDeploymentDTO.CreateDeploymentResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /deployments [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.CreateDeploymentResponseDTO}}
 func (f *FDeployment) Create(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -79,9 +79,9 @@ func (f *FDeployment) Create(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appDeploymentDTO.DeleteDeploymentResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID} [delete]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.DeleteDeploymentResponseDTO}}
 func (f *FDeployment) Delete(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -114,9 +114,9 @@ func (f *FDeployment) Delete(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appDeploymentDTO.UpdateDeploymentRequestDTO true "Update Deployment Info"
-// @Success 200 {object} appDeploymentDTO.UpdateDeploymentResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /deployments/{deploymentID} [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.UpdateDeploymentResponseDTO}}
 func (f *FDeployment) Update(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -151,9 +151,9 @@ func (f *FDeployment) Update(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appDeploymentDTO.GetDeploymentResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID} [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.GetDeploymentResponseDTO}}
 func (f *FDeployment) GetByID(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -201,9 +201,9 @@ func (f *FDeployment) getPredictionURL(c echo.Context) string {
 // @Param page query int false "page"
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
-// @Success 200 {object} appDeploymentDTO.GetDeploymentListResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.GetDeploymentListResponseDTO}}
 func (f *FDeployment) GetList(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -239,9 +239,9 @@ func (f *FDeployment) GetList(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appDeploymentDTO.GetGovernanceHistoryResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID}/governance-log [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.GetGovernanceHistoryResponseDTO}}
 func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -273,9 +273,9 @@ func (f *FDeployment) GetGovernanceHistory(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appDeploymentDTO.GetModelHistoryResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID}/model-history [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.GetModelHistoryResponseDTO}}
 func (f *FDeployment) GetModelHistory(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -308,9 +308,9 @@ func (f *FDeployment) GetModelHistory(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appDeploymentDTO.ReplaceModelRequestDTO true "Create Deployment"
-// @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/replace-model [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.ReplaceModelResponseDTO}}
 func (f *FDeployment) ReplaceModel(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -345,10 +345,10 @@ func (f *FDeployment) ReplaceModel(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Param json body string true "application/json" SchemaExample({\n"association_id": ["abcd1234", "abcd1235"], \n"instances": [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676, -0.465148, -0.495225]]\n}) "Json data for prediction"
-// @Success 200 {object} appDeploymentDTO.ReplaceModelResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Param body body string true "application/json" SchemaExample({\n"association_id": ["abcd1234"], \n"instances": [[-122.12,	37.68,	45.0,	2179.0,	401.0,	1159.0,	399.0,	3.4839]]\n}) "Json data for prediction"
+// @Security BearerAuth
 // @Router       /deployments/{deploymentID}/predict [post]
+// @Success 200 {object} response.RootResponse{}
 func (f *FDeployment) SendPrediction(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -388,9 +388,9 @@ func (f *FDeployment) SendPrediction(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appDeploymentDTO.ActiveDeploymentResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID}/active [put]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.ActiveDeploymentResponseDTO}}
 func (f *FDeployment) Active(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -422,9 +422,9 @@ func (f *FDeployment) Active(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Success 200 {object} appDeploymentDTO.InActiveDeploymentResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /deployments/{deploymentID}/inactive [put]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appDeploymentDTO.InActiveDeploymentResponseDTO}}
 func (f *FDeployment) InActive(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)

@@ -42,8 +42,8 @@ type FAuths struct {
 // @Accept json
 // @Produce json
 // @Param body body dto.RegisterReqDTO true "register user"
-// @Success 200 {object} dto.RegisterResDTO
 // @Router      /auths/register [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=dto.RegisterResDTO}}
 func (f *FAuths) RegisterUser(c echo.Context) error {
 
 	req := new(dto.RegisterReqDTO)
@@ -118,8 +118,8 @@ func (f *FAuths) ActivateRegistration(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param body body dto.LoginReqDTO true "login user"
-// @Success 200 {object} dto.LoginResDTO
 // @Router      /auths/login [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=dto.LoginResDTO}}
 func (f *FAuths) Login(c echo.Context) error {
 
 	req := new(dto.LoginReqDTO)

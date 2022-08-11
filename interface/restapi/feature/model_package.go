@@ -40,9 +40,9 @@ type FModelPackage struct {
 // @Accept json
 // @Produce json
 // @Param body body appModelPackageDTO.CreateModelPackageRequestDTO true "Create ModelPackage"
-// @Success 200 {object} appModelPackageDTO.CreateModelPackageResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.CreateModelPackageResponseDTO}}
 func (f *FModelPackage) Create(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -76,9 +76,9 @@ func (f *FModelPackage) Create(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
-// @Success 200 {object} appModelPackageDTO.DeleteModelPackageResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /model-packages/{modelPackageID} [delete]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.DeleteModelPackageResponseDTO}}
 func (f *FModelPackage) Delete(c echo.Context) error {
 	//
 	req := new(appModelPackageDTO.DeleteModelPackageRequestDTO)
@@ -102,9 +102,9 @@ func (f *FModelPackage) Delete(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
-// @Success 200 {object} appModelPackageDTO.ArchiveModelPackageResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /model-packages/{modelPackageID}/archive [put]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.ArchiveModelPackageResponseDTO}}
 func (f *FModelPackage) Archive(c echo.Context) error {
 	//
 	req := new(appModelPackageDTO.ArchiveModelPackageRequestDTO)
@@ -129,9 +129,9 @@ func (f *FModelPackage) Archive(c echo.Context) error {
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
 // @Param body body appModelPackageDTO.UpdateModelPackageRequestDTO true "Update ModelPackage Info"
-// @Success 200 {object} appModelPackageDTO.UpdateModelPackageResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID} [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.UpdateModelPackageResponseDTO}}
 func (f *FModelPackage) Update(c echo.Context) error {
 	//
 	req := new(appModelPackageDTO.UpdateModelPackageRequestDTO)
@@ -158,9 +158,9 @@ func (f *FModelPackage) Update(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
-// @Success 200 {object} appModelPackageDTO.GetModelPackageResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /model-packages/{modelPackageID} [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.GetModelPackageResponseDTO}}
 func (f *FModelPackage) GetByID(c echo.Context) error {
 	//
 	req := new(appModelPackageDTO.GetModelPackageRequestDTO)
@@ -187,9 +187,9 @@ func (f *FModelPackage) GetByID(c echo.Context) error {
 // @Param page query int false "page"
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Success 200 {object} appModelPackageDTO.GetModelPackageListResponseDTO
+// @Security BearerAuth
 // @Router      /model-packages [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.GetModelPackageListResponseDTO}}
 func (f *FModelPackage) GetList(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -226,8 +226,9 @@ func (f *FModelPackage) GetList(c echo.Context) error {
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
 // @Param upfile formData file true "file upload"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID}/upload-model [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.UploadModelResponseDTO}}
 func (f *FModelPackage) UploadModel(c echo.Context) error {
 	modelPackageID := c.Param("modelPackageID")
 	// projectID := c.Param("projectID")
@@ -267,8 +268,9 @@ func (f *FModelPackage) UploadModel(c echo.Context) error {
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
 // @Param upfile formData file true "file upload"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID}/upload-training-dataset [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.UploadTrainingDatasetResponseDTO}}
 func (f *FModelPackage) UploadTrainingDataset(c echo.Context) error {
 	modelPackageID := c.Param("modelPackageID")
 	// projectID := c.Param("projectID")
@@ -308,8 +310,9 @@ func (f *FModelPackage) UploadTrainingDataset(c echo.Context) error {
 // @Produce json
 // @Param modelPackageID path string true "modelPackageID"
 // @Param upfile formData file true "file upload"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID}/upload-holdout-dataset [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appModelPackageDTO.UploadHoldoutDatasetResponseDTO}}
 func (f *FModelPackage) UploadHoldoutDataset(c echo.Context) error {
 	modelPackageID := c.Param("modelPackageID")
 	// projectID := c.Param("projectID")
@@ -347,7 +350,7 @@ func (f *FModelPackage) UploadHoldoutDataset(c echo.Context) error {
 // @Tags ModelPackage
 // @Produce octet-stream
 // @Param modelPackageID path string true "modelPackageID"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID}/download-model [get]
 func (f *FModelPackage) DownloadModelFile(c echo.Context) error {
 	modelPackageID := c.Param("modelPackageID")
@@ -376,7 +379,7 @@ func (f *FModelPackage) DownloadModelFile(c echo.Context) error {
 // @Tags ModelPackage
 // @Produce octet-stream
 // @Param modelPackageID path string true "modelPackageID"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID}/download-training-dataset [get]
 func (f *FModelPackage) DownloadTrainingDataset(c echo.Context) error {
 	modelPackageID := c.Param("modelPackageID")
@@ -405,7 +408,7 @@ func (f *FModelPackage) DownloadTrainingDataset(c echo.Context) error {
 // @Tags ModelPackage
 // @Produce octet-stream
 // @Param modelPackageID path string true "modelPackageID"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /model-packages/{modelPackageID}/download-holdout-dataset [get]
 func (f *FModelPackage) DownloadHoldoutDataset(c echo.Context) error {
 	modelPackageID := c.Param("modelPackageID")

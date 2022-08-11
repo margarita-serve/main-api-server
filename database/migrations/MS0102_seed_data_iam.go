@@ -44,7 +44,7 @@ func (ms01 *MS0102SeedDataIAM) Run(db *gorm.DB) error {
 		IsActive:    true,
 		AuthorityID: cfg.IAM.DefaultAdmin.AuthorityID,
 	}
-	superAdmin.CreatedBy = "system.d3tago@installation"
+	superAdmin.CreatedBy = "system.koreserve@installation"
 
 	if err := db.Create(&superAdmin).Error; err != nil {
 		return err
@@ -61,7 +61,7 @@ func (ms01 *MS0102SeedDataIAM) Run(db *gorm.DB) error {
 		IsActive:      true,
 		UserID:        superAdmin.ID,
 	}
-	superAdminApp.CreatedBy = "system.d3tago@installation"
+	superAdminApp.CreatedBy = "system.koreserve@installation"
 
 	if err := db.Create(&superAdminApp).Error; err != nil {
 		return err

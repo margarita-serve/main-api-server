@@ -38,7 +38,7 @@ type FResource struct {
 // @Produce json
 // @Param body body appResourceDTO.CreatePredictionEnvRequestDTO true "Create PredictionEnv"
 // @Success 200 {object} appResourceDTO.CreatePredictionEnvResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /prediction-envs [post]
 func (f *FResource) Create(c echo.Context) error {
 	//identity
@@ -74,7 +74,7 @@ func (f *FResource) Create(c echo.Context) error {
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Success 200 {object} appResourceDTO.DeletePredictionEnvResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /prediction-envs/{predictionEnvID} [delete]
 func (f *FResource) Delete(c echo.Context) error {
 	//identity
@@ -109,7 +109,7 @@ func (f *FResource) Delete(c echo.Context) error {
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Param body body appResourceDTO.UpdatePredictionEnvRequestDTO true "Update PredictionEnv Info"
 // @Success 200 {object} appResourceDTO.UpdatePredictionEnvResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /prediction-envs/{predictionEnvID} [patch]
 func (f *FResource) Update(c echo.Context) error {
 	//identity
@@ -146,7 +146,7 @@ func (f *FResource) Update(c echo.Context) error {
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Success 200 {object} appResourceDTO.GetPredictionEnvResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /prediction-envs/{predictionEnvID} [get]
 func (f *FResource) GetByID(c echo.Context) error {
 	//identity
@@ -180,7 +180,7 @@ func (f *FResource) GetByID(c echo.Context) error {
 // @Param page query int false "page"
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Success 200 {object} appResourceDTO.GetPredictionEnvListResponseDTO
 // @Router      /prediction-envs [get]
 func (f *FResource) GetList(c echo.Context) error {
@@ -219,7 +219,7 @@ func (f *FResource) GetList(c echo.Context) error {
 // @Produce json
 // @Param body body appResourceDTO.CreateClusterInfoRequestDTO true "Create ClusterInfo"
 // @Success 200 {object} appResourceDTO.CreateClusterInfoResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /cluster-infos [post]
 func (f *FResource) CreateClusterInfo(c echo.Context) error {
 	//identity
@@ -255,7 +255,7 @@ func (f *FResource) CreateClusterInfo(c echo.Context) error {
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Success 200 {object} appResourceDTO.DeleteClusterInfoResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /cluster-infos/{clusterInfoID} [delete]
 func (f *FResource) DeleteClusterInfo(c echo.Context) error {
 	//identity
@@ -290,7 +290,7 @@ func (f *FResource) DeleteClusterInfo(c echo.Context) error {
 // @Param clusterInfoID path string true "clusterInfoID"
 // @Param body body appResourceDTO.UpdateClusterInfoRequestDTO true "Update ClusterInfo Info"
 // @Success 200 {object} appResourceDTO.UpdateClusterInfoResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /cluster-infos/{clusterInfoID} [patch]
 func (f *FResource) ClusterInfoUpdate(c echo.Context) error {
 	//identity
@@ -327,7 +327,7 @@ func (f *FResource) ClusterInfoUpdate(c echo.Context) error {
 // @Produce json
 // @Param clusterInfoID path string true "clusterInfoID"
 // @Success 200 {object} appResourceDTO.GetClusterInfoResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /cluster-infos/{clusterInfoID} [get]
 func (f *FResource) ClusterInfoGetByID(c echo.Context) error {
 	//identity
@@ -361,7 +361,7 @@ func (f *FResource) ClusterInfoGetByID(c echo.Context) error {
 // @Param page query int false "page"
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Success 200 {object} appResourceDTO.GetClusterInfoListResponseDTO
 // @Router      /cluster-infos [get]
 func (f *FResource) ClusterInfoGetList(c echo.Context) error {

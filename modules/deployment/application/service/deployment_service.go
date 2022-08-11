@@ -128,6 +128,12 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		return nil, err
 	}
 
+	//to be...
+	if req.PredictionEnvID == "" {
+		//Find  Project Default PredictionEnv
+		req.PredictionEnvID = "abcd1234"
+	}
+
 	// New deployment domain Instance
 	domAggregateDeployment, err := domEntity.NewDeployment(
 		guid,
@@ -138,8 +144,8 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		req.Description,
 		req.Importance,
 		"Normal",
-		*req.RequestCPU,
-		*req.RequestMEM,
+		req.RequestCPU,
+		req.RequestMEM,
 		0,
 		0,
 		i.Claims.Username,
@@ -186,11 +192,11 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 
 	featureDriftTrackingBool := false
 	accuracyAnalyzeBool := false
-	if req.FeatureDriftTracking != nil {
-		featureDriftTrackingBool = *req.FeatureDriftTracking
+	if req.FeatureDriftTracking {
+		featureDriftTrackingBool = req.FeatureDriftTracking
 	}
-	if req.FeatureDriftTracking != nil {
-		accuracyAnalyzeBool = *req.AccuracyAnalyze
+	if req.FeatureDriftTracking {
+		accuracyAnalyzeBool = req.AccuracyAnalyze
 	}
 
 	//Create Monitoring Service
@@ -199,7 +205,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		ModelPackageID:       domAggregateDeployment.ModelPackageID,
 		FeatureDriftTracking: featureDriftTrackingBool,
 		AccuracyMonitoring:   accuracyAnalyzeBool,
-		AssociationID:        req.AssociationID,
+		AssociationID:        &req.AssociationID,
 		ModelHistoryID:       newModelHistoryID,
 	}
 
@@ -419,19 +425,34 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
-	if req.Name != "" {
-		domAggregateDeployment.UpdateDeploymentName(req.Name)
+	if req.Name != nil {
+		domAggregateDeployment.UpdateDeploymentName(*req.Name)
 	}
-	if req.Description != "" {
-		domAggregateDeployment.UpdateDeploymentDescription(req.Description)
+	if req.Description != nil {
+		domAggregateDeployment.UpdateDeploymentDescription(*req.Description)
 	}
-	if req.Importance != "" {
-		domAggregateDeployment.UpdateDeploymentImportance(req.Importance)
+	if req.Importance != nil {
+		domAggregateDeployment.UpdateDeploymentImportance(*req.Importance)
 	}
-	if req.AssociationID != "" {
-		//To Be..
-		//s.monitoringSvc.UpdateAssociationID(req.DeploymentID, req.AssociationID)
+	if req.AssociationID != nil {
+		reqUpdateAssociationID := new(appMonitoringDTO.UpdateAssociationIDRequestDTO)
+		reqUpdateAssociationID.DeploymentID = req.DeploymentID
+		reqUpdateAssociationID.AssociationID = req.AssociationID
+
+		_, err = s.monitoringSvc.UpdateAssociationID(reqUpdateAssociationID)
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	var currentModelID string
+	for _, history := range domAggregateDeployment.ModelHistory {
+		if history.ApplyHistoryTag == "Current" {
+			currentModelID = history.ID
+			break
+		}
+	}
+
 	if req.FeatureDriftTracking != nil {
 		if *req.FeatureDriftTracking {
 			println("FeatureDriftTracking true")
@@ -439,7 +460,7 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 			reqDriftActive := new(appMonitoringDTO.MonitorDriftActiveRequestDTO)
 			reqDriftActive.DeploymentID = req.DeploymentID
 			reqDriftActive.ModelPackageID = resModelPackage.ModelPackageID
-			reqDriftActive.CurrentModelID = resModelPackage.ModelVersion
+			reqDriftActive.CurrentModelID = currentModelID
 
 			_, err = s.monitoringSvc.SetDriftMonitorActive(reqDriftActive)
 			if err != nil {
@@ -463,7 +484,7 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 			reqAccuracyActive.DeploymentID = req.DeploymentID
 			reqAccuracyActive.ModelPackageID = resModelPackage.ModelPackageID
 			reqAccuracyActive.AssociationID = req.AssociationID
-			reqAccuracyActive.CurrentModelID = resModelPackage.ModelVersion
+			reqAccuracyActive.CurrentModelID = currentModelID
 
 			_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracyActive)
 			if err != nil {
@@ -590,14 +611,14 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i ident
 		return nil, err
 	}
 
-	// reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
-	// 	ID: req.DeploymentID,
-	// }
+	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
+		ID: req.DeploymentID,
+	}
 
-	// resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	if err != nil {
+		return nil, err
+	}
 
 	// response dto
 	resDTO := new(appDTO.GetDeploymentResponseDTO)
@@ -613,11 +634,12 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i ident
 	resDTO.ActiveStatus = res.ActiveStatus
 	resDTO.ServiceStatus = res.ServiceStatus
 	resDTO.ChangeRequested = res.ChangeRequested
-	// resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
-	// resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
-	// resDTO.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
-	// resDTO.FeatureDriftTracking = convBoolToStrType(resMonitor.Monitor.FeatureDriftTracking)
-	// resDTO.AccuracyAnalyze = convBoolToStrType(resMonitor.Monitor.AccuracyMonitoring)
+	resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
+	resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
+	//resDTO.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
+	resDTO.FeatureDriftTracking = resMonitor.Monitor.FeatureDriftTracking
+	resDTO.AccuracyAnalyze = resMonitor.Monitor.AccuracyMonitoring
+	resDTO.AssociationID = resMonitor.Monitor.AssociationID
 
 	return resDTO, nil
 }

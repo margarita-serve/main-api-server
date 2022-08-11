@@ -5,9 +5,6 @@ import (
 	"io"
 	"sync"
 
-	"io"
-	"sync"
-
 	infStorageClient "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/storage/minio"
 	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
@@ -451,6 +448,8 @@ func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveReq
 		TargetLabel:                resModelPackage.PredictionTargetName,
 		ModelType:                  resModelPackage.TargetType,
 		Framework:                  resModelPackage.ModelFrameWork,
+		TrainDatasetPath:           resModelPackage.TrainingDatasetPath,
+		ModelPath:                  resModelPackage.ModelFilePath,
 		DriftThreshold:             domAggregateMonitor.DriftThreshold,
 		ImportanceThreshold:        domAggregateMonitor.ImportanceThreshold,
 		MonitorRange:               domAggregateMonitor.MonitorRange,

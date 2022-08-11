@@ -109,17 +109,14 @@ definitions:
   dto.CreateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
-        description: 정확도 측정 설정
-<<<<<<< HEAD
-        example: true
-=======
+        description: 정확도 모니터링 설정, 미 입력시 false
         example: false
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
         type: boolean
         x-order: "9"
       associationID:
-        description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
-        example: Index
+        description: 정확도 측정을 위해 요청데이터에서 ID로 처리할 피쳐컬럼 명, 요청 피쳐컬럼에 유니크한 ID값이 없다면 비워두고
+          요청데이터에 별도"association_id" key항목입력 필요
+        example: ""
         type: string
         x-order: "10"
       description:
@@ -128,16 +125,12 @@ definitions:
         type: string
         x-order: "3"
       featureDriftTracking:
-        description: 데이터 드리프트 설정
-<<<<<<< HEAD
-        example: true
-=======
+        description: 데이터 드리프트 모니터링 설정, 미 입력시 false
         example: false
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
         type: boolean
         x-order: "8"
       importance:
-        description: 배포중요도
+        description: 배포중요도   미 입력시 'Moderate'로 설정
         enum:
         - Low
         - ' Moderate'
@@ -157,30 +150,23 @@ definitions:
         type: string
         x-order: 2 x-nullable=false
       predictionEnvID:
-        description: 예측 환경
+        description: 예측 환경   미 입력시 프로젝트에 설정된 기본 배포환경에 배포
         example: cbjmmqfr2g4j4bjpq19g
         type: string
         x-order: "4"
-      projectID:
-        description: 프로젝트 ID
-        example: cbjmlbnr2g4j4bjpq18g
-        type: string
-        x-order: 0 x-nullable=false
       requestCPU:
-        description: 요청 CPU
-        example: 1
+        description: 요청 CPU 단위)1 = 1vCore = 1000millicpu, 범위)0.001 ~, 미 입력시 1
+        example: 0.5
         type: number
         x-order: "6"
       requestMEM:
-        description: 요청 MEM
-        example: 2
+        description: 요청 MEM 단위)1 = 1G= 1Gi  범위)0.001 ~, 미 입력시 2
+        example: 1
         type: number
         x-order: "7"
     required:
     - modelPackageID
     - name
-    - predictionEnvID
-    - projectID
     type: object
   dto.CreateDeploymentResponseDTO:
     properties:
@@ -191,14 +177,14 @@ definitions:
     properties:
       description:
         description: 모델패키지 설명
-        example: New ModelPacakge
+        example: New house price predict
         type: string
         x-order: "02"
       modelDescription:
         description: 모델 설명
         example: Best Accuracy
         type: string
-        x-order: "05"
+        x-order: "06"
       modelFrameWork:
         description: 모델 프레임워크
         enum:
@@ -207,46 +193,46 @@ definitions:
         - ' SkLearn'
         - ' XGBoost'
         - ' LightGBM'
-        example: TensorFlow
+        example: SkLearn
         type: string
         x-order: "08"
       modelFrameWorkVersion:
         description: 모델 프레임워크 버전
-        example: 1.14.0
+        example: 1.1.0
         type: string
         x-order: "09"
       modelName:
         description: 모델명
-        example: Example Model
-        type: string
-        x-order: "03"
-      modelVersion:
-        description: 모델 버전
-        example: "1.4"
+        example: house price Regression Example Model
         type: string
         x-order: "04"
+      modelVersion:
+        description: 모델 버전
+        example: "1.0"
+        type: string
+        x-order: "05"
       name:
         description: 모델패키지 명
-        example: ModelPacakge 01
+        example: California house price 01
         type: string
         x-order: "01"
       negativeClassLabel:
-        description: 이진분류 음성명칭 지정
+        description: 이진분류 음성명칭 지정. 모델 예측타입이 'Binary' 일 때 필수
         example: "False"
         type: string
         x-order: "12"
       positiveClassLabel:
-        description: 이진분류 양성명칭 지정
+        description: 이진분류 양성명칭 지정. 모델 예측타입이 'Binary' 일 때 필수
         example: "True"
         type: string
         x-order: "11"
       predictionTargetName:
-        description: 예측 타켓명칭
-        example: Target
+        description: 데이터 셋 예측타켓 컬럼 명칭
+        example: median_house_value
         type: string
         x-order: "07"
       predictionThreshold:
-        description: 이진분류 예측임계값
+        description: 이진분류 예측임계값. 모델 예측타입이 'Binary' 일 때 필수
         example: 0.5
         type: number
         x-order: "10"
@@ -256,15 +242,18 @@ definitions:
         type: string
         x-order: "0"
       targetType:
-        description: 모델 예측타입
+        description: 모델 예측타입 Binary(Binary classification), Regression
         enum:
         - Binary
         - ' Regression'
-        example: Binary
+        example: Regression
         type: string
-        x-order: "06"
+        x-order: "03"
     required:
+    - modelFrameWork
+    - name
     - projectID
+    - targetType
     type: object
   dto.CreateModelPackageResponseDTO:
     properties:
@@ -310,6 +299,7 @@ definitions:
   dto.CreateProjectRequestDTO:
     properties:
       description:
+        description: 프로젝트 설명
         example: New Project
         type: string
         x-order: "2"
@@ -318,6 +308,8 @@ definitions:
         example: Project 01
         type: string
         x-order: "1"
+    required:
+    - name
     type: object
   dto.CreateProjectResponseDTO:
     properties:
@@ -382,10 +374,6 @@ definitions:
       message:
         type: string
     type: object
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
   dto.DeletePredictionEnvResponseDTO:
     properties:
       message:
@@ -396,14 +384,6 @@ definitions:
       message:
         type: string
     type: object
-  dto.DetailGraphGetResponseDTO:
-    properties:
-      script:
-        description: graph JS script
-        type: string
-    type: object
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
->>>>>>> 5e8c14f (Add:Dockerfile, Project Module)
   dto.FeatureDriftGetResponseDTO:
     properties:
       data:
@@ -682,21 +662,7 @@ definitions:
   dto.MonitorAccuracyPatchRequestDTO:
     properties:
       accuracySetting:
-<<<<<<< HEAD
-        $ref: '#/definitions/dto.AccuracySetting'
-      associationID:
-        type: string
-      dataDriftSetting:
-        $ref: '#/definitions/dto.DataDriftSetting'
-      featureDriftTracking:
-        type: boolean
-      modelPackageID:
-        type: string
-      serviceHealthSetting:
-        $ref: '#/definitions/dto.ServiceHealthSetting'
-=======
         $ref: '#/definitions/dto.PatchAccuracySetting'
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     type: object
   dto.MonitorAccuracyPatchResponseDTO:
     properties:
@@ -889,11 +855,6 @@ definitions:
     type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
-<<<<<<< HEAD
-      description:
-        description: 베포 설명
-        type: string
-=======
       accuracyAnalyze:
         description: 정확도 측정 설정
         example: true
@@ -912,7 +873,6 @@ definitions:
         example: true
         type: boolean
         x-order: "8"
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       importance:
         description: 배포중요도
         enum:
@@ -1018,8 +978,6 @@ definitions:
       message:
         type: string
     type: object
-<<<<<<< HEAD
-=======
   dto.UpdatePredictionEnvRequestDTO:
     properties:
       clusterInfoID:
@@ -1081,7 +1039,41 @@ definitions:
       message:
         type: string
     type: object
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+  dto.UploadHoldoutDatasetResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.UploadModelResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.UploadTrainingDatasetResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  response.Response:
+    properties:
+      message:
+        type: string
+      result: {}
+    type: object
+  response.RootResponse:
+    properties:
+      response:
+        $ref: '#/definitions/response.Response'
+      serverInfo:
+        $ref: '#/definitions/response.ServerInfo'
+      status:
+        type: string
+    type: object
+  response.ServerInfo:
+    properties:
+      serverTime:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -1103,7 +1095,17 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.LoginResDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.LoginResDTO'
+                    type: object
+              type: object
       summary: Login user
       tags:
       - Auth
@@ -1125,13 +1127,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.RegisterResDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.RegisterResDTO'
+                    type: object
+              type: object
       summary: register user
       tags:
       - Auth
-<<<<<<< HEAD
-  /projects/{projectID}/deployments:
-=======
   /cluster-infos:
     get:
       consumes:
@@ -1154,12 +1163,6 @@ paths:
         in: query
         name: sort
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1167,6 +1170,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.GetClusterInfoListResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Get ClusterInfo List
       tags:
       - ClusterInfo
@@ -1181,12 +1186,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateClusterInfoRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1194,6 +1193,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.CreateClusterInfoResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Create ClusterInfo
       tags:
       - ClusterInfo
@@ -1208,12 +1209,6 @@ paths:
         name: predictionEnvID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1221,6 +1216,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.DeleteClusterInfoResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Delete ClusterInfo
       tags:
       - ClusterInfo
@@ -1234,12 +1231,6 @@ paths:
         name: clusterInfoID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1247,6 +1238,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.GetClusterInfoResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Get ClusterInfo
       tags:
       - ClusterInfo
@@ -1266,12 +1259,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateClusterInfoRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1279,6 +1266,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.UpdateClusterInfoResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Edit ClusterInfo
       tags:
       - ClusterInfo
@@ -1304,19 +1293,25 @@ paths:
         in: query
         name: sort
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetDeploymentListResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetDeploymentListResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Deployment List
       tags:
       - Deployment
@@ -1331,19 +1326,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateDeploymentRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateDeploymentResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.CreateDeploymentResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Create Deployment
       tags:
       - Deployment
@@ -1358,19 +1359,25 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.DeleteDeploymentResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.DeleteDeploymentResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Delete Deployment
       tags:
       - Deployment
@@ -1384,19 +1391,25 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetDeploymentResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetDeploymentResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Deployment
       tags:
       - Deployment
@@ -1416,19 +1429,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateDeploymentRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UpdateDeploymentResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UpdateDeploymentResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Edit Deployment
       tags:
       - Deployment
@@ -1443,19 +1462,25 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ActiveDeploymentResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.ActiveDeploymentResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Active Deployment
       tags:
       - Deployment
@@ -1470,19 +1495,25 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetGovernanceHistoryResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetGovernanceHistoryResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Governance Log
       tags:
       - Deployment
@@ -1497,19 +1528,25 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.InActiveDeploymentResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.InActiveDeploymentResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Inactive Deployment
       tags:
       - Deployment
@@ -1524,24 +1561,29 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetModelHistoryResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetModelHistoryResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Model History
       tags:
       - Deployment
   /deployments/{deploymentID}/monitor:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     get:
       consumes:
       - application/json
@@ -1552,19 +1594,25 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MonitorGetSettingResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.MonitorGetSettingResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Monitor Setting
       tags:
       - Monitor
@@ -1599,19 +1647,25 @@ paths:
         name: endTime
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.AccuracyGetResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.AccuracyGetResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Accuracy
       tags:
       - Monitor
@@ -1631,19 +1685,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.MonitorAccuracyPatchRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MonitorAccuracyPatchResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.MonitorAccuracyPatchResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Patch Accuracy Monitor Setting
       tags:
       - Monitor
@@ -1668,19 +1728,25 @@ paths:
         name: targetLabel
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UploadActualResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UploadActualResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Upload Actual file
       tags:
       - Monitor
@@ -1702,19 +1768,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateAssociationIDRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Patch AssociationID
       tags:
       - Monitor
@@ -1744,19 +1816,25 @@ paths:
         name: endTime
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Feature Detail
       tags:
       - Monitor
@@ -1786,19 +1864,25 @@ paths:
         name: endTime
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.FeatureDriftGetResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Data Drift
       tags:
       - Monitor
@@ -1818,19 +1902,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.MonitorDriftPatchRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MonitorDriftPatchResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.MonitorDriftPatchResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Patch Drift Monitor Setting
       tags:
       - Monitor
@@ -1860,12 +1950,6 @@ paths:
         name: endTime
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1873,6 +1957,8 @@ paths:
           description: OK
           schema:
             type: string
+      security:
+      - BearerAuth: []
       summary: Get Feature Detail Graph
       tags:
       - Monitor
@@ -1887,6 +1973,21 @@ paths:
         name: deploymentID
         required: true
         type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01
+        in: query
+        name: endTime
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1894,310 +1995,17 @@ paths:
           description: OK
           schema:
             type: string
+      security:
+      - BearerAuth: []
       summary: Get Drift Graph
       tags:
       - Monitor
-<<<<<<< HEAD
-    patch:
-      consumes:
-      - application/json
-      description: 배포 리스트
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Patch Monitor
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
-      produces:
-      - application/json
-      responses: {}
-      summary: Patch Monitor Setting
-      tags:
-      - Monitor
-    post:
-      consumes:
-      - application/json
-      description: Test
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Create Monitor
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateDeploymentRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.CreateDeploymentResponseDTO'
-      summary: Create Deployment
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/accuracy:
-    get:
-      consumes:
-      - application/json
-      description: 배포 삭제
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.DeleteDeploymentResponseDTO'
-      summary: Delete Deployment
-      tags:
-      - Deployment
-    get:
-      consumes:
-      - application/json
-      description: 배포 상세조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetDeploymentResponseDTO'
-      summary: Get Deployment
-      tags:
-      - Deployment
-    patch:
-      consumes:
-      - application/json
-      description: 배포 정보수정
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Update Deployment Info
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateDeploymentRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UpdateDeploymentResponseDTO'
-      summary: Edit Deployment
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/detail/graph:
-    get:
-      consumes:
-      - application/json
-      description: 배포 활성화
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.ActiveDeploymentResponseDTO'
-      summary: Active Deployment
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/drift:
-    get:
-      consumes:
-      - application/json
-      description: 배포 거버넌스 로그 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetGovernanceHistoryResponseDTO'
-      summary: Get Governance Log
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/drift/graph:
-    get:
-      consumes:
-      - application/json
-      description: 드리프트 그래프
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.InActiveDeploymentResponseDTO'
-      summary: Inactive Deployment
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/monitor/statuses:
-    get:
-      consumes:
-      - application/json
-      description: 배포 모델 변경이력 조회
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetModelHistoryResponseDTO'
-      summary: Get Model History
-      tags:
-      - Monitor
-  /projects/{projectID}/deployments/{deploymentID}/predict:
-=======
   /deployments/{deploymentID}/predict:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 예측 요청
       parameters:
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: deploymentID
         in: path
         name: deploymentID
@@ -2205,47 +2013,29 @@ paths:
         type: string
       - description: application/json
         in: body
-        name: json
+        name: body
         required: true
         schema:
-          example: "{\n\"association_id\": [\"abcd1234\", \"abcd1235\"], \n\"instances\":
-            [[1.483887, 1.865988, 2.234620, 1.018782, -2.530891, -1.604642, 0.774676,
-            -0.465148, -0.495225], [1.483887, 1.865988, 2.234620, 1.018782, -2.530891,
-            -1.604642, 0.774676, -0.465148, -0.495225]]\n}"
+          example: "{\n\"association_id\": [\"abcd1234\"], \n\"instances\": [[-122.12,\t37.68,\t45.0,\t2179.0,\t401.0,\t1159.0,\t399.0,\t3.4839]]\n}"
           type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ReplaceModelResponseDTO'
+            $ref: '#/definitions/response.RootResponse'
+      security:
+      - BearerAuth: []
       summary: Send Prediction
       tags:
       - Deployment
-<<<<<<< HEAD
-  /projects/{projectID}/deployments/{deploymentID}/replace-model:
-=======
   /deployments/{deploymentID}/replace-model:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     patch:
       consumes:
       - application/json
       description: 배포 모델변경
       parameters:
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: deploymentID
         in: path
         name: deploymentID
@@ -2257,40 +2047,34 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ReplaceModelRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ReplaceModelResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.ReplaceModelResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Replace Model
       tags:
       - Deployment
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages:
-=======
   /model-packages:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     get:
       consumes:
       - application/json
       description: 모델 패키지 리스트
       parameters:
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: queryName
         in: query
         name: name
@@ -2307,19 +2091,25 @@ paths:
         in: query
         name: sort
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetModelPackageListResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetModelPackageListResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get ModelPackage List
       tags:
       - ModelPackage
@@ -2328,41 +2118,35 @@ paths:
       - application/json
       description: 모델 패키지 생성
       parameters:
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        required: true
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: Create ModelPackage
         in: body
         name: body
         required: true
         schema:
           $ref: '#/definitions/dto.CreateModelPackageRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateModelPackageResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.CreateModelPackageResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Create ModelPackage
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}:
-=======
   /model-packages/{modelPackageID}:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     delete:
       consumes:
       - application/json
@@ -2373,19 +2157,25 @@ paths:
         name: modelPackageID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.DeleteModelPackageResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.DeleteModelPackageResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Delete ModelPackage
       tags:
       - ModelPackage
@@ -2394,23 +2184,9 @@ paths:
       - application/json
       description: 모델 패키지 상세조회
       parameters:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
         required: true
         type: string
       produces:
@@ -2419,7 +2195,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetModelPackageResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetModelPackageResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get ModelPackage
       tags:
       - ModelPackage
@@ -2428,14 +2216,6 @@ paths:
       - application/json
       description: 모델 패키지 정보수정
       parameters:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -2447,49 +2227,37 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateModelPackageRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UpdateModelPackageResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UpdateModelPackageResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Edit ModelPackage
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/archive:
-=======
   /model-packages/{modelPackageID}/archive:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     put:
       consumes:
       - application/json
       description: 모델 패키지 보관
       parameters:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
-        required: true
-        type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
         required: true
         type: string
       produces:
@@ -2498,124 +2266,79 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ArchiveModelPackageResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.ArchiveModelPackageResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Archive ModelPackage
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/download-holdout-dataset:
-    get:
-      description: 홀드아웃 데이터셋 파일 다운로드
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
   /model-packages/{modelPackageID}/download-holdout-dataset:
     get:
       description: 홀드아웃 데이터셋 파일 다운로드
       parameters:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/octet-stream
       responses: {}
+      security:
+      - BearerAuth: []
       summary: Download Holdout Dataset File
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/download-model:
-    get:
-      description: 모델 파일 다운로드
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
   /model-packages/{modelPackageID}/download-model:
     get:
       description: 모델 파일 다운로드
       parameters:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/octet-stream
       responses: {}
+      security:
+      - BearerAuth: []
       summary: Download Model File
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/download-training-dataset:
-    get:
-      description: 훈련 데이터셋 파일 다운로드
-      parameters:
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
   /model-packages/{modelPackageID}/download-training-dataset:
     get:
       description: 훈련 데이터셋 파일 다운로드
       parameters:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/octet-stream
       responses: {}
+      security:
+      - BearerAuth: []
       summary: Download Training Dataset File
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/upload-holdout-dataset:
-=======
   /model-packages/{modelPackageID}/upload-holdout-dataset:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 훈련 검증 데이터셋 파일 업로드
       parameters:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -2626,36 +2349,34 @@ paths:
         name: upfile
         required: true
         type: file
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UploadHoldoutDatasetResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Upload Holdout Dataset File
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/upload-model:
-=======
   /model-packages/{modelPackageID}/upload-model:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 모델 파일 업로드
       parameters:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -2666,36 +2387,34 @@ paths:
         name: upfile
         required: true
         type: file
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UploadModelResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Upload Model File
       tags:
       - ModelPackage
-<<<<<<< HEAD
-  /projects/{projectID}/model-packages/{modelPackageID}/upload-training-dataset:
-=======
   /model-packages/{modelPackageID}/upload-training-dataset:
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
     post:
       consumes:
       - application/json
       description: 훈련 데이터셋 파일 업로드
       parameters:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - description: projectID
-        in: path
-        name: projectID
-        type: string
-=======
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
       - description: modelPackageID
         in: path
         name: modelPackageID
@@ -2706,20 +2425,28 @@ paths:
         name: upfile
         required: true
         type: file
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UploadTrainingDatasetResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Upload Training Dataset File
       tags:
       - ModelPackage
-<<<<<<< HEAD
-=======
   /prediction-envs:
     get:
       consumes:
@@ -2742,12 +2469,6 @@ paths:
         in: query
         name: sort
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2755,6 +2476,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.GetPredictionEnvListResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Get PredictionEnv List
       tags:
       - PredictionEnv
@@ -2769,12 +2492,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreatePredictionEnvRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2782,6 +2499,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.CreatePredictionEnvResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Create PredictionEnv
       tags:
       - PredictionEnv
@@ -2796,12 +2515,6 @@ paths:
         name: predictionEnvID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2809,6 +2522,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.DeletePredictionEnvResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Delete PredictionEnv
       tags:
       - PredictionEnv
@@ -2822,12 +2537,6 @@ paths:
         name: predictionEnvID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2835,6 +2544,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.GetPredictionEnvResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Get PredictionEnv
       tags:
       - PredictionEnv
@@ -2854,12 +2565,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdatePredictionEnvRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2867,6 +2572,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.UpdatePredictionEnvResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Edit PredictionEnv
       tags:
       - PredictionEnv
@@ -2892,19 +2599,25 @@ paths:
         in: query
         name: sort
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetProjectListResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetProjectListResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Project List
       tags:
       - Project
@@ -2919,19 +2632,25 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateProjectRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateProjectResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.CreateProjectResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Create Project
       tags:
       - Project
@@ -2946,19 +2665,25 @@ paths:
         name: projectID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.DeleteProjectResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.DeleteProjectResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Delete Project
       tags:
       - Project
@@ -2972,19 +2697,25 @@ paths:
         name: projectID
         required: true
         type: string
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetProjectResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.GetProjectResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Get Project
       tags:
       - Project
@@ -3004,21 +2735,31 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateProjectRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UpdateProjectResponseDTO'
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.UpdateProjectResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
       summary: Edit Project
       tags:
       - Project
->>>>>>> 8c10d7c (Add: predictionEnv, cluster info)
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

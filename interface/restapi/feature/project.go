@@ -37,9 +37,9 @@ type FProject struct {
 // @Accept json
 // @Produce json
 // @Param body body appProjectDTO.CreateProjectRequestDTO true "Create Project"
-// @Success 200 {object} appProjectDTO.CreateProjectResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /projects [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appProjectDTO.CreateProjectResponseDTO}}
 func (f *FProject) Create(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -73,9 +73,9 @@ func (f *FProject) Create(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param projectID path string true "projectID"
-// @Success 200 {object} appProjectDTO.DeleteProjectResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /projects/{projectID} [delete]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appProjectDTO.DeleteProjectResponseDTO}}
 func (f *FProject) Delete(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -108,9 +108,9 @@ func (f *FProject) Delete(c echo.Context) error {
 // @Produce json
 // @Param projectID path string true "projectID"
 // @Param body body appProjectDTO.UpdateProjectRequestDTO true "Update Project Info"
-// @Success 200 {object} appProjectDTO.UpdateProjectResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router     /projects/{projectID} [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appProjectDTO.UpdateProjectResponseDTO}}
 func (f *FProject) Update(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -145,9 +145,9 @@ func (f *FProject) Update(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param projectID path string true "projectID"
-// @Success 200 {object} appProjectDTO.GetProjectResponseDTO
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Router      /projects/{projectID} [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appProjectDTO.GetProjectResponseDTO}}
 func (f *FProject) GetByID(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -180,9 +180,9 @@ func (f *FProject) GetByID(c echo.Context) error {
 // @Param page query int false "page"
 // @Param limit query int false "limit"
 // @Param sort query string false "sort"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
-// @Success 200 {object} appProjectDTO.GetProjectListResponseDTO
+// @Security BearerAuth
 // @Router      /projects [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appProjectDTO.GetProjectListResponseDTO}}
 func (f *FProject) GetList(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)

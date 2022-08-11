@@ -15,7 +15,7 @@ applications:
         openAPIDefinition: # OpenAPIDefinition
           info:
             title: "KoreServe REST API Server"
-            description: "KoreServe Main API Definition."
+            description: "0. Swagger 문서 좌측 상단 Schemes를 HTTPS로 선택  1. Swagger 문서 Auth 섹션에서 register API를 이용해 user를 생성\n2. 등록된 email로 인증메일 전송되며 인증 진행  \n3. Swagger 문서 Auth 섹션 login API 이용 로그인 진행\n4. 응답으로 전달 된 JWT token 을 Swagger API 문서 우측 상단 Authorize 아이콘 클릭 후 입력\n    예) bearer eyJhb......NsNTCCPTeBsOvv6Q4  \n    *bearer는 수기입력 필수\n5. Create Project API 호출 \n6. Create ModelPackage API 호출(생성 된 projectID 입력) 및 Model/TrainingDataset/HoldeOutDataset 업로드 진행(dataset은 csv 포맷으로 feature명칭/Target값 포함 필수)\n7. Create Deployment API 호출(생성 된 modelPackageID 입력)\n8. Deployment Send Prediction API 로 예측확인\n\n*현재 모니터링 파트는 개발 진행중인 상태로 Deployment 생성시 아래 두항목은 false로 설정해야 서빙이 가능합니다\n  featureDriftTracking: false,\n  accuracyAnalyze: false"
             version: 0.1.0
             basePath: "/api/v1"
 
@@ -115,7 +115,7 @@ dirLocations:
 connectors:
   storages:
     minio:
-      endpoint: "192.168.88.154:9000"
+      endpoint: "192.168.88.151:30009"
       accessKeyID: "minioadmin"
       secretAccessKey: "minioadmin"
       useSSL: false

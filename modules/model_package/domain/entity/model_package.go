@@ -56,11 +56,11 @@ func NewModelPackage(id string, projectID string, name string, description strin
 	baseEntity.CreatedBy = "testuser"
 
 	modelPackage := &ModelPackage{
-		ID:                    id,
-		ProjectID:             projectID,
-		Name:                  name,
-		Description:           description,
-		ModelName:             modelName,
+		ID:        id,
+		ProjectID: projectID,
+		//Name:                  name,
+		Description: description,
+		//ModelName:             modelName,
 		ModelVersion:          modelVersion,
 		ModelDescription:      modelDescription,
 		TargetType:            targetType,
@@ -73,6 +73,8 @@ func NewModelPackage(id string, projectID string, name string, description strin
 		DeployCount:           0,
 		BaseEntity:            baseEntity,
 	}
+	modelPackage.SetName(name)
+	modelPackage.SetModelName(modelName)
 
 	// Validate
 	err := Validate(modelPackage)
@@ -84,6 +86,9 @@ func NewModelPackage(id string, projectID string, name string, description strin
 }
 
 func (d *ModelPackage) SetName(req string) {
+	if req == "" {
+		req = "default"
+	}
 	d.Name = req
 }
 
@@ -92,6 +97,9 @@ func (d *ModelPackage) SetDescription(req string) {
 }
 
 func (d *ModelPackage) SetModelName(req string) {
+	if req == "" {
+		req = "default"
+	}
 	d.ModelName = req
 }
 

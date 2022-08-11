@@ -100,6 +100,29 @@ func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO, i
 	// 	return nil, err
 	// }
 
+	//Project validation
+	projectReq := &appProjectDTO.GetProjectListRequestDTO{}
+	projectRes, err := s.projectSvc.GetList(projectReq, i)
+	projectIdList := projectRes.Rows.([]appProjectDTO.GetProjectResponseDTO)
+
+	var listProjectId []string
+	for _, rec := range projectIdList {
+		listProjectId = append(listProjectId, rec.ProjectID)
+	}
+
+	var chkExist bool = false
+	for _, oneOfProjectID := range listProjectId {
+		if oneOfProjectID == req.ProjectID {
+			chkExist = true
+			break
+		}
+	}
+
+	if !chkExist {
+		return nil, errors.New("project not found")
+	}
+	//End Project validation
+
 	guid := xid.New().String()
 
 	//toBe...
@@ -218,41 +241,41 @@ func (s *ModelPackageService) UpdateModelPackage(req *appDTO.UpdateModelPackageR
 		return nil, errors.New("ModelPackage Has Archived")
 	}
 
-	if req.Name != "" {
-		domAggregateModelPackage.SetName(req.Name)
+	if req.Name != nil {
+		domAggregateModelPackage.SetName(*req.Name)
 	}
-	if req.Description != "" {
-		domAggregateModelPackage.SetDescription(req.Description)
+	if req.Description != nil {
+		domAggregateModelPackage.SetDescription(*req.Description)
 	}
-	if req.ModelDescription != "" {
-		domAggregateModelPackage.SetModelDescription(req.ModelDescription)
+	if req.ModelDescription != nil {
+		domAggregateModelPackage.SetModelDescription(*req.ModelDescription)
 	}
-	if req.ModelFrameWork != "" {
-		domAggregateModelPackage.SetModelFrameWork(req.ModelFrameWork)
+	if req.ModelFrameWork != nil {
+		domAggregateModelPackage.SetModelFrameWork(*req.ModelFrameWork)
 	}
-	if req.ModelFrameWorkVersion != "" {
-		domAggregateModelPackage.SetModelFrameWorkVersion(req.ModelFrameWorkVersion)
+	if req.ModelFrameWorkVersion != nil {
+		domAggregateModelPackage.SetModelFrameWorkVersion(*req.ModelFrameWorkVersion)
 	}
-	if req.ModelName != "" {
-		domAggregateModelPackage.SetModelName(req.ModelName)
+	if req.ModelName != nil {
+		domAggregateModelPackage.SetModelName(*req.ModelName)
 	}
-	if req.ModelVersion != "" {
-		domAggregateModelPackage.SetModelVersion(req.ModelVersion)
+	if req.ModelVersion != nil {
+		domAggregateModelPackage.SetModelVersion(*req.ModelVersion)
 	}
-	if req.NegativeClassLabel != "" {
-		domAggregateModelPackage.SetNegativeClassLabel(req.NegativeClassLabel)
+	if req.NegativeClassLabel != nil {
+		domAggregateModelPackage.SetNegativeClassLabel(*req.NegativeClassLabel)
 	}
-	if req.PositiveClassLabel != "" {
-		domAggregateModelPackage.SetPositiveClassLabel(req.PositiveClassLabel)
+	if req.PositiveClassLabel != nil {
+		domAggregateModelPackage.SetPositiveClassLabel(*req.PositiveClassLabel)
 	}
-	if req.PredictionTargetName != "" {
-		domAggregateModelPackage.SetPredictionTargetName(req.PredictionTargetName)
+	if req.PredictionTargetName != nil {
+		domAggregateModelPackage.SetPredictionTargetName(*req.PredictionTargetName)
 	}
-	if req.PredictionThreshold != 0 {
-		domAggregateModelPackage.SetPredictionThreshold(req.PredictionThreshold)
+	if req.PredictionThreshold != nil {
+		domAggregateModelPackage.SetPredictionThreshold(*req.PredictionThreshold)
 	}
-	if req.TargetType != "" {
-		domAggregateModelPackage.SetTargetType(req.TargetType)
+	if req.TargetType != nil {
+		domAggregateModelPackage.SetTargetType(*req.TargetType)
 	}
 
 	err = domEntity.Validate(domAggregateModelPackage)

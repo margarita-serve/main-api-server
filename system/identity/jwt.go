@@ -107,9 +107,9 @@ func (j *JWT) GenerateToken(claims JWTCustomClaims) (token string, expiredAt int
 	if err != nil {
 		return "", 0, fmt.Errorf("Failed to generate token: %v", err.Error())
 	}
-	//Dev temp setting
-	//expiredAt = claims.StandardClaims.ExpiresAt * 1000
-	expiredAt = claims.StandardClaims.ExpiresAt * 0
+
+	expiredAt = claims.StandardClaims.ExpiresAt * 1000
+	//expiredAt = claims.StandardClaims.ExpiresAt * 0
 
 	return token, expiredAt, nil
 }

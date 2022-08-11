@@ -147,11 +147,11 @@ func (s *ProjectService) UpdateProject(req *appDTO.UpdateProjectRequestDTO, i id
 	// response dto
 	resDTO := new(appDTO.UpdateProjectResponseDTO)
 
-	if req.Name != "" {
-		domAggregateProject.SetName(req.Name)
+	if req.Name != nil {
+		domAggregateProject.SetName(*req.Name)
 	}
-	if req.Description != "" {
-		domAggregateProject.SetDescription(req.Description)
+	if req.Description != nil {
+		domAggregateProject.SetDescription(*req.Description)
 	}
 
 	// domEntity.Validate(domAggregateProject)

@@ -21,6 +21,10 @@ type FOpenAPI struct {
 	BaseFeature
 }
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 // GenOpenAPI generate openapi definition
 func (f *FOpenAPI) GenOpenAPI(c echo.Context) error {
 	cfg, err := f.handler.GetConfig()
