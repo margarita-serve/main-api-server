@@ -444,8 +444,8 @@ definitions:
     properties:
       accuracyAnalyze:
         description: 정확도 측정 설정
-        example: "True"
-        type: string
+        example: true
+        type: boolean
         x-order: "9"
       accuracyStatus:
         type: string
@@ -464,8 +464,8 @@ definitions:
         type: string
       featureDriftTracking:
         description: 데이터 드리프트 설정
-        example: "True"
-        type: string
+        example: true
+        type: boolean
         x-order: "8"
       id:
         type: string
@@ -1728,6 +1728,11 @@ paths:
         name: targetLabel
         required: true
         type: string
+      - description: association column id
+        in: query
+        name: associationColumn
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1768,25 +1773,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateAssociationIDRequestDTO'
+      - default: bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.RootResponse'
-            - properties:
-                response:
-                  allOf:
-                  - $ref: '#/definitions/response.Response'
-                  - properties:
-                      result:
-                        $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
-                    type: object
-              type: object
-      security:
-      - BearerAuth: []
+            $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
       summary: Patch AssociationID
       tags:
       - Monitor
@@ -1922,6 +1921,44 @@ paths:
       security:
       - BearerAuth: []
       summary: Patch Drift Monitor Setting
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/accuracy:
+    get:
+      consumes:
+      - application/json
+      description: 정확도 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01 (UTC+0)
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01 (UTC+0)
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get Accuracy Graph
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/graph/detail:

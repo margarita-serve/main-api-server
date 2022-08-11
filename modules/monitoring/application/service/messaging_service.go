@@ -46,13 +46,17 @@ func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 	if err != nil {
 		return err
 	}
-	go func() error {
-		err := driftConsumer.ConsumeMessage(ch, "datadrift")
-		// 실행
+	go func() {
+		err := func() error {
+			err := driftConsumer.ConsumeMessage(ch, "datadrift")
+			// 실행
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
 		if err != nil {
-			return err
 		}
-		return nil
 	}()
 
 	// accuracy go routine
@@ -62,13 +66,17 @@ func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 	if err != nil {
 		return err
 	}
-	go func() error {
-		err := accuracyConsumer.ConsumeMessage(ch, "accuracy")
-		// 실행
+	go func() {
+		err := func() error {
+			err := accuracyConsumer.ConsumeMessage(ch, "accuracy")
+			// 실행
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
 		if err != nil {
-			return err
 		}
-		return nil
 	}()
 
 	// Message Listener go routine
@@ -94,15 +102,21 @@ func (m *MessagingService) MessageListener(ch chan infMsgSvc.OrgMsg) {
 		if msgType == "datadrift" {
 			if err != nil {
 				fmt.Printf(err.Error())
-			} else if status == "pass" {
-				domAggregateMonitor.Monitor.SetDriftStatusPass()
-			} else if status == "atrisk" {
-				domAggregateMonitor.Monitor.SetDriftStatusAtRisk()
-			} else if status == "failing" {
-				domAggregateMonitor.Monitor.SetDriftStatusFailing()
 			} else {
-				domAggregateMonitor.Monitor.SetDriftStatusUnknown()
+				result := domAggregateMonitor.Monitor.CheckDriftStatus(status)
+				if result == true {
+					// 변경 완료된 경우
+				}
 			}
+			//else if status == "pass" {
+			//	domAggregateMonitor.Monitor.SetDriftStatusPass()
+			//} else if status == "atrisk" {
+			//	domAggregateMonitor.Monitor.SetDriftStatusAtRisk()
+			//} else if status == "failing" {
+			//	domAggregateMonitor.Monitor.SetDriftStatusFailing()
+			//} else {
+			//	domAggregateMonitor.Monitor.SetDriftStatusUnknown()
+			//}
 		} else if msgType == "accuracy" {
 			if err != nil {
 				fmt.Printf(err.Error())

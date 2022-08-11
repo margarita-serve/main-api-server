@@ -216,6 +216,26 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 
 	var checkErrMsg error = <-errs
 	if checkErrMsg != nil {
+		// 에러시 만들어진 모니터 삭제 및 취소
+		if domAggregateMonitor.DriftCreated == true {
+			reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
+				InferenceName: req.DeploymentID,
+			}
+			err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvc)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if domAggregateMonitor.AccuracyCreated == true {
+			reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
+				InferenceName: req.DeploymentID,
+			}
+			err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+			if err != nil {
+				return nil, err
+			}
+		}
+		err = s.repo.Delete(domAggregateMonitor.ID)
 		return nil, checkErrMsg
 	}
 
@@ -818,9 +838,10 @@ func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appD
 		return nil, err
 	}
 	reqDomActualSvc := domSvcMonitorSvcAccuracyDTO.AccuracyPostActualRequest{
-		InferenceName:  req.DeploymentID,
-		DatasetPath:    uploadFilePath,
-		ActualResponse: req.ActualResponse,
+		InferenceName:     req.DeploymentID,
+		DatasetPath:       uploadFilePath,
+		ActualResponse:    req.ActualResponse,
+		AssociationColumn: req.AssociationColumn,
 	}
 
 	res, err := domAggregateMonitor.PostActual(s.domMonitorAccuracySvc, reqDomActualSvc)

@@ -62,9 +62,10 @@ type AccuracyGetResponse struct {
 }
 
 type AccuracyPostActualRequest struct {
-	InferenceName  string
-	DatasetPath    string
-	ActualResponse string
+	InferenceName     string
+	DatasetPath       string
+	ActualResponse    string
+	AssociationColumn string
 }
 
 type AccuracyPostActualResponse struct {

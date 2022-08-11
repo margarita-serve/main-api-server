@@ -1155,6 +1155,13 @@
                         "name": "targetLabel",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "association column id",
+                        "name": "associationColumn",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1193,11 +1200,6 @@
         },
         "/deployments/{deploymentID}/monitor/association-id": {
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용 삭제예정.",
                 "consumes": [
                     "application/json"
@@ -1225,37 +1227,21 @@
                         "schema": {
                             "$ref": "#/definitions/dto.UpdateAssociationIDRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.RootResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "response": {
-                                            "allOf": [
-                                                {
-                                                    "$ref": "#/definitions/response.Response"
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "result": {
-                                                            "$ref": "#/definitions/dto.UpdateAssociationIDResponseDTO"
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/dto.UpdateAssociationIDResponseDTO"
                         }
                     }
                 }
@@ -1488,6 +1474,64 @@
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/accuracy": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "정확도 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Accuracy Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01 (UTC+0)",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01 (UTC+0)",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -3520,15 +3564,15 @@
             "properties": {
                 "featureDriftTracking": {
                     "description": "데이터 드리프트 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "8",
-                    "example": "True"
+                    "example": true
                 },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "9",
-                    "example": "True"
+                    "example": true
                 },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
@@ -4129,17 +4173,17 @@
                     "x-order": "8",
                     "example": true
                 },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
-                },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
                     "type": "boolean",
                     "x-order": "9",
                     "example": true
+                },
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "Index"
                 },
                 "description": {
                     "description": "베포 설명",

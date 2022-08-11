@@ -132,6 +132,213 @@ const docTemplate = `{
                 }
             }
         },
+        "/cluster-infos": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Get ClusterInfo List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetClusterInfoListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "클러스터정보 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Create ClusterInfo",
+                "parameters": [
+                    {
+                        "description": "Create ClusterInfo",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateClusterInfoRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/cluster-infos/{clusterInfoID}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Get ClusterInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "clusterInfoID",
+                        "name": "clusterInfoID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "프로젝트 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Delete ClusterInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ClusterInfo"
+                ],
+                "summary": "Edit ClusterInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "clusterInfoID",
+                        "name": "clusterInfoID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update ClusterInfo Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateClusterInfoRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateClusterInfoResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/deployments": {
             "get": {
                 "security": [
@@ -960,6 +1167,13 @@ const docTemplate = `{
                         "name": "targetLabel",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "association column id",
+                        "name": "associationColumn",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -998,11 +1212,6 @@ const docTemplate = `{
         },
         "/deployments/{deploymentID}/monitor/association-id": {
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용 삭제예정.",
                 "consumes": [
                     "application/json"
@@ -1030,37 +1239,21 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.UpdateAssociationIDRequestDTO"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "default": "bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.RootResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "response": {
-                                            "allOf": [
-                                                {
-                                                    "$ref": "#/definitions/response.Response"
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "result": {
-                                                            "$ref": "#/definitions/dto.UpdateAssociationIDResponseDTO"
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/dto.UpdateAssociationIDResponseDTO"
                         }
                     }
                 }
@@ -1293,6 +1486,64 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/accuracy": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "정확도 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Accuracy Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01 (UTC+0)",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01 (UTC+0)",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -2199,6 +2450,213 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/prediction-envs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "프로젝트 리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Get PredictionEnv List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetPredictionEnvListResponseDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "프로젝트 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Create PredictionEnv",
+                "parameters": [
+                    {
+                        "description": "Create PredictionEnv",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePredictionEnvRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/prediction-envs/{predictionEnvID}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "프로젝트 상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Get PredictionEnv",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetPredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "프로젝트 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Delete PredictionEnv",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeletePredictionEnvResponseDTO"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "프로젝트 정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PredictionEnv"
+                ],
+                "summary": "Edit PredictionEnv",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "predictionEnvID",
+                        "name": "predictionEnvID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update PredictionEnv Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePredictionEnvRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePredictionEnvResponseDTO"
                         }
                     }
                 }
@@ -3118,9 +3576,9 @@ const docTemplate = `{
             "properties": {
                 "featureDriftTracking": {
                     "description": "데이터 드리프트 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "8",
-                    "example": "True"
+                    "example": true
                 },
                 "associationID": {
                     "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
@@ -3130,9 +3588,9 @@ const docTemplate = `{
                 },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
-                    "type": "string",
+                    "type": "boolean",
                     "x-order": "9",
-                    "example": "True"
+                    "example": true
                 },
                 "accuracyStatus": {
                     "type": "string"

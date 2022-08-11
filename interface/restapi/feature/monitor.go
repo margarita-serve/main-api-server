@@ -111,6 +111,33 @@ func (f *FMonitor) PatchAccuracySetting(c echo.Context) error {
 	return response.OkWithData(resp, c)
 }
 
+// UpdateAssociationID
+// @Summary Patch AssociationID
+// @Description  AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용 삭제예정.
+// @Tags Monitor
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param body body appMonitorDTO.UpdateAssociationIDRequestDTO true "Patch AssociationID"
+// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Success 200 {object} appMonitorDTO.UpdateAssociationIDResponseDTO
+// @Router        /deployments/{deploymentID}/monitor/association-id [patch]
+func (f *FMonitor) UpdateAssociationID(c echo.Context) error {
+	req := new(appMonitorDTO.UpdateAssociationIDRequestDTO)
+	if err := c.Bind(req); err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+
+	resp, err := f.appMonitor.MonitorSvc.UpdateAssociationID(req)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+}
+
 // GetDetail
 // @Summary Get Feature Detail
 // @Description 피쳐 드리프트 디테일
@@ -257,12 +284,14 @@ func (f *FMonitor) GetMonitorSetting(c echo.Context) error {
 // @Param file formData file true "actual file upload"
 // @Param deploymentID path string true "deploymentID"
 // @Param targetLabel query string true "target column name"
+// @Param associationColumn query string true "association column id"
 // @Security BearerAuth
 // @Router      /deployments/{deploymentID}/monitor/actual [post]
 // @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.UploadActualResponseDTO}}
 func (f *FMonitor) UploadActual(c echo.Context) error {
 	deploymentID := c.Param("deploymentID")
 	actualResponse := c.QueryParam("targetLabel")
+	associationColumn := c.QueryParam("associationColumn")
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -287,6 +316,7 @@ func (f *FMonitor) UploadActual(c echo.Context) error {
 	req.File = src
 	req.FileName = file.Filename
 	req.ActualResponse = actualResponse
+	req.AssociationColumn = associationColumn
 
 	resp, err := f.appMonitor.MonitorSvc.UploadActual(req)
 	if err != nil {
@@ -332,29 +362,38 @@ func (f *FMonitor) GetDriftGraph(c echo.Context) error {
 	return response.Ok(c)
 }
 
-// UpdateAssociationID
-// @Summary Patch AssociationID
-// @Description  AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용 삭제예정.
+// GetAccuracyGraph
+// @Summary Get Accuracy Graph
+// @Description 정확도 그래프
 // @Tags Monitor
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Param body body appMonitorDTO.UpdateAssociationIDRequestDTO true "Patch AssociationID"
+// @Param modelHistoryID query string true "modelHistoryID"
+// @Param startTime query string true "example=2022-05-05:01 (UTC+0)"
+// @Param endTime query string true "example=2022-08-01:01 (UTC+0)"
+// @Success 200 string html
 // @Security BearerAuth
-// @Router        /deployments/{deploymentID}/monitor/association-id [patch]
-// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.UpdateAssociationIDResponseDTO}}
-func (f *FMonitor) UpdateAssociationID(c echo.Context) error {
-	req := new(appMonitorDTO.UpdateAssociationIDRequestDTO)
-	if err := c.Bind(req); err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-	deploymentID := c.Param("deploymentID")
-	req.DeploymentID = deploymentID
+// @Router       /deployments/{deploymentID}/monitor/graph/accuracy [get]
+func (f *FMonitor) GetAccuracyGraph(c echo.Context) error {
 
-	resp, err := f.appMonitor.MonitorSvc.UpdateAssociationID(req)
-	if err != nil {
-		return f.translateErrorMessage(err, c)
-	}
+	return response.Ok(c)
+}
 
-	return response.OkWithData(resp, c)
+// GetServiceGraph
+// @Summary Get Service Graph
+// @Description 정확도 그래프
+// @Tags Monitor
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param modelHistoryID query string true "modelHistoryID"
+// @Param startTime query string true "example=2022-05-05:01 (UTC+0)"
+// @Param endTime query string true "example=2022-08-01:01 (UTC+0)"
+// @Success 200 string html
+// @Security BearerAuth
+// @Router       /deployments/{deploymentID}/monitor/graph/service [get]
+func (f *FMonitor) GetServiceGraph(c echo.Context) error {
+
+	return response.Ok(c)
 }

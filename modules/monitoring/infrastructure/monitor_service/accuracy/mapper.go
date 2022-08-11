@@ -94,6 +94,7 @@ func MapPostReq(req *domSchema.AccuracyPostActualRequest) (*conMonitor.ActualReq
 	reqCon.InferenceName = req.InferenceName
 	reqCon.DatasetPath = req.DatasetPath
 	reqCon.ActualResponse = req.ActualResponse
+	reqCon.AssociationColumn = req.AssociationColumn
 
 	return reqCon, nil
 }

@@ -366,6 +366,15 @@ func (m *Monitor) PostActual(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapte
 	return res, nil
 }
 
+func (m *Monitor) CheckDriftStatus(status string) bool {
+	if m.DriftStatus != status {
+		m.DriftStatus = status
+		return true
+	} else {
+		return false
+	}
+}
+
 func (m *Monitor) SetDriftStatusPass() {
 	m.DriftStatus = "pass"
 }

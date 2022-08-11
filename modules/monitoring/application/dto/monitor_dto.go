@@ -51,10 +51,11 @@ type MonitorGetSettingResponseDTO struct {
 }
 
 type UploadActualRequestDTO struct {
-	DeploymentID   string    `json:"deploymentID" swaggerignore:"true"`
-	ActualResponse string    `json:"actualResponse"`
-	File           io.Reader `swaggerignore:"true"`
-	FileName       string    `swaggerignore:"true"`
+	DeploymentID      string    `json:"deploymentID" swaggerignore:"true"`
+	ActualResponse    string    `json:"actualResponse"`
+	AssociationColumn string    `json:"associationColumn"`
+	File              io.Reader `swaggerignore:"true"`
+	FileName          string    `swaggerignore:"true"`
 }
 
 type UploadActualResponseDTO struct {

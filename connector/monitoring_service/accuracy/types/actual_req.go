@@ -3,9 +3,10 @@ package types
 import "encoding/json"
 
 type ActualRequest struct {
-	InferenceName  string `json:"inference_name"`
-	DatasetPath    string `json:"dataset_path"`
-	ActualResponse string `json:"actual_response"`
+	InferenceName     string `json:"inference_name"`
+	DatasetPath       string `json:"dataset_path"`
+	ActualResponse    string `json:"actual_response"`
+	AssociationColumn string `json:"association_column"`
 }
 
 func (r *ActualRequest) ToJSON() []byte {

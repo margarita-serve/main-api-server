@@ -123,8 +123,10 @@ connectors:
     endpoint: "http://192.168.88.151:30071"
   accuracyServer:
     endpoint: "http://192.168.88.151:30072"
-  graphServer:
+  serviceHealthServer:
     endpoint: "http://192.168.88.151:30073"
+  graphServer:
+    endpoint: "http://192.168.88.151:30074"
   kafka:
     endpoint: "192.168.88.151:32038"
     groupID: "monitor-group"
