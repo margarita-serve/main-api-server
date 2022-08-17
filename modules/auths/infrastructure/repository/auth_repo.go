@@ -248,3 +248,37 @@ func (r *AuthenticationRepo) generateJWTToken(data *domEntity.SysUser) (token st
 
 	return token, expiredAt, err
 }
+
+// Login user
+func (r *AuthenticationRepo) GetUserByName(req string, i identity.Identity) (*domEntity.SysUser, error) {
+	// select db
+	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
+	if err != nil {
+		return nil, err
+	}
+
+	var userEntt domEntity.SysUser
+	var count int64
+
+	if err := dbCon.Where("username = ?", req).Find(&userEntt).Count(&count).Error; err != nil {
+		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
+	}
+	if count == 0 {
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("Invalid username")}
+	}
+
+	// check user is active
+	// if !userEntt.IsActive {
+	// 	return nil, &sysError.SystemError{StatusCode: http.StatusNonAuthoritativeInfo, Err: fmt.Errorf("Inactive User")}
+	// }
+
+	// return response
+	// resp := new(domSchema.LoginResponse)
+	// resp.TokenType = "JWT"
+	// resp.Token, resp.ExpiredAt, err = r.generateJWTToken(&userEntt)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return &userEntt, nil
+}

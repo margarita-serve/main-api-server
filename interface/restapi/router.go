@@ -71,4 +71,5 @@ func SetRouters(e *echo.Echo, h *handler.Handler) {
 	router.SetEmail(ga, features.Email)
 	router.SetProject(ga, features.Project)
 	router.SetGraph(ga, h)
+	router.SetNoti(ga, features.Noti)
 }

@@ -23,7 +23,6 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
 
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
@@ -36,9 +35,9 @@ import (
 // ModelPackageService type
 
 type StorageClient interface {
-	UploadFile(ioReader io.Reader, filePath string) error
+	UploadFile(ioReader interface{}, filePath string) error
 	DeleteFile(filePath string) error
-	GetFile(filePath string) (*minio.Object, error)
+	GetFile(filePath string) (io.Reader, error)
 }
 
 type ModelPackageService struct {
@@ -659,7 +658,7 @@ func (s *ModelPackageService) GetByIDInternal(req *appDTO.InternalGetModelPackag
 	return resDTO, nil
 }
 
-func (s *ModelPackageService) GetModelFile(modelPackageID string) (*minio.Object, string, error) {
+func (s *ModelPackageService) GetModelFile(modelPackageID string) (io.Reader, string, error) {
 	res, err := s.repo.GetByID(modelPackageID)
 	if err != nil {
 		return nil, "", err
@@ -675,7 +674,7 @@ func (s *ModelPackageService) GetModelFile(modelPackageID string) (*minio.Object
 	return fileReader, fileName, nil
 }
 
-func (s *ModelPackageService) GetTrainingDatasetFile(modelPackageID string) (*minio.Object, string, error) {
+func (s *ModelPackageService) GetTrainingDatasetFile(modelPackageID string) (io.Reader, string, error) {
 	res, err := s.repo.GetByID(modelPackageID)
 	if err != nil {
 		return nil, "", err
@@ -691,7 +690,7 @@ func (s *ModelPackageService) GetTrainingDatasetFile(modelPackageID string) (*mi
 	return fileReader, fileName, nil
 }
 
-func (s *ModelPackageService) GetHoldoutDatasetFile(modelPackageID string) (*minio.Object, string, error) {
+func (s *ModelPackageService) GetHoldoutDatasetFile(modelPackageID string) (io.Reader, string, error) {
 	res, err := s.repo.GetByID(modelPackageID)
 	if err != nil {
 		return nil, "", err

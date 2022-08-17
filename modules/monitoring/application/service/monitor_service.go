@@ -17,7 +17,6 @@ import (
 	infDriftSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/data_drift"
 	infGraphSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/graph"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
-	"github.com/minio/minio-go/v7"
 
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/repository"
@@ -37,9 +36,9 @@ type IModelPackageService interface {
 }
 
 type StorageClient interface {
-	UploadFile(ioReader io.Reader, filePath string) error
+	UploadFile(ioReader interface{}, filePath string) error
 	DeleteFile(filePath string) error
-	GetFile(filePath string) (*minio.Object, error)
+	GetFile(filePath string) (io.Reader, error)
 }
 
 type MonitorService struct {

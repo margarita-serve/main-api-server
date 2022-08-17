@@ -6,13 +6,13 @@ import (
 )
 
 // NewNotiApp new NotiApp
-func NewNotiApp(h *handler.Handler) (*NotiApp, error) {
+func NewNotiApp(h *handler.Handler, emailSvc appSvc.IEmailService, deploymentSvc appSvc.IDeploymentService, projectSvc appSvc.IProjectService, authSvc appSvc.IAuthService, governanceHistorySvc appSvc.IGovernanceHistoryService) (*NotiApp, error) {
 	var err error
 
 	app := new(NotiApp)
 	app.handler = h
 
-	if app.NotiSvc, err = appSvc.NewNotiService(h); err != nil {
+	if app.NotiSvc, err = appSvc.NewNotiService(h, emailSvc, deploymentSvc, projectSvc, authSvc, governanceHistorySvc); err != nil {
 		return nil, err
 	}
 

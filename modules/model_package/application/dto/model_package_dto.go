@@ -1,7 +1,5 @@
 package dto
 
-import "io"
-
 type CreateModelPackageRequestDTO struct {
 	ProjectID             string  `json:"projectID" example:"cbjmlbnr2g4j4bjpq18g" validate:"required" extensions:"x-order=0"`                                                  // 프로젝트 ID
 	Name                  string  `json:"name" example:"California house price 01" validate:"required" extensions:"x-order=01"`                                                 // 모델패키지 명
@@ -119,7 +117,7 @@ type InternalGetModelPackageResponseDTO struct {
 type UploadModelRequestDTO struct {
 	//	ProjectID      string
 	ModelPackageID string
-	File           io.Reader
+	File           interface{}
 	FileName       string
 }
 
@@ -130,7 +128,7 @@ type UploadModelResponseDTO struct {
 type UploadTrainingDatasetRequestDTO struct {
 	//	ProjectID      string `json:"projectID" validate:"false" swaggerignore:"true"`         // 프로젝트 ID
 	ModelPackageID string `json:"modelPackageID" validate:"required" swaggerignore:"true"` // 모델패키지 ID
-	File           io.Reader
+	File           interface{}
 	FileName       string
 }
 
@@ -141,7 +139,7 @@ type UploadTrainingDatasetResponseDTO struct {
 type UploadHoldoutDatasetRequestDTO struct {
 	//	ProjectID      string
 	ModelPackageID string
-	File           io.Reader
+	File           interface{}
 	FileName       string
 }
 

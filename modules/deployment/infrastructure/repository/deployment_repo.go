@@ -76,6 +76,31 @@ func (r *DeploymentRepo) GetByID(ID string, projectIdList []string) (*domEntity.
 
 }
 
+func (r *DeploymentRepo) GetByIDInternal(ID string) (*domEntity.Deployment, error) {
+	// select db
+	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
+	if err != nil {
+		return nil, err
+	}
+
+	var entity = &domEntity.Deployment{}
+	var count int64
+
+	if err := dbCon.Where("id = ?", ID).Preload(clause.Associations).Find(&entity).Count(&count).Error; err != nil {
+		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
+	}
+
+	if count == 0 {
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid deployment id")}
+	}
+
+	// return response
+	resp := entity
+
+	return resp, nil
+
+}
+
 //Paging 및 Sorting을 위한 코드
 func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string, projectIdList []string) func(db *gorm.DB) *gorm.DB {
 	var totalRows int64

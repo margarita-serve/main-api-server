@@ -69,7 +69,32 @@ func (r *ProjectRepo) GetByID(ID string, i interface{}) (*domEntity.Project, err
 	}
 
 	if count == 0 {
-		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid model_package id")}
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid project id")}
+	}
+
+	// return response
+	resp := domEntity
+
+	return resp, nil
+
+}
+
+func (r *ProjectRepo) GetByIDInternal(ID string) (*domEntity.Project, error) {
+	// select db
+	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
+	if err != nil {
+		return nil, err
+	}
+
+	var domEntity = &domEntity.Project{}
+	var count int64
+
+	if err := dbCon.Where("id = ?", ID).Preload(clause.Associations).Find(&domEntity).Count(&count).Error; err != nil {
+		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
+	}
+
+	if count == 0 {
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid project id")}
 	}
 
 	// return response

@@ -644,6 +644,37 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i ident
 	return resDTO, nil
 }
 
+// func (s *DeploymentService) GetByIDInternal(req *appDTO.GetDeploymentRequestDTO, i identity.Identity) (*appDTO.GetDeploymentResponseDTO, error) {
+// 	// //authorization
+// 	// if i.CanAccessCurrentRequest() == false {
+// 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
+// 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
+// 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
+// 	// }
+
+// 	res, err := s.repo.GetByIDInternal(req.DeploymentID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// response dto
+// 	resDTO := new(appDTO.GetDeploymentResponseDTO)
+// 	resDTO.ID = res.ID
+// 	resDTO.ProjectID = res.ProjectID
+// 	resDTO.ModelPackageID = res.ModelPackageID
+// 	resDTO.PredictionEnvID = res.PredictionEnvID
+// 	resDTO.Name = res.Name
+// 	resDTO.Description = res.Description
+// 	resDTO.Importance = res.Importance
+// 	resDTO.RequestCPU = res.RequestCPU
+// 	resDTO.RequestMEM = res.RequestMEM
+// 	resDTO.ActiveStatus = res.ActiveStatus
+// 	resDTO.ServiceStatus = res.ServiceStatus
+// 	resDTO.ChangeRequested = res.ChangeRequested
+
+// 	return resDTO, nil
+// }
+
 func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO, i identity.Identity) (*appDTO.GetDeploymentListResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {

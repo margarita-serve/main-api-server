@@ -7,18 +7,19 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appResource "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application"
 	appResourceDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/dto"
+	appResourceSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewFResource new FResource
-func NewResource(h *handler.Handler) (*FResource, error) {
+func NewResource(h *handler.Handler, clusterInfoService *appResourceSvc.ClusterInfoService, predictionEnvService *appResourceSvc.PredictionEnvService) (*FResource, error) {
 	var err error
 
 	f := new(FResource)
 	f.handler = h
 
-	if f.appResource, err = appResource.NewResourceApp(h); err != nil {
+	if f.appResource, err = appResource.NewResourceApp(h, clusterInfoService, predictionEnvService); err != nil {
 		return nil, err
 	}
 
