@@ -46,7 +46,8 @@ func connectClient(endpoint string, accessKeyID string, secretAccessKey string, 
 	return minioClient, nil
 }
 
-func (i *StorageClient) UploadFile(ioReader io.Reader, filePath string) error {
+func (i *StorageClient) UploadFile(ioReader interface{}, filePath string) error {
+	convIoReader := ioReader.(io.Reader)
 	bucketName, fileName := i.filPathToBucketName(filePath)
 
 	found, err := i.client.BucketExists(i.ctx, bucketName)
@@ -60,7 +61,7 @@ func (i *StorageClient) UploadFile(ioReader io.Reader, filePath string) error {
 		}
 	}
 
-	uploadInfo, err := i.client.PutObject(i.ctx, bucketName, fileName, ioReader, -1, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	uploadInfo, err := i.client.PutObject(i.ctx, bucketName, fileName, convIoReader, -1, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		fmt.Println(err)
 		// err2 := i.checkReconnect()
@@ -94,7 +95,7 @@ func (i *StorageClient) DeleteFile(filePath string) error {
 	return err
 }
 
-func (i *StorageClient) GetFile(filePath string) (*minio.Object, error) {
+func (i *StorageClient) GetFile(filePath string) (io.Reader, error) {
 	bucketName, fileName := i.filPathToBucketName(filePath)
 
 	object, err := i.client.GetObject(context.Background(), bucketName, fileName, minio.GetObjectOptions{})

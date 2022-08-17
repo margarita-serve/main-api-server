@@ -168,3 +168,9 @@ type GetGovernanceHistoryRequestDTO struct {
 type GetGovernanceHistoryResponseDTO struct {
 	EventHistory interface{}
 }
+
+type AddGovernanceHistoryRequestDTO struct {
+	DeploymentID string
+	EventType    string
+	LogMessage   string
+}

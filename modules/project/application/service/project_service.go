@@ -196,6 +196,32 @@ func (s *ProjectService) GetByID(req *appDTO.GetProjectRequestDTO, i identity.Id
 	resDTO.Name = res.Name
 	resDTO.Description = res.Description
 	resDTO.ModelPackages = resModelPackage.Rows
+	resDTO.CreatedBy = res.CreatedBy
+	resDTO.CreatedAt = res.CreatedAt.GoString()
+
+	return resDTO, nil
+}
+
+func (s *ProjectService) GetByIDInternal(req *appDTO.GetProjectRequestDTO) (*appDTO.GetProjectResponseDTO, error) {
+	// //authorization
+	// if i.CanAccessCurrentRequest() == false {
+	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
+	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
+	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
+	// }
+
+	res, err := s.repo.GetByIDInternal(req.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	// response dto
+	resDTO := new(appDTO.GetProjectResponseDTO)
+	resDTO.ProjectID = req.ProjectID
+	resDTO.Name = res.Name
+	resDTO.Description = res.Description
+	resDTO.CreatedBy = res.CreatedBy
+	resDTO.CreatedAt = res.CreatedAt.GoString()
 
 	return resDTO, nil
 }

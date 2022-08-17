@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/auths/domain/entity"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/auths/domain/schema"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 )
@@ -11,4 +12,5 @@ type IAuthenticationRepo interface {
 	ActivateRegistration(req *schema.ActivateRegistrationRequest, i identity.Identity) (*schema.ActivateRegistrationResponse, error)
 	Login(req *schema.LoginRequest, i identity.Identity) (*schema.LoginResponse, error)
 	LoginApp(req *schema.LoginAppRequest, i identity.Identity) (*schema.LoginAppResponse, error)
+	GetUserByName(req string, i identity.Identity) (*entity.SysUser, error)
 }

@@ -17,6 +17,13 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/initialize"
 )
 
+type Services struct {
+	ClusterInfoSvc   interface{}
+	PredictionEnvSvc interface{}
+}
+
+var services Services
+
 func initConfig(h *handler.Handler) (*config.Config, error) {
 	//init config
 	cfg, viper, err := config.NewConfig("./")

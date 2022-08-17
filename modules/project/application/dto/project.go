@@ -17,6 +17,8 @@ type GetProjectResponseDTO struct {
 	ProjectID     string
 	Name          string
 	Description   string
+	CreatedBy     string
+	CreatedAt     string
 	ModelPackages interface{}
 	Deployments   interface{}
 }

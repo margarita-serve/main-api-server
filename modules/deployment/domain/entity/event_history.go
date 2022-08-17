@@ -9,7 +9,7 @@ import (
 
 type EventHistory struct {
 	ID           string `gorm:"size:20"`
-	EventType    string `gorm:"size:20"` //Create, Delete, ModelReplace, Update
+	EventType    string `gorm:"size:20"`
 	EventDate    time.Time
 	LogMessage   string
 	UserID       string `gorm:"size:20"`
@@ -19,7 +19,7 @@ type EventHistory struct {
 // Validate
 func (r *EventHistory) Validate() error {
 	return validation.ValidateStruct(r,
-		validation.Field(&r.EventType, validation.Required, validation.In("Create", "Delete", "ReplaceModel", "Update", "Active", "InActive")),
+		validation.Field(&r.EventType, validation.Required, validation.In("Create", "Delete", "ReplaceModel", "Update", "Active", "InActive", "DataDriftAlert", "AccuracyAlert", "ServiceAlert")),
 		validation.Field(&r.UserID, validation.Required),
 	)
 }

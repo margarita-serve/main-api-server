@@ -212,3 +212,15 @@ func (s *AuthenticationSvc) LoginApp(req *appDTO.LoginAppReqDTO, i identity.Iden
 
 	return resDTO, nil
 }
+
+// Get userInfo
+func (s *AuthenticationSvc) GetUserByName(req *appDTO.GetUserByNameReqDTO, i identity.Identity) (*appDTO.GetUserByNameResDTO, error) {
+	res, err := s.repo.GetUserByName(req.UserName, i)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.GetUserByNameResDTO)
+	resDTO.Email = res.Email
+	return resDTO, nil
+}

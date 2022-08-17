@@ -1,14 +1,11 @@
 package service
 
 import (
-	"fmt"
-
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/application/dto"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/domain/repository"
 	domSchema "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/domain/schema"
 	domSchemaET "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/domain/schema/email_template"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/infrastructure/repository"
-	sysError "git.k3.acornsoft.io/msit-auto-ml/koreserv/system/error"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 )
@@ -43,11 +40,11 @@ type EmailService struct {
 // Send send Email
 func (s *EmailService) Send(req *appDTO.SendEmailReqDTO, i identity.Identity) (*appDTO.SendEmailResDTO, error) {
 	// authorization
-	if (i.CanAccessCurrentRequest() == false) && (i.CanAccess("", "system.module.email.send", "EXECUTE", nil) == false) {
-		errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
-			i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
-		return nil, sysError.CustomForbiddenAccess(errMsg)
-	}
+	// if (i.CanAccessCurrentRequest() == false) && (i.CanAccess("", "system.module.email.send", "EXECUTE", nil) == false) {
+	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
+	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
+	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
+	// }
 
 	// request domain
 	reqDom := domSchema.SendEmailRequest{

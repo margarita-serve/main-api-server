@@ -7,18 +7,19 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appProject "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application"
 	appProjectDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
+	appProjectSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewFProject new FProject
-func NewProject(h *handler.Handler) (*FProject, error) {
+func NewProject(h *handler.Handler, projectService *appProjectSvc.ProjectService) (*FProject, error) {
 	var err error
 
 	f := new(FProject)
 	f.handler = h
 
-	if f.appProject, err = appProject.NewProjectApp(h); err != nil {
+	if f.appProject, err = appProject.NewProjectApp(h, projectService); err != nil {
 		return nil, err
 	}
 

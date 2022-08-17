@@ -6,19 +6,22 @@ import (
 )
 
 // NewResourceApp new ResourceApp
-func NewResourceApp(h *handler.Handler) (*ResourceApp, error) {
-	var err error
+func NewResourceApp(h *handler.Handler, clusterInfoService *appSvc.ClusterInfoService, predictionEnvService *appSvc.PredictionEnvService) (*ResourceApp, error) {
+	// var err error
 
 	app := new(ResourceApp)
 	app.handler = h
 
-	if app.ClusterInfoSvc, err = appSvc.NewClusterInfoService(h); err != nil {
-		return nil, err
-	}
+	// if app.ClusterInfoSvc, err = appSvc.NewClusterInfoService(h); err != nil {
+	// 	return nil, err
+	// }
 
-	if app.PredictionEnvSvc, err = appSvc.NewPredictionEnvService(h, app.ClusterInfoSvc); err != nil {
-		return nil, err
-	}
+	// if app.PredictionEnvSvc, err = appSvc.NewPredictionEnvService(h, app.ClusterInfoSvc); err != nil {
+	// 	return nil, err
+	// }
+
+	app.ClusterInfoSvc = clusterInfoService
+	app.PredictionEnvSvc = predictionEnvService
 
 	return app, nil
 }
