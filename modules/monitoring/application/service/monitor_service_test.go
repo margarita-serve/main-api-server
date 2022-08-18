@@ -26,7 +26,7 @@ func newMonitorSvc(t *testing.T) (*MonitorService, *handler.Handler, error) {
 		return nil, nil, err
 	}
 
-	r, err := NewMonitorService(h, nil)
+	r, err := NewMonitorService(h, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -7,17 +7,18 @@ import (
 	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	appMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application"
 	appMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
+	appNotiSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
-func NewMonitor(h *handler.Handler, modelPackageSvc *appModelPackageSvc.ModelPackageService) (*FMonitor, error) {
+func NewMonitor(h *handler.Handler, modelPackageSvc *appModelPackageSvc.ModelPackageService, NotiSvc *appNotiSvc.NotiService) (*FMonitor, error) {
 	var err error
 
 	f := new(FMonitor)
 	f.handler = h
 
-	if f.appMonitor, err = appMonitor.NewMonitorApp(h, modelPackageSvc); err != nil {
+	if f.appMonitor, err = appMonitor.NewMonitorApp(h, modelPackageSvc, NotiSvc); err != nil {
 		return nil, err
 	}
 
@@ -362,6 +363,24 @@ func (f *FMonitor) GetDriftGraph(c echo.Context) error {
 	return response.Ok(c)
 }
 
+// GetPredictionOverTimeGraph
+// @Summary Get PredictionOverTime Graph
+// @Description 예측값 변화 그래프
+// @Tags Monitor
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param modelHistoryID query string true "modelHistoryID"
+// @Param startTime query string true "example=2022-05-05:01"
+// @Param endTime query string true "example=2022-08-01:01"
+// @Success 200 string html
+// @Security BearerAuth
+// @Router       /deployments/{deploymentID}/monitor/graph/prediction-over-time [get]
+func (f *FMonitor) GetPredictionOverTimeGraph(c echo.Context) error {
+
+	return response.Ok(c)
+}
+
 // GetAccuracyGraph
 // @Summary Get Accuracy Graph
 // @Description 정확도 그래프
@@ -380,9 +399,27 @@ func (f *FMonitor) GetAccuracyGraph(c echo.Context) error {
 	return response.Ok(c)
 }
 
+// GetPredictedActual
+// @Summary Get PredictedActual Graph
+// @Description 예측값 변화 그래프
+// @Tags Monitor
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param modelHistoryID query string true "modelHistoryID"
+// @Param startTime query string true "example=2022-05-05:01 (UTC+0)"
+// @Param endTime query string true "example=2022-08-01:01 (UTC+0)"
+// @Success 200 string html
+// @Security BearerAuth
+// @Router       /deployments/{deploymentID}/monitor/graph/predicted-actual [get]
+func (f *FMonitor) GetPredictedActual(c echo.Context) error {
+
+	return response.Ok(c)
+}
+
 // GetServiceGraph
 // @Summary Get Service Graph
-// @Description 정확도 그래프
+// @Description 서비스 상태 그래프
 // @Tags Monitor
 // @Accept json
 // @Produce json

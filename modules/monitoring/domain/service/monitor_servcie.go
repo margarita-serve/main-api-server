@@ -3,7 +3,7 @@ package service
 import (
 	domAccuracySvcDto "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domDriftSvcDto "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
-	domGraphSvcDto "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/graph/dto"
+	domServiceHealthSvcDto "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/service_health/dto"
 )
 
 type IExternalDriftMonitorAdapter interface {
@@ -25,7 +25,9 @@ type IExternalAccuracyMonitorAdapter interface {
 	MonitorAssociationIDPatch(req *domAccuracySvcDto.AccuracyUpdateAssociationIDRequest) (*domAccuracySvcDto.AccuracyUpdateAssociationIDResponse, error)
 }
 
-type IExternalGraphMonitorAdapter interface {
-	MonitorGetDetailGraph(req *domGraphSvcDto.DetailGraphGetRequest) (*domGraphSvcDto.DetailGraphGetResponse, error)
-	MonitorGetDriftGraph(req *domGraphSvcDto.DriftGraphGetRequest) (*domGraphSvcDto.DriftGraphGetResponse, error)
+type IExternalServiceHealthMonitorAdapter interface {
+	MonitorCreate(req *domServiceHealthSvcDto.ServiceHealthCreateRequest) (*domServiceHealthSvcDto.ServiceHealthCreateResponse, error)
+	MonitorGetServiceHealth(req *domServiceHealthSvcDto.ServiceHealthGetRequest) (*domServiceHealthSvcDto.ServiceHealthGetResponse, error)
+	MonitorEnable(req *domServiceHealthSvcDto.ServiceHealthEnableRequest) (*domServiceHealthSvcDto.ServiceHealthEnableResponse, error)
+	MonitorDisable(req *domServiceHealthSvcDto.ServiceHealthDeleteRequest) error
 }

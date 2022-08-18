@@ -2,7 +2,7 @@ package kafka
 
 type KafkaMsg struct {
 	InferenceName string `json:"inference_name"`
-	DriftResult   string `json:"drift_result"`
+	Result        string `json:"result"`
 }
 
 type OrgMsg struct {

@@ -46,7 +46,7 @@ type NotiService struct {
 	BaseService
 	//repo           domRepo.IPredictionEnvRepo
 	EmailSvc             IEmailService
-	DeploymentlSvc       IDeploymentService
+	DeploymentSvc        IDeploymentService
 	ProjectSvc           IProjectService
 	AuthSvc              IAuthService
 	GovernanceHistorySvc IGovernanceHistoryService
@@ -73,7 +73,7 @@ func NewNotiService(h *handler.Handler, emailSvc IEmailService, deploymentSvc ID
 	// }
 
 	svc.EmailSvc = emailSvc
-	svc.DeploymentlSvc = deploymentSvc
+	svc.DeploymentSvc = deploymentSvc
 	svc.ProjectSvc = projectSvc
 	svc.AuthSvc = authSvc
 	svc.GovernanceHistorySvc = governanceHistorySvc
@@ -107,7 +107,7 @@ func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) 
 	reqDeploy := &appDeploymentDTO.GetDeploymentRequestDTO{
 		DeploymentID: req.DeploymentID,
 	}
-	resDeploy, err := s.DeploymentlSvc.GetByIDInternal(reqDeploy, i)
+	resDeploy, err := s.DeploymentSvc.GetByIDInternal(reqDeploy, i)
 	if err != nil {
 		return err
 	}

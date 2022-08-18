@@ -2,12 +2,13 @@ package config
 
 // Connectors represent available connectors
 type Connectors struct {
-	Identity       Identity        `json:"identity" yaml:"identity"`
-	Storages       Storages        `json:"storages" yaml:"storages"`
-	DriftServer    DataDriftServer `json:"driftServer" yaml:"driftServer"`
-	AccuracyServer AccuracyServer  `json:"accuracyServer" yaml:"accuracyServer"`
-	GraphServer    GraphServer     `json:"graphServer" yaml:"graphServer"`
-	Kafka          KafkaServer     `json:"Kafka" yaml:"kafka"`
+	Identity            Identity            `json:"identity" yaml:"identity"`
+	Storages            Storages            `json:"storages" yaml:"storages"`
+	DriftServer         DataDriftServer     `json:"driftServer" yaml:"driftServer"`
+	AccuracyServer      AccuracyServer      `json:"accuracyServer" yaml:"accuracyServer"`
+	ServiceHealthServer ServiceHealthServer `json:"serviceHealthServer" yaml:"serviceHealthServer"`
+	GraphServer         GraphServer         `json:"graphServer" yaml:"graphServer"`
+	Kafka               KafkaServer         `json:"Kafka" yaml:"kafka"`
 }
 
 // Identity type
@@ -41,6 +42,10 @@ type DataDriftServer struct {
 }
 
 type AccuracyServer struct {
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+}
+
+type ServiceHealthServer struct {
 	Endpoint string `json:"endpoint" yaml:"endpoint"`
 }
 

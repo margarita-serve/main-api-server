@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	"io"
 	"sync"
 
@@ -13,9 +15,11 @@ import (
 	domSvcMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domSvcMonitorSvcDriftDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
+	domSvcMonitorSvcServiceHealthDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/service_health/dto"
 	infAccuracySvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/accuracy"
 	infDriftSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/data_drift"
-	infGraphSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/graph"
+	infServiceHealthSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/service_health"
+	appNotiDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
@@ -35,6 +39,10 @@ type IModelPackageService interface {
 	GetByIDInternal(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
 }
 
+type INotiService interface {
+	SendNoti(req *appNotiDTO.NotiRequestDTO, i identity.Identity) error
+}
+
 type StorageClient interface {
 	UploadFile(ioReader interface{}, filePath string) error
 	DeleteFile(filePath string) error
@@ -43,15 +51,16 @@ type StorageClient interface {
 
 type MonitorService struct {
 	BaseService
-	domMonitorDriftSvc    domSvcMonitorSvc.IExternalDriftMonitorAdapter
-	domMonitorAccuracySvc domSvcMonitorSvc.IExternalAccuracyMonitorAdapter
-	domMonitorGraphSvc    domSvcMonitorSvc.IExternalGraphMonitorAdapter
-	modelPackageSvc       IModelPackageService
-	repo                  domRepo.IMonitorRepo
-	storageClient         StorageClient
+	domMonitorDriftSvc         domSvcMonitorSvc.IExternalDriftMonitorAdapter
+	domMonitorAccuracySvc      domSvcMonitorSvc.IExternalAccuracyMonitorAdapter
+	domMonitorServiceHealthSvc domSvcMonitorSvc.IExternalServiceHealthMonitorAdapter
+	modelPackageSvc            IModelPackageService
+	notiSvc                    INotiService
+	repo                       domRepo.IMonitorRepo
+	storageClient              StorageClient
 }
 
-func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService) (*MonitorService, error) {
+func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService, notiSvc INotiService) (*MonitorService, error) {
 	var err error
 
 	svc := new(MonitorService)
@@ -74,11 +83,13 @@ func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService)
 		return nil, err
 	}
 
-	if svc.domMonitorGraphSvc, err = infGraphSvc.NewGraphAdapter(h); err != nil {
+	if svc.domMonitorServiceHealthSvc, err = infServiceHealthSvc.NewServiceHealthAdapter(h); err != nil {
 		return nil, err
 	}
 
 	svc.modelPackageSvc = modelPackageSvc
+
+	svc.notiSvc = notiSvc
 
 	cfg, err := h.GetConfig()
 	if err != nil {
@@ -142,9 +153,24 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 	}
 
 	var wait sync.WaitGroup
-	wait.Add(2)
+	wait.Add(3)
 
-	errs := make(chan error, 2)
+	errs := make(chan error, 3)
+
+	// 서비스 상태 모니터는 항상 생성한다
+	go func() {
+		defer wait.Done()
+		reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthCreateRequest{
+			InferenceName:  req.DeploymentID,
+			ModelHistoryID: req.ModelHistoryID,
+		}
+		err = domAggregateMonitor.SetServiceHealthMonitorTrackingOn(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvc)
+		if err != nil {
+			errs <- err
+		} else {
+			domAggregateMonitor.SetServiceHealthCreatedTrue()
+		}
+	}()
 
 	if req.FeatureDriftTracking == true {
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
@@ -213,34 +239,42 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 	wait.Wait()
 	close(errs)
 
-	var checkErrMsg error = <-errs
-	if checkErrMsg != nil {
-		// 에러시 만들어진 모니터 삭제 및 취소
-		if domAggregateMonitor.DriftCreated == true {
-			reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
-				InferenceName: req.DeploymentID,
-			}
-			err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvc)
-			if err != nil {
-				return nil, err
-			}
-		}
-		if domAggregateMonitor.AccuracyCreated == true {
-			reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
-				InferenceName: req.DeploymentID,
-			}
-			err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvc)
-			if err != nil {
-				return nil, err
-			}
-		}
-		err = s.repo.Delete(domAggregateMonitor.ID)
-		return nil, checkErrMsg
-	}
-
 	err = s.repo.Save(domAggregateMonitor)
 	if err != nil {
 		return nil, err
+	}
+
+	var checkErrMsg error = <-errs
+	if checkErrMsg != nil {
+		//// 에러시 만들어진 모니터 삭제 및 취소
+		//reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthDeleteRequest{
+		//	InferenceName: req.DeploymentID,
+		//}
+		//err = domAggregateMonitor.SetServiceHealthMonitorTrackingOff(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvc)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//
+		//if domAggregateMonitor.DriftCreated == true {
+		//	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
+		//		InferenceName: req.DeploymentID,
+		//	}
+		//	err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvc)
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//}
+		//if domAggregateMonitor.AccuracyCreated == true {
+		//	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
+		//		InferenceName: req.DeploymentID,
+		//	}
+		//	err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//}
+		//err = s.repo.Delete(domAggregateMonitor.ID)
+		return nil, checkErrMsg
 	}
 
 	resDTO := new(appDTO.MonitorCreateResponseDTO)
@@ -266,6 +300,23 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 		return nil, err
 	}
 
+	// ServiceHealth
+	domAggregateMonitor.SetServiceHealthCreatedFalse()
+	reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthCreateRequest{
+		InferenceName:  req.DeploymentID,
+		ModelHistoryID: req.ModelHistoryID,
+	}
+	err = domAggregateMonitor.SetServiceHealthMonitorTrackingOn(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	// Drift
 	if domAggregateMonitor.FeatureDriftTracking == true {
 		domAggregateMonitor.SetDriftCreatedFalse()
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
@@ -298,6 +349,7 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 		}
 	}
 
+	// Accuracy
 	if domAggregateMonitor.AccuracyMonitoring == true {
 		domAggregateMonitor.SetAccuracyCreatedFalse()
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
@@ -338,6 +390,14 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 
 func (s *MonitorService) Delete(req *appDTO.MonitorDeleteRequestDTO) (*appDTO.MonitorDeleteResponseDTO, error) {
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthDeleteRequest{
+		InferenceName: req.DeploymentID,
+	}
+	err = domAggregateMonitor.SetServiceHealthMonitorTrackingOff(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvc)
 	if err != nil {
 		return nil, err
 	}
@@ -452,6 +512,55 @@ func (s *MonitorService) PatchDriftMonitorSetting(req *appDTO.MonitorDriftPatchR
 	return resDTO, nil
 }
 
+func (s *MonitorService) SetServiceHealthMonitorActive(req *appDTO.MonitorServiceHealthActiveRequestDTO) (*appDTO.MonitorServiceHealthActiveResponseDTO, error) {
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthCreateRequest{
+		InferenceName:  req.DeploymentID,
+		ModelHistoryID: req.CurrentModelID,
+	}
+
+	err = domAggregateMonitor.SetServiceHealthMonitorTrackingOn(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvc)
+	if err != nil {
+		return nil, err
+	}
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+	resDTO := new(appDTO.MonitorServiceHealthActiveResponseDTO)
+	resDTO.DeploymentID = domAggregateMonitor.ID
+
+	return resDTO, nil
+}
+
+func (s *MonitorService) SetServiceHealthMonitorInActive(req *appDTO.MonitorServiceHealthInActiveRequestDTO) (*appDTO.MonitorServiceHealthInActiveResponseDTO, error) {
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+	reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthDeleteRequest{
+		InferenceName: req.DeploymentID,
+	}
+	err = domAggregateMonitor.SetServiceHealthMonitorTrackingOff(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.MonitorServiceHealthInActiveResponseDTO)
+	resDTO.Message = "ServiceHealth Monitor InActive Success"
+
+	return resDTO, nil
+}
+
 func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveRequestDTO) (*appDTO.MonitorDriftActiveResponseDTO, error) {
 	// active 는 드리프트 셋팅과 연관이 없음. 단순 on 만 가능하게 하는데 drift monitor가 만들어지지 않을경우엔 생성, 이미 있을 경우엔 단순 on만. drift monitor 생성여부 상태값 저장해야함
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
@@ -513,7 +622,7 @@ func (s *MonitorService) SetDriftMonitorInActive(req *appDTO.MonitorDriftInActiv
 	}
 
 	resDTO := new(appDTO.MonitorDriftInActiveResponseDTO)
-	resDTO.Message = "DataDrift Monitor Inactive Success"
+	resDTO.Message = "DataDrift Monitor InActive Success"
 
 	return resDTO, nil
 }
@@ -729,7 +838,7 @@ func (s *MonitorService) SetAccuracyMonitorInActive(req *appDTO.MonitorAccuracyI
 	}
 
 	resDTO := new(appDTO.MonitorAccuracyInActiveResponseDTO)
-	resDTO.Message = "Accuracy Monitor Inactive Success"
+	resDTO.Message = "Accuracy Monitor InActive Success"
 
 	return resDTO, nil
 }
@@ -856,6 +965,86 @@ func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appD
 	resDTO.DeploymentID = res.InferenceName
 
 	return resDTO, nil
+}
+
+func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckRequestDTO) error {
+	// 데이터 드리프트 = 사욪자 지정한 드리프트 모니터 셋팅에 따라 결정 /30초간격
+	// 정확도 = 사용자 지정한 정확도 모니터 셋팅에 따라 결정 /30초간격
+	// 서비스 상태 = 고정값으로 현재부터 24시간까지의 데이터에 따라 결정. /60초간격
+	//            24시간동안 요청이 없을경우 = unknown, 4xx >=1 인경우 = warning, 5xx >=1 인경우 = failing, 4xx or 5xx 없을경우 = pass
+	// 데이터 드리프트와 정확도 모니터링은 모델의 버전에 따라 모니터링 하지만 서비스 상태의 경우 모델의 버전과 상관없이 해당 배포의 24시간 범위를 모니터링 한다.
+	// noti 규칙 => 상태가 변할때 단 한번 노티를 한다. 하지만  (모든상태 -> unknown) 와 (unknown -> pass) 일 경우에는 노티하지 않는다.
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return err
+	}
+	if req.Kind == "datadrift" {
+		result := domAggregateMonitor.CheckDriftStatus(req.Status)
+		if result == true {
+			err = s.repo.Save(domAggregateMonitor)
+			if err != nil {
+				return err
+			}
+			if req.Status != "unknown" {
+				reqNotiSvc := appNotiDTO.NotiRequestDTO{
+					DeploymentID:   req.DeploymentID,
+					NotiCategory:   "Datadrift",
+					AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				}
+
+				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else if req.Kind == "accuracy" {
+		result := domAggregateMonitor.CheckAccuracyStatus(req.Status)
+		if result == true {
+			err = s.repo.Save(domAggregateMonitor)
+			if err != nil {
+				return err
+			}
+			if req.Status != "unknown" {
+				reqNotiSvc := appNotiDTO.NotiRequestDTO{
+					DeploymentID:   req.DeploymentID,
+					NotiCategory:   "Accuracy",
+					AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				}
+
+				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else if req.Kind == "servicehealth" {
+		result := domAggregateMonitor.CheckServiceHealthStatus(req.Status)
+		if result == true {
+			err = s.repo.Save(domAggregateMonitor)
+			if err != nil {
+				return err
+			}
+			if req.Status != "unknown" {
+				reqNotiSvc := appNotiDTO.NotiRequestDTO{
+					DeploymentID:   req.DeploymentID,
+					NotiCategory:   "Service",
+					AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				}
+
+				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+	} else {
+		return fmt.Errorf("kind error")
+	}
+
+	return nil
+
 }
 
 //func (s *MonitorService) GetFeatureDriftGraph(req *appDTO.DriftGraphGetRequestDTO) (*appDTO.DriftGraphGetResponseDTO, error) {

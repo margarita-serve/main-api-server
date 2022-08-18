@@ -4,6 +4,7 @@ import (
 	"fmt"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	"time"
 )
 
 type ConsumerKafka struct {
@@ -53,7 +54,8 @@ func (c *ConsumerKafka) ConsumeMessage(ch chan OrgMsg, msgType string) error {
 			ch <- orgMsg
 		} else {
 			// The client will automatically try to recover from all errors.
-			fmt.Printf("Consumer error: %v (%v), MsgType: %v\n", err, msg, msgType)
+			fmt.Printf("Consumer error: %v", err)
+			time.Sleep(30000 * time.Millisecond)
 		}
 	}
 

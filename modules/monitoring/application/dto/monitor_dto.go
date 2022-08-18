@@ -72,3 +72,9 @@ type MonitorReplaceModelRequestDTO struct {
 type MonitorReplaceModelResponseDTO struct {
 	DeploymentID string
 }
+
+type MonitorStatusCheckRequestDTO struct {
+	DeploymentID string
+	Status       string
+	Kind         string
+}

@@ -1,5 +1,5 @@
 package types
 
-type GraphServerEnv struct {
+type ServiceHealthServerEnv struct {
 	ConnectionInfo string
 }

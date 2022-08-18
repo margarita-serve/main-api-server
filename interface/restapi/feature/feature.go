@@ -75,7 +75,7 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	if f.Monitor, err = NewMonitor(h, ModelPackageSvc); err != nil {
+	if f.Monitor, err = NewMonitor(h, ModelPackageSvc, f.Noti.appNoti.NotiSvc); err != nil {
 		return nil, err
 	}
 

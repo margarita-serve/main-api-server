@@ -5,7 +5,7 @@ import (
 	domSvcMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	domAccuracySvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domDriftSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
-	domGraphSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/graph/dto"
+	domServiceHealthSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/service_health/dto"
 	"strings"
 )
 
@@ -19,8 +19,10 @@ type Monitor struct {
 	AssociationID        string `gorm:"size:256"`
 	DriftStatus          string `gorm:"size:256"`
 	AccuracyStatus       string `gorm:"size:256"`
+	ServiceHealthStatus  string `gorm:"size:256"`
 	DriftCreated         bool
 	AccuracyCreated      bool
+	ServiceHealthCreated bool
 	DataDriftSetting
 	AccuracySetting
 	ServiceHealthSetting
@@ -38,6 +40,8 @@ func NewMonitor(id string, modelPackageID string) (*Monitor, error) {
 		"None",
 		"unknown",
 		"unknown",
+		"unknown",
+		false,
 		false,
 		false,
 		DataDriftSetting{},
@@ -149,10 +153,39 @@ func (m *Monitor) UpdateAccuracySetting(metricType string, measurement string, a
 	m.FailingValue = failingValue
 }
 
-func (m *Monitor) SetServiceHealthSetting() {
-	var hs ServiceHealthSetting
+func (m *Monitor) SetServiceHealthMonitorTrackingOn(domSvc domSvcMonitor.IExternalServiceHealthMonitorAdapter, reqDom domServiceHealthSvcMonitorDTO.ServiceHealthCreateRequest) error {
+	if m.ServiceHealthCreated == true {
+		reqEnable := new(domServiceHealthSvcMonitorDTO.ServiceHealthEnableRequest)
+		reqEnable.InferenceName = reqDom.InferenceName
+		res, err := domSvc.MonitorEnable(reqEnable)
+		fmt.Printf("res : %v\n", res)
+		if err != nil {
+			return err
+		}
+		m.ServiceHealthStatus = "unknown"
+		return nil
+	} else {
+		res, err := domSvc.MonitorCreate(&reqDom)
+		fmt.Printf("res : %v\n", res)
 
-	m.ServiceHealthSetting = hs
+		if err != nil {
+			return err
+		}
+		m.ServiceHealthCreated = true
+		m.ServiceHealthStatus = "unknown"
+		return nil
+	}
+
+}
+
+func (m *Monitor) SetServiceHealthMonitorTrackingOff(domSvc domSvcMonitor.IExternalServiceHealthMonitorAdapter, reqDom domServiceHealthSvcMonitorDTO.ServiceHealthDeleteRequest) error {
+	err := domSvc.MonitorDisable(&reqDom)
+	if err != nil {
+		return err
+	}
+	m.ServiceHealthStatus = "unknown"
+
+	return nil
 }
 
 // DataDrift Func
@@ -240,22 +273,6 @@ func (m *Monitor) GetFeatureDetail(domSvc domSvcMonitor.IExternalDriftMonitorAda
 
 func (m *Monitor) GetFeatureDrift(domSvc domSvcMonitor.IExternalDriftMonitorAdapter, reqDom domDriftSvcMonitorDTO.DataDriftGetRequest) (*domDriftSvcMonitorDTO.DataDriftGetResponse, error) {
 	res, err := domSvc.MonitorGetDrift(&reqDom)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (m *Monitor) GetDetailGraph(domSvc domSvcMonitor.IExternalGraphMonitorAdapter, reqDom domGraphSvcMonitorDTO.DetailGraphGetRequest) (*domGraphSvcMonitorDTO.DetailGraphGetResponse, error) {
-	res, err := domSvc.MonitorGetDetailGraph(&reqDom)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (m *Monitor) GetDriftGraph(domSvc domSvcMonitor.IExternalGraphMonitorAdapter, reqDom domGraphSvcMonitorDTO.DriftGraphGetRequest) (*domGraphSvcMonitorDTO.DriftGraphGetResponse, error) {
-	res, err := domSvc.MonitorGetDriftGraph(&reqDom)
 	if err != nil {
 		return nil, err
 	}
@@ -368,43 +385,42 @@ func (m *Monitor) PostActual(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapte
 
 func (m *Monitor) CheckDriftStatus(status string) bool {
 	if m.DriftStatus != status {
+		result := m.checkNoti(status, m.DriftStatus)
 		m.DriftStatus = status
-		return true
+		return result
 	} else {
 		return false
 	}
 }
 
-func (m *Monitor) SetDriftStatusPass() {
-	m.DriftStatus = "pass"
+func (m *Monitor) CheckAccuracyStatus(status string) bool {
+	if m.AccuracyStatus != status {
+		result := m.checkNoti(status, m.DriftStatus)
+		m.AccuracyStatus = status
+		return result
+	} else {
+		return false
+	}
 }
 
-func (m *Monitor) SetDriftStatusAtRisk() {
-	m.DriftStatus = "atrisk"
+func (m *Monitor) CheckServiceHealthStatus(status string) bool {
+	if m.ServiceHealthStatus != status {
+		result := m.checkNoti(status, m.DriftStatus)
+		m.ServiceHealthStatus = status
+		return result
+	} else {
+		return false
+	}
 }
 
-func (m *Monitor) SetDriftStatusFailing() {
-	m.DriftStatus = "failing"
-}
-
-func (m *Monitor) SetDriftStatusUnknown() {
-	m.DriftStatus = "unknown"
-}
-
-func (m *Monitor) SetAccuracyStatusPass() {
-	m.DriftStatus = "pass"
-}
-
-func (m *Monitor) SetAccuracyStatusAtRisk() {
-	m.DriftStatus = "atrisk"
-}
-
-func (m *Monitor) SetAccuracyStatusFailing() {
-	m.DriftStatus = "failing"
-}
-
-func (m *Monitor) SetAccuracyStatusUnknown() {
-	m.DriftStatus = "unknown"
+func (m *Monitor) checkNoti(new, old string) bool {
+	if new == "unknown" {
+		return false
+	} else if old == "unknown" && new == "pass" {
+		return false
+	} else {
+		return true
+	}
 }
 
 func (m *Monitor) SetDriftCreatedTrue() {
@@ -421,4 +437,12 @@ func (m *Monitor) SetAccuracyCreatedTrue() {
 
 func (m *Monitor) SetAccuracyCreatedFalse() {
 	m.AccuracyCreated = false
+}
+
+func (m *Monitor) SetServiceHealthCreatedTrue() {
+	m.ServiceHealthCreated = true
+}
+
+func (m *Monitor) SetServiceHealthCreatedFalse() {
+	m.ServiceHealthCreated = false
 }

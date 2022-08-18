@@ -29,7 +29,7 @@ func (r *UploadActualRequestDTO) Validate() error {
 
 func (r *PatchAccuracySetting) Validate() error {
 	return validation.ValidateStruct(r,
-		validation.Field(&r.MetricType, validation.NotNil, validation.In("rmse", "rmsle", "mae", "mad", "mape", "mean_tweedie_deviance", "gamma_deviance", "tpr", "accuracy",
+		validation.Field(&r.MetricType, validation.NotNil, validation.In("rmse", "rmsle", "mae", "mape", "mean_tweedie_deviance", "gamma_deviance", "tpr", "accuracy",
 			"f1", "ppv", "fnr", "fpr")),
 		validation.Field(&r.Measurement, validation.NotNil, validation.In("percent", "value")),
 		validation.Field(&r.AtRiskValue, validation.Min(0.0)),

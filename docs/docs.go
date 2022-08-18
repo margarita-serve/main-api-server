@@ -1665,6 +1665,180 @@ const docTemplate = `{
                 }
             }
         },
+        "/deployments/{deploymentID}/monitor/graph/pot": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "예측값 변화 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get PredictionOverTime Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/predicted-actual": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "예측값 변화 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get PredictedActual Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01 (UTC+0)",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01 (UTC+0)",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/service": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "서비스 상태 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Service Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01 (UTC+0)",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01 (UTC+0)",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/deployments/{deploymentID}/predict": {
             "post": {
                 "security": [
@@ -3026,7 +3200,6 @@ const docTemplate = `{
                         "rmse",
                         " rmsle",
                         " mae",
-                        " mad",
                         " mape",
                         " mean_tweedie_deviance",
                         " gamma_deviance",
@@ -3819,6 +3992,12 @@ const docTemplate = `{
         "dto.GetProjectResponseDTO": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
                 "deployments": {},
                 "description": {
                     "type": "string"
@@ -3947,7 +4126,6 @@ const docTemplate = `{
                         "rmse",
                         " rmsle",
                         " mae",
-                        " mad",
                         " mape",
                         " mean_tweedie_deviance",
                         " gamma_deviance",

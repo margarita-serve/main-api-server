@@ -44,7 +44,6 @@ definitions:
         - rmse
         - ' rmsle'
         - ' mae'
-        - ' mad'
         - ' mape'
         - ' mean_tweedie_deviance'
         - ' gamma_deviance'
@@ -611,6 +610,10 @@ definitions:
     type: object
   dto.GetProjectResponseDTO:
     properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
       deployments: {}
       description:
         type: string
@@ -716,7 +719,6 @@ definitions:
         - rmse
         - ' rmsle'
         - ' mae'
-        - ' mad'
         - ' mape'
         - ' mean_tweedie_deviance'
         - ' gamma_deviance'
@@ -2035,6 +2037,120 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Drift Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/pot:
+    get:
+      consumes:
+      - application/json
+      description: 예측값 변화 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get PredictionOverTime Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/predicted-actual:
+    get:
+      consumes:
+      - application/json
+      description: 예측값 변화 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01 (UTC+0)
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01 (UTC+0)
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get PredictedActual Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/service:
+    get:
+      consumes:
+      - application/json
+      description: 서비스 상태 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01 (UTC+0)
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01 (UTC+0)
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get Service Graph
       tags:
       - Monitor
   /deployments/{deploymentID}/predict:

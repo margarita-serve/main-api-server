@@ -45,6 +45,8 @@ type IMonitorService interface {
 	SetDriftMonitorInActive(req *appMonitoringDTO.MonitorDriftInActiveRequestDTO) (*appMonitoringDTO.MonitorDriftInActiveResponseDTO, error)
 	SetAccuracyMonitorActive(req *appMonitoringDTO.MonitorAccuracyActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyActiveResponseDTO, error)
 	SetAccuracyMonitorInActive(req *appMonitoringDTO.MonitorAccuracyInActiveRequestDTO) (*appMonitoringDTO.MonitorAccuracyInActiveResponseDTO, error)
+	SetServiceHealthMonitorActive(req *appMonitoringDTO.MonitorServiceHealthActiveRequestDTO) (*appMonitoringDTO.MonitorServiceHealthActiveResponseDTO, error)
+	SetServiceHealthMonitorInActive(req *appMonitoringDTO.MonitorServiceHealthInActiveRequestDTO) (*appMonitoringDTO.MonitorServiceHealthInActiveResponseDTO, error)
 	UpdateAssociationID(req *appMonitoringDTO.UpdateAssociationIDRequestDTO) (*appMonitoringDTO.UpdateAssociationIDResponseDTO, error)
 }
 
@@ -789,6 +791,15 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO, i 
 	}
 
 	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+
+	reqServiceHealth := &appMonitoringDTO.MonitorServiceHealthActiveRequestDTO{
+		DeploymentID:   req.DeploymentID,
+		CurrentModelID: "",
+	}
+	_, err = s.monitoringSvc.SetServiceHealthMonitorActive(reqServiceHealth)
+	if err != nil {
+		return nil, err
+	}
 	if resMonitor.Monitor.FeatureDriftTracking == true {
 		reqDrift := &appMonitoringDTO.MonitorDriftActiveRequestDTO{
 			DeploymentID:   req.DeploymentID,
@@ -874,6 +885,13 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 	}
 
 	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	reqServiceHealth := &appMonitoringDTO.MonitorServiceHealthInActiveRequestDTO{
+		DeploymentID: req.DeploymentID,
+	}
+	_, err = s.monitoringSvc.SetServiceHealthMonitorInActive(reqServiceHealth)
+	if err != nil {
+		return nil, err
+	}
 	if resMonitor.Monitor.FeatureDriftTracking == true {
 		reqDrift := &appMonitoringDTO.MonitorDriftInActiveRequestDTO{
 			DeploymentID: req.DeploymentID,
