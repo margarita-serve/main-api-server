@@ -383,33 +383,33 @@ func (m *Monitor) PostActual(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapte
 	return res, nil
 }
 
-func (m *Monitor) CheckDriftStatus(status string) bool {
+func (m *Monitor) CheckDriftStatus(status string) (bool, bool) {
 	if m.DriftStatus != status {
 		result := m.checkNoti(status, m.DriftStatus)
 		m.DriftStatus = status
-		return result
+		return true, result
 	} else {
-		return false
+		return false, false
 	}
 }
 
-func (m *Monitor) CheckAccuracyStatus(status string) bool {
+func (m *Monitor) CheckAccuracyStatus(status string) (bool, bool) {
 	if m.AccuracyStatus != status {
 		result := m.checkNoti(status, m.DriftStatus)
 		m.AccuracyStatus = status
-		return result
+		return true, result
 	} else {
-		return false
+		return false, false
 	}
 }
 
-func (m *Monitor) CheckServiceHealthStatus(status string) bool {
+func (m *Monitor) CheckServiceHealthStatus(status string) (bool, bool) {
 	if m.ServiceHealthStatus != status {
 		result := m.checkNoti(status, m.DriftStatus)
 		m.ServiceHealthStatus = status
-		return result
+		return true, result
 	} else {
-		return false
+		return false, false
 	}
 }
 

@@ -979,19 +979,18 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 		return err
 	}
 	if req.Kind == "datadrift" {
-		result := domAggregateMonitor.CheckDriftStatus(req.Status)
+		result, noti := domAggregateMonitor.CheckDriftStatus(req.Status)
 		if result == true {
 			err = s.repo.Save(domAggregateMonitor)
 			if err != nil {
 				return err
 			}
-			if req.Status != "unknown" {
+			if noti == true {
 				reqNotiSvc := appNotiDTO.NotiRequestDTO{
 					DeploymentID:   req.DeploymentID,
 					NotiCategory:   "Datadrift",
 					AdditionalData: fmt.Sprintf("status : %s", req.Status),
 				}
-
 				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
 				if err != nil {
 					return err
@@ -999,19 +998,18 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 			}
 		}
 	} else if req.Kind == "accuracy" {
-		result := domAggregateMonitor.CheckAccuracyStatus(req.Status)
+		result, noti := domAggregateMonitor.CheckAccuracyStatus(req.Status)
 		if result == true {
 			err = s.repo.Save(domAggregateMonitor)
 			if err != nil {
 				return err
 			}
-			if req.Status != "unknown" {
+			if noti == true {
 				reqNotiSvc := appNotiDTO.NotiRequestDTO{
 					DeploymentID:   req.DeploymentID,
 					NotiCategory:   "Accuracy",
 					AdditionalData: fmt.Sprintf("status : %s", req.Status),
 				}
-
 				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
 				if err != nil {
 					return err
@@ -1019,19 +1017,18 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 			}
 		}
 	} else if req.Kind == "servicehealth" {
-		result := domAggregateMonitor.CheckServiceHealthStatus(req.Status)
+		result, noti := domAggregateMonitor.CheckServiceHealthStatus(req.Status)
 		if result == true {
 			err = s.repo.Save(domAggregateMonitor)
 			if err != nil {
 				return err
 			}
-			if req.Status != "unknown" {
+			if noti == true {
 				reqNotiSvc := appNotiDTO.NotiRequestDTO{
 					DeploymentID:   req.DeploymentID,
 					NotiCategory:   "Service",
 					AdditionalData: fmt.Sprintf("status : %s", req.Status),
 				}
-
 				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
 				if err != nil {
 					return err
