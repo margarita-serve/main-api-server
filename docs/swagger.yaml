@@ -316,6 +316,49 @@ definitions:
       projectID:
         type: string
     type: object
+  dto.CreateWebHookRequestDTO:
+    properties:
+      customHeader:
+        example: 'Content-Type: application/json '
+        type: string
+        x-order: "4"
+      messageBody:
+        example: '{ "key": "value"}'
+        type: string
+        x-order: "5"
+      method:
+        enum:
+        - POST
+        - GET
+        example: POST
+        type: string
+        x-order: "3"
+      name:
+        example: pipe-line-trigger
+        type: string
+        x-order: "1"
+      triggerSource:
+        enum:
+        - Datadrift
+        - ' Accuracy'
+        example: Datadrift
+        type: string
+        x-order: "1"
+      url:
+        example: http://example.com/to/webhook/client
+        type: string
+        x-order: "2"
+    required:
+    - method
+    - name
+    - triggerSource
+    - url
+    type: object
+  dto.CreateWebHookResponseDTO:
+    properties:
+      webHookID:
+        type: string
+    type: object
   dto.DataDriftSetting:
     properties:
       driftMetricType:
@@ -611,6 +654,10 @@ definitions:
     type: object
   dto.GetProjectResponseDTO:
     properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
       deployments: {}
       description:
         type: string
@@ -1031,6 +1078,44 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  dto.UpdateWebHookRequestDTO:
+    properties:
+      customHeader:
+        example: 'Content-Type: application/json '
+        type: string
+        x-order: "5"
+      messageBody:
+        example: '{ "key": "value"}'
+        type: string
+        x-order: "6"
+      method:
+        enum:
+        - POST
+        - GET
+        example: POST
+        type: string
+        x-order: "4"
+      name:
+        example: pipe-line-trigger
+        type: string
+        x-order: "2"
+      triggerSource:
+        enum:
+        - Datadrift
+        - ' Accuracy'
+        example: Datadrift
+        type: string
+        x-order: "1"
+      url:
+        example: http://example.com/to/webhook/client
+        type: string
+        x-order: "3"
+    required:
+    - method
+    - name
+    - triggerSource
+    - url
     type: object
   dto.UploadActualResponseDTO:
     properties:
@@ -2037,6 +2122,263 @@ paths:
       summary: Get Drift Graph
       tags:
       - Monitor
+  /deployments/{deploymentID}/monitor/graph/service:
+    get:
+      consumes:
+      - application/json
+      description: 정확도 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: modelHistoryID
+        in: query
+        name: modelHistoryID
+        required: true
+        type: string
+      - description: example=2022-05-05:01 (UTC+0)
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: example=2022-08-01:01 (UTC+0)
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get Service Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/noti/web-hooks:
+    get:
+      consumes:
+      - application/json
+      description: WebHook 리스트
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: queryName
+        in: query
+        name: name
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  $ref: '#/definitions/response.Response'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get WebHook List
+      tags:
+      - Noti
+    post:
+      consumes:
+      - application/json
+      description: WebHook 생성
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Create WebHook
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateWebHookRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.CreateWebHookResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create WebHook
+      tags:
+      - Noti
+  /deployments/{deploymentID}/noti/web-hooks/{webHookID}:
+    delete:
+      consumes:
+      - application/json
+      description: WebHook 삭제
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: webHookID
+        in: path
+        name: webHookID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  $ref: '#/definitions/response.Response'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete WebHook
+      tags:
+      - Noti
+    get:
+      consumes:
+      - application/json
+      description: WebHook 상세조회
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: webHookID
+        in: path
+        name: webHookID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  $ref: '#/definitions/response.Response'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get WebHook
+      tags:
+      - Noti
+    patch:
+      consumes:
+      - application/json
+      description: WebHook 정보수정
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: webHookID
+        in: path
+        name: webHookID
+        required: true
+        type: string
+      - description: Update WebHook Info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateWebHookRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  $ref: '#/definitions/response.Response'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Edit WebHook
+      tags:
+      - Noti
+  /deployments/{deploymentID}/noti/web-hooks/test:
+    post:
+      consumes:
+      - application/json
+      description: Test WebHook
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Test WebHook
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateWebHookRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  $ref: '#/definitions/response.Response'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Test WebHook Send
+      tags:
+      - Noti
   /deployments/{deploymentID}/predict:
     post:
       consumes:

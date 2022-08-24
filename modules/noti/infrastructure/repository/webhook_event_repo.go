@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/domain/entity"
-	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/domain/repository"
+	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/domain/entity"
+	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/domain/repository"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/service"
@@ -14,8 +14,8 @@ import (
 )
 
 // NewAuthenticationRepo new AuthenticationRepo implement IAuthenticationRepo
-func NewPredictionEnvRepo(h *handler.Handler) (domRepo.IPredictionEnvRepo, error) {
-	repo := new(PredictionEnvRepo)
+func NewWebHookEventRepo(h *handler.Handler) (domRepo.IWebHookEventRepo, error) {
+	repo := new(WebHookEventRepo)
 	repo.handler = h
 
 	cfg, err := h.GetConfig()
@@ -28,11 +28,11 @@ func NewPredictionEnvRepo(h *handler.Handler) (domRepo.IPredictionEnvRepo, error
 }
 
 // AuthenticationRepo type
-type PredictionEnvRepo struct {
+type WebHookEventRepo struct {
 	BaseRepo
 }
 
-func (r *PredictionEnvRepo) Save(req *domEntity.PredictionEnv) error {
+func (r *WebHookEventRepo) Save(req *domEntity.WebHookEvent) error {
 	// select db
 	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
 	if err != nil {
@@ -49,14 +49,14 @@ func (r *PredictionEnvRepo) Save(req *domEntity.PredictionEnv) error {
 	return nil
 }
 
-func (r *PredictionEnvRepo) GetByID(ID string) (*domEntity.PredictionEnv, error) {
+func (r *WebHookEventRepo) GetByID(ID string) (*domEntity.WebHookEvent, error) {
 	// select db
 	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
 	if err != nil {
 		return nil, err
 	}
 
-	var domEntity = &domEntity.PredictionEnv{}
+	var domEntity = &domEntity.WebHookEvent{}
 	var count int64
 
 	if err := dbCon.Where("id = ?", ID).Preload(clause.Associations).Find(&domEntity).Count(&count).Error; err != nil {
@@ -64,7 +64,7 @@ func (r *PredictionEnvRepo) GetByID(ID string) (*domEntity.PredictionEnv, error)
 	}
 
 	if count == 0 {
-		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid prediction_env id")}
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid webhook event id")}
 	}
 
 	// return response
@@ -74,7 +74,7 @@ func (r *PredictionEnvRepo) GetByID(ID string) (*domEntity.PredictionEnv, error)
 
 }
 
-func (r *PredictionEnvRepo) GetList(queryName string, pagination interface{}, filter map[string]interface{}) ([]*domEntity.PredictionEnv, interface{}, error) {
+func (r *WebHookEventRepo) GetList(queryName string, pagination interface{}, filterEntity interface{}) ([]*domEntity.WebHookEvent, interface{}, error) {
 	p := pagination.(Pagination)
 
 	var mapSort string
@@ -93,33 +93,38 @@ func (r *PredictionEnvRepo) GetList(queryName string, pagination interface{}, fi
 		return nil, p, err
 	}
 
-	var entityModel []*domEntity.PredictionEnv
+	var result []*domEntity.WebHookEvent
 
-	if err := dbCon.Model(entityModel).Scopes(paginate(&entityModel, &p, dbCon, queryName, filter)).Find(&entityModel).Error; err != nil {
+	filterDomain := filterEntity.(domEntity.WebHookEvent)
+	entityModel := domEntity.WebHookEvent{
+		DeploymentID: filterDomain.ID,
+	}
+
+	if err := dbCon.Model(&entityModel).Scopes(paginate(&entityModel, &p, dbCon, queryName)).Find(&result).Error; err != nil {
 		return nil, p, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 
-	resp := entityModel
+	resp := result
 
 	return resp, p, nil
 }
 
-func (r *PredictionEnvRepo) GetForUpdate(modelPackageID string) (*domEntity.PredictionEnv, error) {
+func (r *WebHookEventRepo) GetForUpdate(ID string) (*domEntity.WebHookEvent, error) {
 	// select db
 	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
 	if err != nil {
 		return nil, err
 	}
 
-	var entityModel = &domEntity.PredictionEnv{}
+	var entityModel = &domEntity.WebHookEvent{}
 	var count int64
 
-	if err := dbCon.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", modelPackageID).Preload(clause.Associations).Find(&entityModel).Count(&count).Error; err != nil {
+	if err := dbCon.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", ID).Preload(clause.Associations).Find(&entityModel).Count(&count).Error; err != nil {
 		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 
 	if count == 0 {
-		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid prediction_env id")}
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid id")}
 	}
 
 	// return response
@@ -129,14 +134,14 @@ func (r *PredictionEnvRepo) GetForUpdate(modelPackageID string) (*domEntity.Pred
 
 }
 
-func (r *PredictionEnvRepo) Delete(id string) error {
+func (r *WebHookEventRepo) Delete(id string) error {
 	// select db
 	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
 	if err != nil {
 		return err
 	}
 
-	var domEntity = &domEntity.PredictionEnv{}
+	var domEntity = &domEntity.WebHookEvent{}
 	var count int64
 
 	if err := dbCon.Where("id = ?", id).Find(&domEntity).Count(&count).Error; err != nil {
@@ -144,7 +149,7 @@ func (r *PredictionEnvRepo) Delete(id string) error {
 	}
 
 	if count == 0 {
-		return &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid prediction_env id")}
+		return &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid id")}
 	}
 
 	if err := dbCon.Select(clause.Associations).Delete(domEntity).Error; err != nil {
@@ -152,34 +157,4 @@ func (r *PredictionEnvRepo) Delete(id string) error {
 	}
 
 	return nil
-}
-
-func (r *PredictionEnvRepo) GetListByProject(queryName string, pagination interface{}, filter map[string]interface{}) ([]*domEntity.PredictionEnv, interface{}, error) {
-	p := pagination.(Pagination)
-
-	var mapSort string
-	switch p.Sort {
-	case "CreateDesc":
-		mapSort = "id desc"
-	case "CreateASC":
-		mapSort = "id asc"
-	}
-
-	p.Sort = mapSort
-
-	// select db
-	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
-	if err != nil {
-		return nil, p, err
-	}
-
-	var entityModel []*domEntity.PredictionEnv
-
-	if err := dbCon.Model(entityModel).Scopes(paginate(&entityModel, &p, dbCon, queryName, filter)).Find(&entityModel).Error; err != nil {
-		return nil, p, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
-	}
-
-	resp := entityModel
-
-	return resp, p, nil
 }

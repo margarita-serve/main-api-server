@@ -20,70 +20,70 @@ type MessagingService struct {
 
 func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 
-	svc := new(MessagingService)
+	// svc := new(MessagingService)
 
-	svc.handler = h
-	svc.MonitorService = monitorSvc
-	// base service init
-	if err := svc.initBaseService(); err != nil {
-		return err
-	}
+	// svc.handler = h
+	// svc.MonitorService = monitorSvc
+	// // base service init
+	// if err := svc.initBaseService(); err != nil {
+	// 	return err
+	// }
 
-	ch := make(chan infMsgSvc.OrgMsg, 1000)
+	// ch := make(chan infMsgSvc.OrgMsg, 1000)
 
-	cfg, err := h.GetConfig()
-	if err != nil {
-		return err
-	}
-	RegisterReq := new(appDTO.RegisterServer)
-	RegisterReq.Endpoint = cfg.Connectors.Kafka.Endpoint
-	RegisterReq.GroupID = cfg.Connectors.Kafka.GroupID
-	RegisterReq.AutoOffsetReset = cfg.Connectors.Kafka.AutoOffsetReset
+	// cfg, err := h.GetConfig()
+	// if err != nil {
+	// 	return err
+	// }
+	// RegisterReq := new(appDTO.RegisterServer)
+	// RegisterReq.Endpoint = cfg.Connectors.Kafka.Endpoint
+	// RegisterReq.GroupID = cfg.Connectors.Kafka.GroupID
+	// RegisterReq.AutoOffsetReset = cfg.Connectors.Kafka.AutoOffsetReset
 
-	// datadrift go routine
-	driftConsumer := infMsgSvc.NewConsumerKafka()
-	driftConsumer.SetTopic("datadrift-monitoring-data")
-	err = driftConsumer.RegisterConsumer(RegisterReq)
-	if err != nil {
-		return err
-	}
-	go func() {
-		err := func() error {
-			err := driftConsumer.ConsumeMessage(ch, "datadrift")
-			// 실행
-			if err != nil {
-				return err
-			}
-			return nil
-		}()
-		if err != nil {
-		}
-	}()
+	// // datadrift go routine
+	// driftConsumer := infMsgSvc.NewConsumerKafka()
+	// driftConsumer.SetTopic("datadrift-monitoring-data")
+	// err = driftConsumer.RegisterConsumer(RegisterReq)
+	// if err != nil {
+	// 	return err
+	// }
+	// go func() {
+	// 	err := func() error {
+	// 		err := driftConsumer.ConsumeMessage(ch, "datadrift")
+	// 		// 실행
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		return nil
+	// 	}()
+	// 	if err != nil {
+	// 	}
+	// }()
 
-	// accuracy go routine
-	accuracyConsumer := infMsgSvc.NewConsumerKafka()
-	accuracyConsumer.SetTopic("accuracy-monitoring-data")
-	err = accuracyConsumer.RegisterConsumer(RegisterReq)
-	if err != nil {
-		return err
-	}
-	go func() {
-		err := func() error {
-			err := accuracyConsumer.ConsumeMessage(ch, "accuracy")
-			// 실행
-			if err != nil {
-				return err
-			}
-			return nil
-		}()
-		if err != nil {
-		}
-	}()
+	// // accuracy go routine
+	// accuracyConsumer := infMsgSvc.NewConsumerKafka()
+	// accuracyConsumer.SetTopic("accuracy-monitoring-data")
+	// err = accuracyConsumer.RegisterConsumer(RegisterReq)
+	// if err != nil {
+	// 	return err
+	// }
+	// go func() {
+	// 	err := func() error {
+	// 		err := accuracyConsumer.ConsumeMessage(ch, "accuracy")
+	// 		// 실행
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		return nil
+	// 	}()
+	// 	if err != nil {
+	// 	}
+	// }()
 
-	// Message Listener go routine
-	go func() {
-		svc.MessageListener(ch)
-	}()
+	// // Message Listener go routine
+	// go func() {
+	// 	svc.MessageListener(ch)
+	// }()
 	return nil
 }
 

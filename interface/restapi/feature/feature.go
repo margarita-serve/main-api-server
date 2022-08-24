@@ -3,6 +3,7 @@ package feature
 import (
 	appDeploymentSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/service"
 	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
+	appNotiSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/service"
 	appProjectSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/service"
 	appResourceSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
@@ -71,7 +72,22 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	if f.Noti, err = NewFNoti(h, f.Email.appEmail.EmailSvc, DeploymentGetByIDInternalSvc, ProjectSvc, f.Auths.appAuths.AuthenticationSvc, DeploymentGovernanceHistorySvc); err != nil {
+	WebHookEventSvc, err := appNotiSvc.NewWebHookEventService(h)
+	if err != nil {
+		return nil, err
+	}
+
+	WebHookSvc, err := appNotiSvc.NewWebHookService(h, WebHookEventSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	NotiSvc, err := appNotiSvc.NewNotiService(h, f.Email.appEmail.EmailSvc, DeploymentGetByIDInternalSvc, ProjectSvc, f.Auths.appAuths.AuthenticationSvc, DeploymentGovernanceHistorySvc, WebHookSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	if f.Noti, err = NewNoti(h, NotiSvc, WebHookSvc); err != nil {
 		return nil, err
 	}
 

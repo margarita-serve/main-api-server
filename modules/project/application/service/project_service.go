@@ -197,8 +197,7 @@ func (s *ProjectService) GetByID(req *appDTO.GetProjectRequestDTO, i identity.Id
 	resDTO.Description = res.Description
 	resDTO.ModelPackages = resModelPackage.Rows
 	resDTO.CreatedBy = res.CreatedBy
-	resDTO.CreatedAt = res.CreatedAt.GoString()
-
+	resDTO.CreatedAt = res.CreatedAt.String()
 	return resDTO, nil
 }
 
@@ -221,8 +220,7 @@ func (s *ProjectService) GetByIDInternal(req *appDTO.GetProjectRequestDTO) (*app
 	resDTO.Name = res.Name
 	resDTO.Description = res.Description
 	resDTO.CreatedBy = res.CreatedBy
-	resDTO.CreatedAt = res.CreatedAt.GoString()
-
+	resDTO.CreatedAt = res.CreatedAt.String()
 	return resDTO, nil
 }
 

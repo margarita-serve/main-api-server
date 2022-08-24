@@ -58,11 +58,11 @@ func (p *Pagination) GetSort() string {
 }
 
 //Paging 및 Sorting을 위한 코드
-func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string, filter map[string]interface{}) func(db *gorm.DB) *gorm.DB {
+func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string) func(db *gorm.DB) *gorm.DB {
 	var totalRows int64
 	var tmpLimit int
 
-	dbCon.Model(value).Where("name like ?", "%"+queryName+"%").Where(filter).Count(&totalRows)
+	dbCon.Model(value).Where("name like ?", "%"+queryName+"%").Count(&totalRows)
 	pagination.TotalRows = totalRows
 
 	if pagination.Limit <= 0 {
@@ -75,6 +75,6 @@ func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryNa
 	pagination.TotalPages = totalPages
 
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort()).Where("name like ?", "%"+queryName+"%").Where(filter)
+		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort()).Where("name like ?", "%"+queryName+"%")
 	}
 }

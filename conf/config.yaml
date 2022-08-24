@@ -29,7 +29,7 @@ databases:
     password: "gorm"
     hostName: "127.0.0.1:3306" # hostname:port OR path
     dbName: "koreserve"
-    config: "charset=utf8&parseTime=True&loc=Local"
+    config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
     maxOpenConns: 10
     logMode: true # shoud be "false" on production
@@ -41,7 +41,7 @@ databases:
     password: "gorm"
     hostName: "127.0.0.1:3306" # hostname:port OR path
     dbName: "koreserve"
-    config: "charset=utf8&parseTime=True&loc=Local"
+    config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
     maxOpenConns: 10
     logMode: true # shoud be "false" on production
@@ -53,7 +53,7 @@ databases:
   #   password: "gorm"
   #   hostName: "127.0.0.1:3306" # hostname:port OR path
   #   dbName: "a_d3ta_logs"
-  #   config: "charset=utf8&parseTime=True&loc=Local"
+  #   config: "charset=utf8&parseTime=True&loc=UTC"
   #   maxIdleConns: 10
   #   maxOpenConns: 10
   #   logMode: true # shoud be "false" on production
@@ -65,7 +65,7 @@ databases:
     password: "gorm"
     hostName: "127.0.0.1:3306" # hostname:port OR path
     dbName: "koreserve"
-    config: "charset=utf8&parseTime=True&loc=Local"
+    config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
     maxOpenConns: 10
     logMode: true # shoud be "false" on production

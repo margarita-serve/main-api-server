@@ -42,6 +42,10 @@ type IGovernanceHistoryService interface {
 	AddGovernanceHistory(req *appDeploymentDTO.AddGovernanceHistoryRequestDTO, i identity.Identity) error
 }
 
+type IWebHookService interface {
+	SendWebHook(req *appDTO.SendWebHookRequestDTO, i identity.Identity) error
+}
+
 type NotiService struct {
 	BaseService
 	//repo           domRepo.IPredictionEnvRepo
@@ -50,6 +54,7 @@ type NotiService struct {
 	ProjectSvc           IProjectService
 	AuthSvc              IAuthService
 	GovernanceHistorySvc IGovernanceHistoryService
+	WebHookSvc           IWebHookService
 }
 
 type TemplateData struct {
@@ -59,7 +64,7 @@ type TemplateData struct {
 }
 
 // NewNotiService new NotiService
-func NewNotiService(h *handler.Handler, emailSvc IEmailService, deploymentSvc IDeploymentService, projectSvc IProjectService, authSvc IAuthService, governanceHistorySvc IGovernanceHistoryService) (*NotiService, error) {
+func NewNotiService(h *handler.Handler, emailSvc IEmailService, deploymentSvc IDeploymentService, projectSvc IProjectService, authSvc IAuthService, governanceHistorySvc IGovernanceHistoryService, webHookService IWebHookService) (*NotiService, error) {
 	// var err error
 
 	svc := new(NotiService)
@@ -77,6 +82,8 @@ func NewNotiService(h *handler.Handler, emailSvc IEmailService, deploymentSvc ID
 	svc.ProjectSvc = projectSvc
 	svc.AuthSvc = authSvc
 	svc.GovernanceHistorySvc = governanceHistorySvc
+	svc.WebHookSvc = webHookService
+
 	return svc, nil
 }
 
@@ -96,7 +103,7 @@ func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) 
 	///////////////////////////////////////////////////////
 	// to be need injection identity from monitoring module
 	///////////////////////////////////////////////////////
-	i = s.systemIdentity
+	//i = s.systemIdentity
 
 	///////////////////////
 	//Get UserIno Sequence
@@ -158,6 +165,15 @@ func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) 
 	}
 
 	//Triggering WebHook
+	reqWebHookEvent := &appDTO.SendWebHookRequestDTO{
+		DeploymentID:  req.DeploymentID,
+		TriggerSource: req.NotiCategory,
+	}
+
+	err = s.WebHookSvc.SendWebHook(reqWebHookEvent, i)
+	if err != nil {
+		return err
+	}
 
 	// response dto
 	// resDTO := new(appDTO.NotiResponseDTO)

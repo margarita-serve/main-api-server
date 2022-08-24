@@ -41,12 +41,17 @@ func (r *DeploymentRepo) Save(req *domEntity.Deployment) error {
 		return err
 	}
 
-	//if err := dbCon.Create(&req).Error; err != nil {
 	if err := dbCon.Clauses(clause.OnConflict{
 		UpdateAll: true,
-	}).Create(&req).Error; err != nil {
+	}).Session(&gorm.Session{FullSaveAssociations: true}).Save(&req).Error; err != nil {
 		return &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
+
+	// if err := dbCon.Clauses(clause.OnConflict{
+	// 	UpdateAll: true,
+	// }).Create(&req).Error; err != nil {
+	// 	return &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
+	// }
 
 	return nil
 }

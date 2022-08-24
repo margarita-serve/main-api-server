@@ -118,15 +118,15 @@ func (d *Deployment) AddEventHistory(eventType string, logMessage string, userId
 
 func (d *Deployment) AddModelHistory(name string, version string) string {
 	var newModelHistoryID string
-	var lenOfArr = len(d.ModelHistory) - 1
+	lenOfArr := len(d.ModelHistory)
 	for i, mh := range d.ModelHistory {
 		if mh.ApplyHistoryTag == "Current" {
 			d.ModelHistory[i].ApplyHistoryTag = "Previous"
-			d.ModelHistory[i].EndDate = time.Now()
+			d.ModelHistory[i].EndDate = time.Now().UTC()
 		}
 
-		if lenOfArr == i {
-			newModelHistoryID = fmt.Sprintf("%06d", i+1)
+		if lenOfArr == i+1 {
+			newModelHistoryID = fmt.Sprintf("%06d", i+2)
 		}
 	}
 	if len(d.ModelHistory) == 0 {
