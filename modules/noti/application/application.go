@@ -6,21 +6,19 @@ import (
 )
 
 // NewNotiApp new NotiApp
-func NewNotiApp(h *handler.Handler, emailSvc appSvc.IEmailService, deploymentSvc appSvc.IDeploymentService, projectSvc appSvc.IProjectService, authSvc appSvc.IAuthService, governanceHistorySvc appSvc.IGovernanceHistoryService) (*NotiApp, error) {
-	var err error
-
+func NewNotiApp(h *handler.Handler, notiService *appSvc.NotiService, webHookService *appSvc.WebHookService) (*NotiApp, error) {
 	app := new(NotiApp)
 	app.handler = h
 
-	if app.NotiSvc, err = appSvc.NewNotiService(h, emailSvc, deploymentSvc, projectSvc, authSvc, governanceHistorySvc); err != nil {
-		return nil, err
-	}
+	app.NotiSvc = notiService
+	app.WebHookSvc = webHookService
 
 	return app, nil
 }
 
 // NotiApp represent DDD Module:  (Application Layer)
 type NotiApp struct {
-	handler *handler.Handler
-	NotiSvc *appSvc.NotiService
+	handler    *handler.Handler
+	NotiSvc    *appSvc.NotiService
+	WebHookSvc *appSvc.WebHookService
 }

@@ -220,10 +220,10 @@ func (r *ModelPackageRepo) Delete(id string) error {
 		return err
 	}
 
-	var domEntity = &domEntity.ModelPackage{ID: id}
+	var domEntity = &domEntity.ModelPackage{}
 	var count int64
 
-	if err := dbCon.Where("id = ?", domEntity).Find(&domEntity).Count(&count).Error; err != nil {
+	if err := dbCon.Where("id = ?", id).Find(&domEntity).Count(&count).Error; err != nil {
 		return &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 

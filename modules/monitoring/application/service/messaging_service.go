@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 	infMsgSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/message_broker/kafka"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
@@ -19,25 +20,25 @@ type MessagingService struct {
 
 func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 
-	svc := new(MessagingService)
+	// svc := new(MessagingService)
 
-	svc.handler = h
-	svc.MonitorService = monitorSvc
-	// base service init
-	if err := svc.initBaseService(); err != nil {
-		return err
-	}
+	// svc.handler = h
+	// svc.MonitorService = monitorSvc
+	// // base service init
+	// if err := svc.initBaseService(); err != nil {
+	// 	return err
+	// }
 
-	ch := make(chan infMsgSvc.OrgMsg, 1000)
+	// ch := make(chan infMsgSvc.OrgMsg, 1000)
 
-	cfg, err := h.GetConfig()
-	if err != nil {
-		return err
-	}
-	RegisterReq := new(appDTO.RegisterServer)
-	RegisterReq.Endpoint = cfg.Connectors.Kafka.Endpoint
-	RegisterReq.GroupID = cfg.Connectors.Kafka.GroupID
-	RegisterReq.AutoOffsetReset = cfg.Connectors.Kafka.AutoOffsetReset
+	// cfg, err := h.GetConfig()
+	// if err != nil {
+	// 	return err
+	// }
+	// RegisterReq := new(appDTO.RegisterServer)
+	// RegisterReq.Endpoint = cfg.Connectors.Kafka.Endpoint
+	// RegisterReq.GroupID = cfg.Connectors.Kafka.GroupID
+	// RegisterReq.AutoOffsetReset = cfg.Connectors.Kafka.AutoOffsetReset
 
 	// datadrift go routine
 	driftConsumer := infMsgSvc.NewConsumerKafka()
@@ -102,10 +103,10 @@ func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 	//}()
 	go consumeLoop(serviceHealthConsumer, ch, "servicehealth")
 
-	// Message Listener go routine
-	go func() {
-		svc.MessageListener(ch)
-	}()
+	// // Message Listener go routine
+	// go func() {
+	// 	svc.MessageListener(ch)
+	// }()
 	return nil
 }
 

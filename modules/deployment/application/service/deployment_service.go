@@ -329,23 +329,6 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 
 	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
 
-	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, i.Claims.Username)
-	if err != nil {
-		return nil, err
-	}
-
-	err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
-	if err != nil {
-		return nil, err
-	}
-
-	domAggregateDeployment.ChangeModelPackage(req.ModelPackageID)
-
-	err = s.repo.Save(domAggregateDeployment)
-	if err != nil {
-		return nil, err
-	}
-
 	//Call Monitoring Service
 	//Send Replaced Model Info 수정
 	reqReplaceMonitoring := &appMonitoringDTO.MonitorReplaceModelRequestDTO{
@@ -353,7 +336,56 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 		ModelPackageID: req.ModelPackageID,
 		ModelHistoryID: newModelHistoryID,
 	}
-	_, err = s.monitoringSvc.MonitorReplaceModel(reqReplaceMonitoring)
+
+	// WaitGroup 생성. 2개의 Go루틴을 기다림.
+	var wait sync.WaitGroup
+	var checkErrMsg error
+	wait.Add(2)
+
+	// ch생성
+	errs := make(chan error, 1)
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		_, err = s.monitoringSvc.MonitorReplaceModel(reqReplaceMonitoring)
+		if err != nil {
+			errs <- err
+		}
+
+	}()
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
+		if err != nil {
+			errs <- err
+		}
+	}()
+
+	wait.Wait() //Go루틴 모두 끝날 때까지 대기
+	close(errs)
+
+	checkErrMsg = <-errs
+
+	if checkErrMsg != nil {
+		domAggregateDeployment.SetServiceStatusReady()
+
+		err = s.repo.Save(domAggregateDeployment)
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, fmt.Errorf("deployment replace error: %s", checkErrMsg)
+	}
+
+	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, i.Claims.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	domAggregateDeployment.ChangeModelPackage(req.ModelPackageID)
+
+	err = s.repo.Save(domAggregateDeployment)
 	if err != nil {
 		return nil, err
 	}

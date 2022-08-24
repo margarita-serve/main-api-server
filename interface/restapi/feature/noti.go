@@ -1,25 +1,25 @@
 package feature
 
 import (
-
-	//captcha "git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/feature/captcha"
+	"net/http"
+	"strconv"
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application"
-	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
-	appSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/service"
+	appNotiDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
+	appNotiSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
-// NewFNoti new  FNoti
-func NewFNoti(h *handler.Handler, emailSvc appSvc.IEmailService, deploymentSvc appSvc.IDeploymentService, projectSvc appSvc.IProjectService, authSvc appSvc.IAuthService, governanceHistorySvc appSvc.IGovernanceHistoryService) (*FNoti, error) {
+// NewNoti new  FNoti
+func NewNoti(h *handler.Handler, notiService *appNotiSvc.NotiService, webHookService *appNotiSvc.WebHookService) (*FNoti, error) {
 	var err error
 
 	f := new(FNoti)
 	f.handler = h
 
-	if f.appNoti, err = application.NewNotiApp(h, emailSvc, deploymentSvc, projectSvc, authSvc, governanceHistorySvc); err != nil {
+	if f.appNoti, err = application.NewNotiApp(h, notiService, webHookService); err != nil {
 		return nil, err
 	}
 
@@ -32,37 +32,222 @@ type FNoti struct {
 	appNoti *application.NotiApp
 }
 
-func (f *FNoti) Create(c echo.Context) error {
+// @Summary Create WebHook
+// @Description  WebHook 생성
+// @Tags Noti
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param body body appNotiDTO.CreateWebHookRequestDTO true "Create WebHook"
+// @Security BearerAuth
+// @Router     /deployments/{deploymentID}/noti/web-hooks [post]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appNotiDTO.CreateWebHookResponseDTO}}
+func (f *FNoti) CreateWebHook(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
 
-	// if !i.IsLogin || i.IsAnonymous {
-	// 	return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
-	// }
+	req := new(appNotiDTO.CreateWebHookRequestDTO)
+	if err := c.Bind(req); err != nil {
+		return f.translateErrorMessage(err, c)
+	}
 
-	//req := new(appDTO.NotiRequestDTO)
-	// if err := c.Bind(req); err != nil {
-	// 	return f.translateErrorMessage(err, c)
-	// }
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
 
-	// req := &appDTO.NotiRequestDTO{
-	// 	DeploymentID: "aaaaaa",
-	// 	NotiCategory: "Datadrift",
-	// 	Data:         {"adf": "asdf"},
-	// }
+	resp, err := f.appNoti.WebHookSvc.Create(req, i)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
 
-	req := &appDTO.NotiRequestDTO{}
-	req.DeploymentID = "cbpjvgfr2g4ng38tb86g"
-	req.NotiCategory = "Datadrift"
-	req.AdditionalData = "status is Failling"
+	return response.OkWithData(resp, c)
 
-	// projectID := c.Param("projectID")
-	// req.ProjectID = projectID
+}
 
-	err = f.appNoti.NotiSvc.SendNoti(req, i)
+// @Summary Delete WebHook
+// @Description WebHook 삭제
+// @Tags Noti
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param webHookID path string true "webHookID"
+// @Security BearerAuth
+// @Router      /deployments/{deploymentID}/noti/web-hooks/{webHookID} [delete]
+// @Success 200 {object} response.RootResponse{response=response.Response{}}
+func (f *FNoti) DeleteWebHook(c echo.Context) error {
+	//identity
+	i, err := f.SetIdentity(c)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
+
+	req := new(appNotiDTO.DeleteWebHookRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	webHookID := c.Param("webHookID")
+	req.WebHookID = webHookID
+
+	err = f.appNoti.WebHookSvc.Delete(req, i)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.Ok(c)
+
+}
+
+// @Summary Edit WebHook
+// @Description WebHook 정보수정
+// @Tags Noti
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param webHookID path string true "webHookID"
+// @Param body body appNotiDTO.UpdateWebHookRequestDTO true "Update WebHook Info"
+// @Security BearerAuth
+// @Router     /deployments/{deploymentID}/noti/web-hooks/{webHookID} [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{}}
+func (f *FNoti) UpdateWebHook(c echo.Context) error {
+	//identity
+	i, err := f.SetIdentity(c)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
+
+	req := new(appNotiDTO.UpdateWebHookRequestDTO)
+	if err := c.Bind(req); err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	webHookID := c.Param("webHookID")
+	req.WebHookID = webHookID
+
+	err = f.appNoti.WebHookSvc.UpdateWebHook(req, i)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.Ok(c)
+
+}
+
+// @Summary Get WebHook
+// @Description WebHook 상세조회
+// @Tags Noti
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param webHookID path string true "webHookID"
+// @Security BearerAuth
+// @Router      /deployments/{deploymentID}/noti/web-hooks/{webHookID} [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{}}
+func (f *FNoti) GetByIDWebHook(c echo.Context) error {
+	//identity
+	i, err := f.SetIdentity(c)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
+
+	req := new(appNotiDTO.GetWebHookRequestDTO)
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+	webHookID := c.Param("webHookID")
+	req.WebHookID = webHookID
+
+	resp, err := f.appNoti.WebHookSvc.GetByID(req, i)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+
+}
+
+// @Summary Get WebHook List
+// @Description WebHook 리스트
+// @Tags Noti
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param name query string false "queryName"
+// @Param page query int false "page"
+// @Param limit query int false "limit"
+// @Param sort query string false "sort"
+// @Security BearerAuth
+// @Router      /deployments/{deploymentID}/noti/web-hooks [get]
+// @Success 200 {object} response.RootResponse{response=response.Response{}}
+func (f *FNoti) GetListWebHook(c echo.Context) error {
+	//identity
+	i, err := f.SetIdentity(c)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
+
+	req := new(appNotiDTO.GetWebHookListRequestDTO)
+
+	req.Name = c.QueryParam("name")
+	req.Page, _ = strconv.Atoi((c.QueryParam("page")))
+	req.Limit, _ = strconv.Atoi(c.QueryParam("limit"))
+	req.Sort = c.QueryParam("sort")
+
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+
+	resp, err := f.appNoti.WebHookSvc.GetList(req, i)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+
+	return response.OkWithData(resp, c)
+
+}
+
+// @Summary Test WebHook Send
+// @Description Test WebHook
+// @Tags Noti
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param body body appNotiDTO.CreateWebHookRequestDTO true "Test WebHook"
+// @Security BearerAuth
+// @Router      /deployments/{deploymentID}/noti/web-hooks/test [POST]
+// @Success 200 {object} response.RootResponse{response=response.Response{}}
+func (f *FNoti) TestWebHookSend(c echo.Context) error {
+	//identity
+	i, err := f.SetIdentity(c)
+	if err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	if !i.IsLogin || i.IsAnonymous {
+		return response.FailWithMessageWithCode(http.StatusForbidden, "Forbidden Access", c)
+	}
+
+	req := new(appNotiDTO.TestWebHookRequestDTO)
+	if err := c.Bind(req); err != nil {
+		return f.translateErrorMessage(err, c)
+	}
+	deploymentID := c.Param("deploymentID")
+	req.DeploymentID = deploymentID
+
+	err = f.appNoti.WebHookSvc.TestWebHookSend(req, i)
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}

@@ -1665,64 +1665,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/{deploymentID}/monitor/graph/pot": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "예측값 변화 그래프",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Get PredictionOverTime Graph",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "modelHistoryID",
-                        "name": "modelHistoryID",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "example=2022-05-05:01",
-                        "name": "startTime",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "example=2022-08-01:01",
-                        "name": "endTime",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/deployments/{deploymentID}/monitor/graph/predicted-actual": {
             "get": {
                 "security": [
@@ -1766,6 +1708,64 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "example=2022-08-01:01 (UTC+0)",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/prediction-over-time": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "예측값 변화 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get PredictionOverTime Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modelHistoryID",
+                        "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-05-05:01",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=2022-08-01:01",
                         "name": "endTime",
                         "in": "query",
                         "required": true
@@ -1834,6 +1834,378 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/noti/web-hooks": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "WebHook 리스트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Noti"
+                ],
+                "summary": "Get WebHook List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "queryName",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "$ref": "#/definitions/response.Response"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "WebHook 생성",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Noti"
+                ],
+                "summary": "Create WebHook",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create WebHook",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateWebHookRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.Response"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "result": {
+                                                            "$ref": "#/definitions/dto.CreateWebHookResponseDTO"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/noti/web-hooks/test": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Test WebHook",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Noti"
+                ],
+                "summary": "Test WebHook Send",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Test WebHook",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateWebHookRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "$ref": "#/definitions/response.Response"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/noti/web-hooks/{webHookID}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "WebHook 상세조회",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Noti"
+                ],
+                "summary": "Get WebHook",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "webHookID",
+                        "name": "webHookID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "$ref": "#/definitions/response.Response"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "WebHook 삭제",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Noti"
+                ],
+                "summary": "Delete WebHook",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "webHookID",
+                        "name": "webHookID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "$ref": "#/definitions/response.Response"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "WebHook 정보수정",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Noti"
+                ],
+                "summary": "Edit WebHook",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "webHookID",
+                        "name": "webHookID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update WebHook Info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateWebHookRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "$ref": "#/definitions/response.Response"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -3571,6 +3943,63 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateWebHookRequestDTO": {
+            "type": "object",
+            "required": [
+                "method",
+                "name",
+                "triggerSource",
+                "url"
+            ],
+            "properties": {
+                "triggerSource": {
+                    "type": "string",
+                    "enum": [
+                        "Datadrift",
+                        " Accuracy"
+                    ],
+                    "x-order": "1",
+                    "example": "Datadrift"
+                },
+                "name": {
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "pipe-line-trigger"
+                },
+                "url": {
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "http://example.com/to/webhook/client"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "POST",
+                        "GET"
+                    ],
+                    "x-order": "3",
+                    "example": "POST"
+                },
+                "customHeader": {
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "Content-Type: application/json "
+                },
+                "messageBody": {
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "{ \"key\": \"value\"}"
+                }
+            }
+        },
+        "dto.CreateWebHookResponseDTO": {
+            "type": "object",
+            "properties": {
+                "webHookID": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DataDriftSetting": {
             "type": "object",
             "properties": {
@@ -4557,6 +4986,55 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateWebHookRequestDTO": {
+            "type": "object",
+            "required": [
+                "method",
+                "name",
+                "triggerSource",
+                "url"
+            ],
+            "properties": {
+                "triggerSource": {
+                    "type": "string",
+                    "enum": [
+                        "Datadrift",
+                        " Accuracy"
+                    ],
+                    "x-order": "1",
+                    "example": "Datadrift"
+                },
+                "name": {
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "pipe-line-trigger"
+                },
+                "url": {
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "http://example.com/to/webhook/client"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "POST",
+                        "GET"
+                    ],
+                    "x-order": "4",
+                    "example": "POST"
+                },
+                "customHeader": {
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "Content-Type: application/json "
+                },
+                "messageBody": {
+                    "type": "string",
+                    "x-order": "6",
+                    "example": "{ \"key\": \"value\"}"
                 }
             }
         },
