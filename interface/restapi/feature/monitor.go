@@ -4,23 +4,23 @@ import (
 	"mime/multipart"
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	appMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application"
 	appMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
-	appNotiSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
-func NewMonitor(h *handler.Handler, modelPackageSvc *appModelPackageSvc.ModelPackageService, NotiSvc *appNotiSvc.NotiService) (*FMonitor, error) {
-	var err error
+func NewMonitor(h *handler.Handler) (*FMonitor, error) {
 
 	f := new(FMonitor)
 	f.handler = h
 
-	if f.appMonitor, err = appMonitor.NewMonitorApp(h, modelPackageSvc, NotiSvc); err != nil {
+	MonitorApp, err := h.GetApp("monitor")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appMonitor = MonitorApp.(*appMonitor.MonitorApp)
 
 	return f, nil
 }

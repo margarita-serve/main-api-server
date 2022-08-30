@@ -52,6 +52,7 @@ type IMonitorService interface {
 
 type IModelPackageService interface {
 	GetByIDInternal(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
+	AddDeployCount(req *appModelPackageDTO.AddDeployCountRequestDTO) error
 }
 
 type IPredictionEnvService interface {
@@ -60,6 +61,7 @@ type IPredictionEnvService interface {
 
 type IProjectService interface {
 	GetList(req *appProjectDTO.GetProjectListRequestDTO, i identity.Identity) (*appProjectDTO.GetProjectListResponseDTO, error)
+	GetByIDInternal(req *appProjectDTO.GetProjectRequestDTO) (*appProjectDTO.GetProjectResponseDTO, error)
 }
 
 // DeploymentService type
@@ -121,9 +123,6 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 
 	guid := xid.New().String()
 
-	//toBe...
-	userID := "testID"
-
 	//Find ModelPackage
 	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
 	if err != nil {
@@ -133,7 +132,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 	//to be...
 	if req.PredictionEnvID == "" {
 		//Find  Project Default PredictionEnv
-		req.PredictionEnvID = "abcd1234"
+		req.PredictionEnvID = "dev01234567890123456"
 	}
 
 	// New deployment domain Instance
@@ -162,7 +161,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(req.PredictionEnvID, i)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(req.PredictionEnvID)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +173,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
 		ModelName:             resModelPackage.ModelName,
-		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		ConnectionInfo:        resPredictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
@@ -185,9 +184,9 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		return nil, err
 	}
 
-	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
+	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion, resModelPackage.ModelPackageID)
 
-	err = domAggregateDeployment.AddEventHistory("Create", "Deployment Created", userID)
+	err = domAggregateDeployment.AddEventHistory("Create", "Deployment Created", i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +207,9 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		FeatureDriftTracking: featureDriftTrackingBool,
 		AccuracyMonitoring:   accuracyAnalyzeBool,
 		AssociationID:        &req.AssociationID,
-		ModelHistoryID:       newModelHistoryID,
+		//toBe..
+		//AssociationIDInFeature:        &req.AssociationIDInFeature,
+		ModelHistoryID: newModelHistoryID,
 	}
 
 	// WaitGroup 생성. 2개의 Go루틴을 기다림.
@@ -260,6 +261,8 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		return nil, err
 	}
 
+	s.addModelPackageDeployCount(req.ModelPackageID)
+
 	// response dto
 	resDTO := new(appDTO.CreateDeploymentResponseDTO)
 	resDTO.DeploymentID = domAggregateDeployment.ID
@@ -298,7 +301,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +313,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
 		ModelName:             resModelPackage.ModelName,
-		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		ConnectionInfo:        resPredictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
@@ -327,7 +330,7 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 		return nil, err
 	}
 
-	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion)
+	newModelHistoryID := domAggregateDeployment.AddModelHistory(resModelPackage.ModelName, resModelPackage.ModelVersion, resModelPackage.ModelPackageID)
 
 	//Call Monitoring Service
 	//Send Replaced Model Info 수정
@@ -390,6 +393,8 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 		return nil, err
 	}
 
+	s.addModelPackageDeployCount(req.ModelPackageID)
+
 	// response dto
 	resDTO := new(appDTO.ReplaceModelResponseDTO)
 	resDTO.Message = "Replace Model Success"
@@ -406,7 +411,7 @@ func (s *DeploymentService) updateResources(domAggregateDeployment *domEntity.De
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
 	if err != nil {
 		return err
 	}
@@ -418,7 +423,7 @@ func (s *DeploymentService) updateResources(domAggregateDeployment *domEntity.De
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
 		ModelName:             resModelPackage.ModelName,
-		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		ConnectionInfo:        resPredictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
@@ -459,19 +464,26 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
+	var updateInfoString string = ""
+
 	if req.Name != nil {
+		updateInfoString += fmt.Sprintf("%s: %s -> %s  ", "Name", domAggregateDeployment.Name, *req.Name)
 		domAggregateDeployment.UpdateDeploymentName(*req.Name)
 	}
 	if req.Description != nil {
+		updateInfoString += fmt.Sprintf("%s: %s -> %s  ", "Description", domAggregateDeployment.Description, *req.Description)
 		domAggregateDeployment.UpdateDeploymentDescription(*req.Description)
 	}
 	if req.Importance != nil {
+		updateInfoString += fmt.Sprintf("%s: %s ->% s  ", "Importance", domAggregateDeployment.Importance, *req.Importance)
 		domAggregateDeployment.UpdateDeploymentImportance(*req.Importance)
 	}
 	if req.AssociationID != nil {
 		reqUpdateAssociationID := new(appMonitoringDTO.UpdateAssociationIDRequestDTO)
 		reqUpdateAssociationID.DeploymentID = req.DeploymentID
 		reqUpdateAssociationID.AssociationID = req.AssociationID
+		//toBe..
+		//reqUpdateAssociationID.AssociationIDInFeature = req.AssociationIDInFeature
 
 		_, err = s.monitoringSvc.UpdateAssociationID(reqUpdateAssociationID)
 		if err != nil {
@@ -519,6 +531,8 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 			reqAccuracyActive.ModelPackageID = resModelPackage.ModelPackageID
 			reqAccuracyActive.AssociationID = req.AssociationID
 			reqAccuracyActive.CurrentModelID = currentModelID
+			//toBe..
+			//reqAccuracyActive.AssociationIDInFeature = req.AssociationIDInFeature
 
 			_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracyActive)
 			if err != nil {
@@ -537,9 +551,11 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 
 	if (req.RequestCPU != nil) || (req.RequestMEM != nil) {
 		if req.RequestCPU != nil {
+			updateInfoString += fmt.Sprintf("%s: %f->%f\n", "RequestCPU", domAggregateDeployment.RequestCPU, *req.RequestCPU)
 			domAggregateDeployment.UpdateDeploymentRequestCPU(*req.RequestCPU)
 		}
 		if req.RequestMEM != nil {
+			updateInfoString += fmt.Sprintf("%s: %f->%f\n", "RequestMEM", domAggregateDeployment.RequestMEM, *req.RequestMEM)
 			domAggregateDeployment.UpdateDeploymentRequestMEM(*req.RequestMEM)
 		}
 
@@ -549,7 +565,7 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		}
 	}
 
-	err = domAggregateDeployment.AddEventHistory("Update", "Deployment is Updated", i.Claims.Username)
+	err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -586,13 +602,13 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO, i ide
 	}
 
 	//Find  PredictionEnv
-	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
 	if err != nil {
 		return nil, err
 	}
 
 	reqDomSvc := domSvcInferenceSvcDto.InferenceServiceDeleteRequest{
-		ConnectionInfo: predictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		ConnectionInfo: predictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
 		Namespace:      predictionEnvInfo.Namespace,
 		DeploymentID:   domAggregateDeployment.ID,
 	}
@@ -613,7 +629,8 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO, i ide
 
 	_, err = s.monitoringSvc.Delete(reqDeleteMonitoring)
 	if err != nil {
-		return nil, fmt.Errorf("monitoring delete error: %s", err)
+		//return nil, fmt.Errorf("monitoring delete error: %s", err)
+		fmt.Errorf("monitoring delete error: %s", err)
 	}
 
 	err = s.repo.Delete(req.DeploymentID)
@@ -645,21 +662,35 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i ident
 		return nil, err
 	}
 
-	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
-		ID: req.DeploymentID,
-	}
+	//Find Monitor
+	resMonitor, _ := s.getMonitorByID(res.ID)
 
-	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
-	if err != nil {
-		return nil, err
-	}
+	//Find ModelPackage
+	resModelPackage, _ := s.getModelPackageByID(res.ModelPackageID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	//Find PredictionEnv
+	resPredictionEnv, _ := s.getPredictionEnvByID(res.PredictionEnvID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	//Find ProjectInfo
+	resProject, _ := s.getProjectByID(res.ProjectID)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// response dto
 	resDTO := new(appDTO.GetDeploymentResponseDTO)
 	resDTO.ID = res.ID
 	resDTO.ProjectID = res.ProjectID
+	resDTO.ProjectName = resProject.Name
 	resDTO.ModelPackageID = res.ModelPackageID
 	resDTO.PredictionEnvID = res.PredictionEnvID
+	resDTO.PredictionEnvName = resPredictionEnv.Name
 	resDTO.Name = res.Name
 	resDTO.Description = res.Description
 	resDTO.Importance = res.Importance
@@ -668,12 +699,21 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i ident
 	resDTO.ActiveStatus = res.ActiveStatus
 	resDTO.ServiceStatus = res.ServiceStatus
 	resDTO.ChangeRequested = res.ChangeRequested
-	resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
-	resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
-	//resDTO.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
-	resDTO.FeatureDriftTracking = resMonitor.Monitor.FeatureDriftTracking
-	resDTO.AccuracyAnalyze = resMonitor.Monitor.AccuracyMonitoring
-	resDTO.AssociationID = resMonitor.Monitor.AssociationID
+
+	if resModelPackage != nil {
+		resDTO.ModelPackageName = resModelPackage.Name
+	}
+
+	if resMonitor != nil {
+		resDTO.DriftStatus = resMonitor.Monitor.DriftStatus
+		resDTO.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
+		resDTO.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
+		resDTO.FeatureDriftTracking = resMonitor.Monitor.FeatureDriftTracking
+		resDTO.AccuracyAnalyze = resMonitor.Monitor.AccuracyMonitoring
+		resDTO.AssociationID = resMonitor.Monitor.AssociationID
+	}
+	//toBe..
+	//resDTO.AssociationIDInFeature = resMonitor.Monitor.AssociationIDInFeature
 
 	return resDTO, nil
 }
@@ -746,21 +786,50 @@ func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO, i i
 
 	var listDeployment []*appDTO.DeploymentList
 	for _, rec := range resultList {
+		//Find Monitor
+		resMonitor, _ := s.getMonitorByID(rec.ID)
+
+		//Find ModelPackage
+		resModelPackage, _ := s.getModelPackageByID(rec.ModelPackageID)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		//Find PredictionEnv
+		resPredictionEnv, _ := s.getPredictionEnvByID(rec.PredictionEnvID)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		//Find ProjectInfo
+		resProject, _ := s.getProjectByID(rec.ProjectID)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
 		tmp := new(appDTO.DeploymentList)
 
 		tmp.ID = rec.ID
 		tmp.ProjectID = rec.ProjectID
+		tmp.ProjectName = resProject.Name
 		tmp.ModelPackageID = rec.ModelPackageID
 		tmp.PredictionEnvID = rec.PredictionEnvID
+		tmp.PredictionEnvName = resPredictionEnv.Name
 		tmp.Name = rec.Name
 		tmp.Importance = rec.Importance
+		tmp.ActiveStatus = rec.ActiveStatus
+		tmp.ServiceStatus = rec.ServiceStatus
 
-		//Find ModelPackage
-		resModelPackage, err := s.getModelPackageByID(rec.ModelPackageID)
-		if err != nil {
-			return nil, err
+		if resModelPackage != nil {
+			tmp.ModelPackageName = resModelPackage.Name
+			tmp.ModelFrameWork = resModelPackage.ModelFrameWork
 		}
-		tmp.ModelFrameWork = resModelPackage.ModelFrameWork
+
+		if resMonitor != nil {
+			tmp.DriftStatus = resMonitor.Monitor.DriftStatus
+			tmp.AccuracyStatus = resMonitor.Monitor.AccuracyStatus
+			tmp.ServiceHealthStatus = resMonitor.Monitor.ServiceHealthStatus
+		}
 
 		listDeployment = append(listDeployment, tmp)
 	}
@@ -790,7 +859,7 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO, i 
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
 	if err != nil {
 		return nil, err
 	}
@@ -800,7 +869,7 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO, i 
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
-		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		ConnectionInfo:        resPredictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
 		RequestCPU:            domAggregateDeployment.RequestCPU,
 		LimitCPU:              domAggregateDeployment.LimitCPU,
 		RequestMEM:            domAggregateDeployment.RequestMEM,
@@ -888,7 +957,7 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 	}
 
 	//Find  PredictionEnv
-	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	resPredictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
 	if err != nil {
 		return nil, err
 	}
@@ -898,7 +967,7 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 		ModelFrameWork:        resModelPackage.ModelFrameWork,
 		ModelFrameWorkVersion: resModelPackage.ModelFrameWorkVersion,
 		ModelURL:              resModelPackage.ModelFilePath,
-		ConnectionInfo:        resPredictionEnvInfo.InfereceSvcAPISvrEndPoint,
+		ConnectionInfo:        resPredictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
 	}
 
 	err = domAggregateDeployment.AddEventHistory("InActive", "Deployment is InActivated", i.Claims.Username)
@@ -979,13 +1048,13 @@ func (s *DeploymentService) SendPrediction(req *appDTO.SendPredictionRequestDTO,
 	}
 
 	//Find  PredictionEnv
-	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID, i)
+	predictionEnvInfo, err := s.getPredictionEnvByID(domAggregateDeployment.PredictionEnvID)
 	if err != nil {
 		return nil, err
 	}
 
-	host := domAggregateDeployment.ID + "." + predictionEnvInfo.Namespace + "." + predictionEnvInfo.InfereceSvcHostName
-	URL := predictionEnvInfo.InferenceSvcIngressEndPoint + "/v1/models/" + domAggregateDeployment.ID + ":predict"
+	host := domAggregateDeployment.ID + "." + predictionEnvInfo.Namespace + "." + predictionEnvInfo.ClusterInfo.InferenceSvcInfo.InfereceSvcHostName
+	URL := predictionEnvInfo.ClusterInfo.InferenceSvcInfo.InferenceSvcIngressEndPoint + "/v1/models/" + domAggregateDeployment.ID + ":predict"
 
 	sendResult, err := s.predictionSendSvc.SendPrediction(URL, host, []byte(req.JsonData))
 	if err != nil {
@@ -1012,7 +1081,20 @@ func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*appMode
 	return resModelPackage, err
 }
 
-func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string, i identity.Identity) (*domSchema.PredictionEnv, error) {
+func (s *DeploymentService) addModelPackageDeployCount(modelPackageID string) error {
+	reqModelPackage := &appModelPackageDTO.AddDeployCountRequestDTO{
+		ModelPackageID: modelPackageID,
+	}
+
+	err := s.modelPackageSvc.AddDeployCount(reqModelPackage)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string) (*domSchema.PredictionEnv, error) {
 	// req := &appResourceDTO.InternalGetPredictionEnvRequestDTO{
 	// 	PredictionEnvID: predictionEnvID,
 	// }
@@ -1032,10 +1114,16 @@ func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string, i ident
 
 	//dev mode only
 	predictionEnvInfo := &domSchema.PredictionEnv{
-		Namespace:                   "koreserve",
-		InfereceSvcAPISvrEndPoint:   "http://192.168.88.161:30070",
-		InfereceSvcHostName:         "kserve.acornsoft.io",
-		InferenceSvcIngressEndPoint: "http://192.168.88.161:31000",
+		Name:            "Default",
+		PredictionEnvID: "test",
+		Namespace:       "koreserve",
+		ClusterInfo: domSchema.ClusterInfo{
+			InferenceSvcInfo: domSchema.InferenceSvcInfo{
+				InfereceSvcAPISvrEndPoint:   "http://192.168.88.161:30070",
+				InfereceSvcHostName:         "kserve.acornsoft.io",
+				InferenceSvcIngressEndPoint: "http://192.168.88.161:31000",
+			},
+		},
 	}
 
 	return predictionEnvInfo, nil
@@ -1120,10 +1208,28 @@ func (s *DeploymentService) checkProjectList(i identity.Identity) ([]string, err
 	return listProjectId, nil
 }
 
-// func (s *DeploymentService) checkApprovalProcess(req string) (*domSchema.PredictionEnv, error) {
-// 	//Check Organization ApprovalPolicy
-// 	resApprovalPolicy, err := s.getApprovalPolicy(deploymentID string, orgID string, policyTriggerType string, importance string, userID string)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// }
+func (s *DeploymentService) getProjectByID(projectID string) (*appProjectDTO.GetProjectResponseDTO, error) {
+	reqProject := &appProjectDTO.GetProjectRequestDTO{
+		ProjectID: projectID,
+	}
+
+	resProject, err := s.projectSvc.GetByIDInternal(reqProject)
+	if err != nil {
+		return nil, err
+	}
+
+	return resProject, err
+}
+
+func (s *DeploymentService) getMonitorByID(monitorID string) (*appMonitoringDTO.MonitorGetByIDResponseDTO, error) {
+	reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
+		ID: monitorID,
+	}
+
+	resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resMonitor, err
+}

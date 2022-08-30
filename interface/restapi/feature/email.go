@@ -12,14 +12,16 @@ import (
 
 // NewFEmail new FEmail
 func NewFEmail(h *handler.Handler) (*FEmail, error) {
-	var err error
 
 	f := new(FEmail)
 	f.handler = h
 
-	if f.appEmail, err = appEmail.NewEmailApp(h); err != nil {
+	EmailApp, err := h.GetApp("email")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appEmail = EmailApp.(*appEmail.EmailApp)
 
 	return f, nil
 }

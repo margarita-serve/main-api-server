@@ -17,14 +17,16 @@ import (
 
 // NewFAuths new  FAuths
 func NewFAuths(h *handler.Handler) (*FAuths, error) {
-	var err error
 
 	f := new(FAuths)
 	f.handler = h
 
-	if f.appAuths, err = application.NewAuthsApp(h); err != nil {
+	authApp, err := h.GetApp("auths")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appAuths = authApp.(*application.AuthsApp)
 
 	return f, nil
 }
@@ -147,11 +149,11 @@ func (f *FAuths) Login(c echo.Context) error {
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}
-
+	// 과제 API연동시 업체측 어려움으로 고정 토큰생성 후 파싱만 진행으로 변경
 	// set interface-session-jwt on cacher
-	if err := f._setSession(resp.Token, resp.ExpiredAt); err != nil {
-		return f.translateErrorMessage(err, c)
-	}
+	// if err := f._setSession(resp.Token, resp.ExpiredAt); err != nil {
+	// 	return f.translateErrorMessage(err, c)
+	// }
 
 	return response.OkWithData(resp, c)
 }
@@ -173,11 +175,11 @@ func (f *FAuths) LoginApp(c echo.Context) error {
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}
-
+	// 과제 API연동시 업체측 어려움으로 고정 토큰생성 후 파싱만 진행으로 변경
 	// set interface-session-jwt on cacher
-	if err := f._setSession(resp.Token, resp.ExpiredAt); err != nil {
-		return f.translateErrorMessage(err, c)
-	}
+	// if err := f._setSession(resp.Token, resp.ExpiredAt); err != nil {
+	// 	return f.translateErrorMessage(err, c)
+	// }
 
 	return response.OkWithData(resp, c)
 }

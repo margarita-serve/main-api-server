@@ -3,6 +3,7 @@ package config
 // IAM type
 type IAM struct {
 	DefaultAdmin DefaultAdmin `json:"defaultAdmin" yaml:"defaultAdmin"`
+	DefaultUser  DefaultUser  `json:"defaultUser" yaml:"defaultUser"`
 	Registration Registration `json:"registration" yaml:"registration"`
 	JWT          JWT          `json:"JWT" yaml:"JWT"`
 	Casbin       Casbin       `json:"casbin" yaml:"casbin"`
@@ -10,6 +11,14 @@ type IAM struct {
 
 // DefaultAdmin type
 type DefaultAdmin struct {
+	Username    string `json:"username" yaml:"username"`
+	Password    string `json:"password" yaml:"password"`
+	NickName    string `json:"nickName" yaml:"nickName"`
+	Email       string `json:"email" yaml:"email"`
+	AuthorityID string `json:"authorityID" yaml:"authorityID"`
+}
+
+type DefaultUser struct {
 	Username    string `json:"username" yaml:"username"`
 	Password    string `json:"password" yaml:"password"`
 	NickName    string `json:"nickName" yaml:"nickName"`

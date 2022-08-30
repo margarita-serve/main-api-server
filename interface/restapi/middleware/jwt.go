@@ -1,10 +1,8 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
@@ -48,25 +46,26 @@ func JWTVerifier(h *handler.Handler) echo.MiddlewareFunc {
 				return response.FailWithDetailed(response.ERROR, data, err.Error(), c)
 			}
 
+			// 과제 API연동시 업체측 어려움으로 고정 토큰생성 후 파싱만 진행으로 변경
 			// verify token to persistent storage
-			exist, err := isSessionExist(token, h)
-			if err != nil {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, err.Error(), c)
-			}
-			if !exist {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Invalid Token"), c)
-			}
+			// exist, err := isSessionExist(token, h)
+			// if err != nil {
+			// 	return response.FailWithMessageWithCode(http.StatusInternalServerError, err.Error(), c)
+			// }
+			// if !exist {
+			// 	return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Invalid Token"), c)
+			// }
 
-			// if expired
-			now := time.Now().Unix()
-			if claims.ExpiresAt < now {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Token Expired"), c)
-			}
+			// // if expired
+			// now := time.Now().Unix()
+			// if claims.ExpiresAt < now {
+			// 	return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Token Expired"), c)
+			// }
 
-			// if not valid before
-			if claims.NotBefore > now {
-				return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Token Not Valid Berofe"), c)
-			}
+			// // if not valid before
+			// if claims.NotBefore > now {
+			// 	return response.FailWithMessageWithCode(http.StatusInternalServerError, fmt.Sprintf("Identity Provider Error [%s]", "Token Not Valid Berofe"), c)
+			// }
 			c.Set("identity.token.jwt", token)
 			c.Set("identity.token.jwt.claims", claims)
 

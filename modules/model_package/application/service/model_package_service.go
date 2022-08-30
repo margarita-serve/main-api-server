@@ -177,7 +177,7 @@ func (s *ModelPackageService) Delete(req *appDTO.DeleteModelPackageRequestDTO) (
 
 	check := domAggregateModelPackage.IsValidForDelete()
 	if !check {
-		return nil, errors.New("ModelPackage Has Deployed")
+		return nil, errors.New("ModelPackage Has Deployed, Use Archive")
 	}
 
 	err = s.repo.Delete(req.ModelPackageID)
@@ -461,9 +461,9 @@ func (s *ModelPackageService) UploadModel(req *appDTO.UploadModelRequestDTO) (*a
 	// response dto
 	resDTO := new(appDTO.UploadModelResponseDTO)
 
-	check := domAggregateModelPackage.IsValidForUpdate()
+	check := domAggregateModelPackage.IsValidForUploadFile()
 	if !check {
-		return nil, errors.New("ModelPackage Has Archived")
+		return nil, errors.New("model package has deployed")
 	}
 
 	cfg, err := s.handler.GetConfig()
@@ -530,9 +530,9 @@ func (s *ModelPackageService) UploadTrainingDataset(req *appDTO.UploadTrainingDa
 	// response dto
 	resDTO := new(appDTO.UploadTrainingDatasetResponseDTO)
 
-	check := domAggregateModelPackage.IsValidForUpdate()
+	check := domAggregateModelPackage.IsValidForUploadFile()
 	if !check {
-		return nil, errors.New("ModelPackage Has Archived")
+		return nil, errors.New("model package has deployed")
 	}
 
 	cfg, err := s.handler.GetConfig()
@@ -584,9 +584,9 @@ func (s *ModelPackageService) UploadHoldoutDataset(req *appDTO.UploadHoldoutData
 	// response dto
 	resDTO := new(appDTO.UploadHoldoutDatasetResponseDTO)
 
-	check := domAggregateModelPackage.IsValidForUpdate()
+	check := domAggregateModelPackage.IsValidForUploadFile()
 	if !check {
-		return nil, errors.New("ModelPackage Has Archived")
+		return nil, errors.New("model package has deployed")
 	}
 
 	cfg, err := s.handler.GetConfig()
@@ -706,20 +706,24 @@ func (s *ModelPackageService) GetHoldoutDatasetFile(modelPackageID string) (io.R
 	return fileReader, fileName, nil
 }
 
-// func (s *ModelPackageService) GetTrainingDatasetFileStorageURL(modelPackageID string) (string, error) {
-// 	res, err := s.repo.GetByID(modelPackageID)
-// 	if err != nil {
-// 		return "", err
-// 	}
+func (s *ModelPackageService) AddDeployCount(req *appDTO.AddDeployCountRequestDTO) error {
+	// //authorization
+	// if i.CanAccessCurrentRequest() == false {
+	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
+	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
+	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
+	// }
+	domAggregateModelPackage, err := s.repo.GetForUpdate(req.ModelPackageID)
+	if err != nil {
+		return err
+	}
 
-// 	return s.storageClient.GetEndPoint() + "/" + res.TrainingDatasetPath, err
-// }
+	domAggregateModelPackage.AddDeployCount()
 
-// func (s *ModelPackageService) GetHoldoutDatasetFileStorageURL(modelPackageID string) (string, error) {
-// 	res, err := s.repo.GetByID(modelPackageID)
-// 	if err != nil {
-// 		return "", err
-// 	}
+	err = s.repo.Save(domAggregateModelPackage)
+	if err != nil {
+		return err
+	}
 
-// 	return s.storageClient.GetEndPoint() + "/" + res.HoldoutDatasetPath, err
-// }
+	return nil
+}

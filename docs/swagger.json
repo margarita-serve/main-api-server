@@ -120,213 +120,6 @@
                 }
             }
         },
-        "/cluster-infos": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "리스트",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ClusterInfo"
-                ],
-                "summary": "Get ClusterInfo List",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "queryName",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sort",
-                        "name": "sort",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetClusterInfoListResponseDTO"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "클러스터정보 생성",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ClusterInfo"
-                ],
-                "summary": "Create ClusterInfo",
-                "parameters": [
-                    {
-                        "description": "Create ClusterInfo",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateClusterInfoRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateClusterInfoResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/cluster-infos/{clusterInfoID}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "상세조회",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ClusterInfo"
-                ],
-                "summary": "Get ClusterInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "clusterInfoID",
-                        "name": "clusterInfoID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetClusterInfoResponseDTO"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "프로젝트 삭제",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ClusterInfo"
-                ],
-                "summary": "Delete ClusterInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "predictionEnvID",
-                        "name": "predictionEnvID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeleteClusterInfoResponseDTO"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "정보수정",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ClusterInfo"
-                ],
-                "summary": "Edit ClusterInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "clusterInfoID",
-                        "name": "clusterInfoID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update ClusterInfo Info",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateClusterInfoRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateClusterInfoResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/deployments": {
             "get": {
                 "security": [
@@ -2921,213 +2714,6 @@
                 }
             }
         },
-        "/prediction-envs": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "프로젝트 리스트",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PredictionEnv"
-                ],
-                "summary": "Get PredictionEnv List",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "queryName",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sort",
-                        "name": "sort",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetPredictionEnvListResponseDTO"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "프로젝트 생성",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PredictionEnv"
-                ],
-                "summary": "Create PredictionEnv",
-                "parameters": [
-                    {
-                        "description": "Create PredictionEnv",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreatePredictionEnvRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreatePredictionEnvResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/prediction-envs/{predictionEnvID}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "프로젝트 상세조회",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PredictionEnv"
-                ],
-                "summary": "Get PredictionEnv",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "predictionEnvID",
-                        "name": "predictionEnvID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetPredictionEnvResponseDTO"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "프로젝트 삭제",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PredictionEnv"
-                ],
-                "summary": "Delete PredictionEnv",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "predictionEnvID",
-                        "name": "predictionEnvID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeletePredictionEnvResponseDTO"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "프로젝트 정보수정",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PredictionEnv"
-                ],
-                "summary": "Edit PredictionEnv",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "predictionEnvID",
-                        "name": "predictionEnvID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update PredictionEnv Info",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdatePredictionEnvRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdatePredictionEnvResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/projects": {
             "get": {
                 "security": [
@@ -3545,58 +3131,6 @@
                 }
             }
         },
-        "dto.ClusterInfo": {
-            "type": "object",
-            "properties": {
-                "clusterInfoID": {
-                    "type": "string"
-                },
-                "inferenceSvcInfo": {
-                    "$ref": "#/definitions/dto.InferenceSvcInfo"
-                },
-                "name": {
-                    "description": "클러스터 명",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateClusterInfoRequestDTO": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "클러스터 명",
-                    "type": "string",
-                    "x-order": "1",
-                    "example": "ClusterInfo 01"
-                },
-                "infereceSvcAPISvrEndPoint": {
-                    "description": "Kserve API Server 접속주소",
-                    "type": "string",
-                    "x-order": "2",
-                    "example": "http://192.168.88.161:30070"
-                },
-                "infereceSvcHostName": {
-                    "description": "Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)",
-                    "type": "string",
-                    "x-order": "3",
-                    "example": "example.com"
-                },
-                "inferenceSvcIngressEndPoint": {
-                    "description": "Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)",
-                    "type": "string",
-                    "x-order": "4",
-                    "example": "http://192.168.88.161:31000"
-                }
-            }
-        },
-        "dto.CreateClusterInfoResponseDTO": {
-            "type": "object",
-            "properties": {
-                "clusterInfoID": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.CreateDeploymentRequestDTO": {
             "type": "object",
             "required": [
@@ -3607,32 +3141,20 @@
                 "modelPackageID": {
                     "description": "모델패키지 ID",
                     "type": "string",
-                    "x-order": "1 x-nullable=false",
+                    "x-order": "01 x-nullable=false",
                     "example": "cbjmmrvr2g4j4bjpq1a0"
-                },
-                "associationID": {
-                    "description": "정확도 측정을 위해 요청데이터에서 ID로 처리할 피쳐컬럼 명, 요청 피쳐컬럼에 유니크한 ID값이 없다면 비워두고 요청데이터에 별도\"association_id\" key항목입력 필요",
-                    "type": "string",
-                    "x-order": "10",
-                    "example": ""
                 },
                 "name": {
                     "description": "배포 명",
                     "type": "string",
-                    "x-order": "2 x-nullable=false",
+                    "x-order": "02 x-nullable=false",
                     "example": "This Is a Test Deploy"
                 },
                 "description": {
                     "description": "배포 설명",
                     "type": "string",
-                    "x-order": "3",
+                    "x-order": "03",
                     "example": "deploy best model"
-                },
-                "predictionEnvID": {
-                    "description": "예측 환경   미 입력시 프로젝트에 설정된 기본 배포환경에 배포",
-                    "type": "string",
-                    "x-order": "4",
-                    "example": "cbjmmqfr2g4j4bjpq19g"
                 },
                 "importance": {
                     "description": "배포중요도   미 입력시 'Moderate'로 설정",
@@ -3643,31 +3165,43 @@
                         " High",
                         " Critical"
                     ],
-                    "x-order": "5",
+                    "x-order": "05",
                     "example": "Low"
                 },
                 "requestCPU": {
                     "description": "요청 CPU 단위)1 = 1vCore = 1000millicpu, 범위)0.001 ~, 미 입력시 1",
                     "type": "number",
-                    "x-order": "6",
+                    "x-order": "06",
                     "example": 0.5
                 },
                 "requestMEM": {
                     "description": "요청 MEM 단위)1 = 1G= 1Gi  범위)0.001 ~, 미 입력시 2",
                     "type": "number",
-                    "x-order": "7",
+                    "x-order": "07",
                     "example": 1
                 },
                 "featureDriftTracking": {
                     "description": "데이터 드리프트 모니터링 설정, 미 입력시 false",
                     "type": "boolean",
-                    "x-order": "8",
+                    "x-order": "08",
                     "example": false
                 },
                 "accuracyAnalyze": {
                     "description": "정확도 모니터링 설정, 미 입력시 false",
                     "type": "boolean",
-                    "x-order": "9",
+                    "x-order": "09",
+                    "example": false
+                },
+                "associationID": {
+                    "description": "정확도 측정을 위해 유니크한 요청 ID로 처리할 key명, 요청데이터에 별도 json key항목입력 필요",
+                    "type": "string",
+                    "x-order": "10",
+                    "example": ""
+                },
+                "associationIDInFeature": {
+                    "description": "요청 피쳐컬럼에 유니크한 ID값이 포함되어 있는경우 설정",
+                    "type": "boolean",
+                    "x-order": "11",
                     "example": false
                 }
             }
@@ -3742,7 +3276,7 @@
                     "example": "median_house_value"
                 },
                 "modelFrameWork": {
-                    "description": "모델 프레임워크",
+                    "description": "모델 런타임 프레임워크",
                     "type": "string",
                     "enum": [
                         "TensorFlow",
@@ -3755,7 +3289,7 @@
                     "example": "SkLearn"
                 },
                 "modelFrameWorkVersion": {
-                    "description": "모델 프레임워크 버전",
+                    "description": "모델 런타임 프레임워크 버전",
                     "type": "string",
                     "x-order": "09",
                     "example": "1.1.0"
@@ -3784,53 +3318,6 @@
             "type": "object",
             "properties": {
                 "modelPackageID": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreatePredictionEnvRequestDTO": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "배포환경 명",
-                    "type": "string",
-                    "x-order": "1",
-                    "example": "PredictionEnv 01"
-                },
-                "description": {
-                    "description": "설명",
-                    "type": "string",
-                    "x-order": "2",
-                    "example": "New PredictionEnv"
-                },
-                "clusterInfoID": {
-                    "description": "클러스터정보 ID",
-                    "type": "string",
-                    "x-order": "3",
-                    "example": "12345678901234567890"
-                },
-                "useType": {
-                    "description": "클러스터 등록 타입",
-                    "type": "string",
-                    "enum": [
-                        "Default",
-                        " Custom",
-                        " PackageTest"
-                    ],
-                    "x-order": "4"
-                },
-                "namespace": {
-                    "description": "배포할 Kubernetes Namespace",
-                    "type": "string",
-                    "x-order": "5",
-                    "example": "default"
-                }
-            }
-        },
-        "dto.CreatePredictionEnvResponseDTO": {
-            "type": "object",
-            "properties": {
-                "predictionEnvID": {
                     "type": "string"
                 }
             }
@@ -3872,6 +3359,11 @@
                 "url"
             ],
             "properties": {
+                "name": {
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "pipe-line-trigger"
+                },
                 "triggerSource": {
                     "type": "string",
                     "enum": [
@@ -3880,11 +3372,6 @@
                     ],
                     "x-order": "1",
                     "example": "Datadrift"
-                },
-                "name": {
-                    "type": "string",
-                    "x-order": "1",
-                    "example": "pipe-line-trigger"
                 },
                 "url": {
                     "type": "string",
@@ -3973,14 +3460,6 @@
                 }
             }
         },
-        "dto.DeleteClusterInfoResponseDTO": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.DeleteDeploymentResponseDTO": {
             "type": "object",
             "properties": {
@@ -3990,14 +3469,6 @@
             }
         },
         "dto.DeleteModelPackageResponseDTO": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DeletePredictionEnvResponseDTO": {
             "type": "object",
             "properties": {
                 "message": {
@@ -4043,35 +3514,6 @@
                 }
             }
         },
-        "dto.GetClusterInfoListResponseDTO": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "rows": {},
-                "sort": {
-                    "type": "string"
-                },
-                "totalPages": {
-                    "type": "integer"
-                },
-                "totalRows": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.GetClusterInfoResponseDTO": {
-            "type": "object",
-            "properties": {
-                "clusterInfo": {
-                    "$ref": "#/definitions/dto.ClusterInfo"
-                }
-            }
-        },
         "dto.GetDeploymentListResponseDTO": {
             "type": "object",
             "properties": {
@@ -4095,75 +3537,149 @@
         },
         "dto.GetDeploymentResponseDTO": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
+                "deploymentID": {
+                    "description": "deployment ID",
+                    "type": "string",
+                    "x-order": "01",
+                    "example": "cbjmmqfr2g4j4bjpq19g"
+                },
+                "projectID": {
+                    "description": "프로젝트 ID",
+                    "type": "string",
+                    "x-order": "02",
+                    "example": "cbjmmqfr2g4j4bjpq19g"
+                },
+                "projectName": {
+                    "description": "프로젝트 명",
+                    "type": "string",
+                    "x-order": "03",
+                    "example": "House Price Project"
+                },
+                "modelPackageID": {
+                    "description": "모델패키지 ID",
+                    "type": "string",
+                    "x-order": "04",
+                    "example": "cbjmmrvr2g4j4bjpq1a0"
+                },
+                "modelPackageName": {
+                    "description": "모델패키지 ID",
+                    "type": "string",
+                    "x-order": "05",
+                    "example": "House Price Best Acuuracy"
+                },
+                "predictionEnvID": {
+                    "description": "예측 환경   미 입력시 프로젝트에 설정된 기본 배포환경에 배포",
+                    "type": "string",
+                    "x-order": "06",
+                    "example": "cbjmmqfr2g4j4bjpq19g"
+                },
+                "predictionEnvName": {
+                    "type": "string",
+                    "x-order": "07",
+                    "example": "Production Inference Cluster"
+                },
+                "URI": {
+                    "description": "End Point 예측 요청 URL",
+                    "type": "string",
+                    "x-order": "08",
+                    "example": "http://example.com/predict"
+                },
+                "name": {
+                    "description": "배포 명",
+                    "type": "string",
+                    "x-order": "09",
+                    "example": "This Is a Test Deploy"
+                },
+                "description": {
+                    "description": "배포 설명",
+                    "type": "string",
+                    "x-order": "10",
+                    "example": "deploy best model"
+                },
+                "importance": {
+                    "description": "배포중요도   미 입력시 'Moderate'로 설정",
+                    "type": "string",
+                    "enum": [
+                        "Low",
+                        " Moderate",
+                        " High",
+                        " Critical"
+                    ],
+                    "x-order": "11",
+                    "example": "Low"
+                },
+                "requestCPU": {
+                    "description": "요청 CPU 단위)1 = 1vCore = 1000millicpu, 범위)0.001 ~, 미 입력시 1",
+                    "type": "number",
+                    "x-order": "12",
+                    "example": 0.5
+                },
+                "requestMEM": {
+                    "description": "요청 MEM 단위)1 = 1G= 1Gi  범위)0.001 ~, 미 입력시 2",
+                    "type": "number",
+                    "x-order": "13",
+                    "example": 1
+                },
+                "activeStatus": {
+                    "description": "배포서비스 활성화 상태",
+                    "type": "string",
+                    "x-order": "14",
+                    "example": "active"
+                },
+                "serviceStatus": {
+                    "description": "배포서비스 내부 처리 상태",
+                    "type": "string",
+                    "x-order": "15",
+                    "example": "Ready"
+                },
+                "serviceHealthStatus": {
+                    "description": "서비스 상태, 24시간 기준 요청이 없을경우 = unknown, 4xx \u003e=1 인경우 = warning, 5xx \u003e=1 인경우 = failing, 4xx or 5xx 없을경우 = pass",
+                    "type": "string",
+                    "x-order": "16",
+                    "example": "pass"
+                },
+                "driftStatus": {
+                    "description": "데이터 드리프트 상태, 사용자가 지정한 드리프트 모니터 셋팅에 따라 결정 /30초간격, unknown, warning, failing,  정상 = pass",
+                    "type": "string",
+                    "x-order": "17",
+                    "example": "pass"
+                },
+                "accuracyStatus": {
+                    "description": "모델 정확도 상태, 사용자가 지정한 정확도 모니터 셋팅에 따라 결정 /30초간격, unknown, warning, failing,  정상 = pass",
+                    "type": "string",
+                    "x-order": "18",
+                    "example": "pass"
+                },
                 "featureDriftTracking": {
                     "description": "데이터 드리프트 설정",
                     "type": "boolean",
-                    "x-order": "8",
-                    "example": true
-                },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
+                    "x-order": "19",
+                    "example": false
                 },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
                     "type": "boolean",
-                    "x-order": "9",
-                    "example": true
+                    "x-order": "20",
+                    "example": false
                 },
-                "accuracyStatus": {
-                    "type": "string"
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "21",
+                    "example": "Index"
                 },
-                "activeStatus": {
-                    "type": "string"
+                "associationIDInFeature": {
+                    "type": "boolean",
+                    "x-order": "22",
+                    "example": false
                 },
                 "changeRequested": {
+                    "description": "미사용 컬럼",
                     "type": "boolean"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "driftStatus": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "importance": {
-                    "type": "string"
-                },
-                "modelPackageID": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "predictionEnvID": {
-                    "type": "string"
-                },
-                "predictionEnvName": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "requestCPU": {
-                    "type": "number"
-                },
-                "requestMEM": {
-                    "type": "number"
-                },
-                "serviceHealthStatus": {
-                    "type": "string"
-                },
-                "serviceStatus": {
-                    "type": "string"
-                },
-                "uri": {
-                    "type": "string"
                 }
             }
         },
@@ -4202,118 +3718,129 @@
         },
         "dto.GetModelPackageResponseDTO": {
             "type": "object",
+            "required": [
+                "modelFrameWork",
+                "name",
+                "projectID",
+                "targetType"
+            ],
             "properties": {
-                "archived": {
-                    "type": "boolean"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "holdoutDatasetName": {
-                    "type": "string"
-                },
-                "modelDescription": {
-                    "type": "string"
-                },
-                "modelFileName": {
-                    "type": "string"
-                },
-                "modelFrameWork": {
-                    "type": "string"
-                },
-                "modelFrameWorkVersion": {
-                    "type": "string"
-                },
-                "modelName": {
-                    "type": "string"
-                },
                 "modelPackageID": {
-                    "type": "string"
-                },
-                "modelVersion": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "negativeClassLabel": {
-                    "type": "string"
-                },
-                "positiveClassLabel": {
-                    "type": "string"
-                },
-                "predictionTargetName": {
-                    "type": "string"
-                },
-                "predictionThreshold": {
-                    "type": "number"
+                    "type": "string",
+                    "x-order": "01"
                 },
                 "projectID": {
-                    "type": "string"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "trainingDatasetName": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.GetPredictionEnvListResponseDTO": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "rows": {},
-                "sort": {
-                    "type": "string"
-                },
-                "totalPages": {
-                    "type": "integer"
-                },
-                "totalRows": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.GetPredictionEnvResponseDTO": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "배포환경 명",
+                    "description": "프로젝트 ID",
                     "type": "string",
-                    "x-order": "1"
+                    "x-order": "02",
+                    "example": "cbjmlbnr2g4j4bjpq18g"
+                },
+                "name": {
+                    "description": "모델패키지 명",
+                    "type": "string",
+                    "x-order": "03",
+                    "example": "California house price 01"
                 },
                 "description": {
-                    "description": "설명",
+                    "description": "모델패키지 설명",
                     "type": "string",
-                    "x-order": "2"
+                    "x-order": "04",
+                    "example": "New house price predict"
                 },
-                "clusterInfoID": {
-                    "description": "클러스터정보 ID",
-                    "x-order": "3",
-                    "$ref": "#/definitions/dto.ClusterInfo"
-                },
-                "useType": {
-                    "description": "클러스터 등록 타입",
+                "targetType": {
+                    "description": "모델 예측타입 Binary(Binary classification), Regression",
                     "type": "string",
-                    "x-order": "4"
+                    "enum": [
+                        "Binary",
+                        " Regression"
+                    ],
+                    "x-order": "05",
+                    "example": "Regression"
                 },
-                "namespace": {
-                    "description": "배포할 Kubernetes Namespace",
+                "modelName": {
+                    "description": "모델명",
                     "type": "string",
-                    "x-order": "5"
+                    "x-order": "06",
+                    "example": "house price Regression Example Model"
                 },
-                "predictionEnvID": {
-                    "type": "string"
+                "modelVersion": {
+                    "description": "모델 버전",
+                    "type": "string",
+                    "x-order": "07",
+                    "example": "1.0"
                 },
-                "projects": {
-                    "type": "array",
-                    "items": {}
+                "modelDescription": {
+                    "description": "모델 설명",
+                    "type": "string",
+                    "x-order": "08",
+                    "example": "Best Accuracy"
+                },
+                "predictionTargetName": {
+                    "description": "데이터 셋 예측타켓 컬럼 명칭",
+                    "type": "string",
+                    "x-order": "09",
+                    "example": "median_house_value"
+                },
+                "modelFrameWork": {
+                    "description": "모델 런타임 프레임워크",
+                    "type": "string",
+                    "enum": [
+                        "TensorFlow",
+                        " PyTorch",
+                        " SkLearn",
+                        " XGBoost",
+                        " LightGBM"
+                    ],
+                    "x-order": "10",
+                    "example": "SkLearn"
+                },
+                "modelFrameWorkVersion": {
+                    "description": "모델 런타임 프레임워크 버전",
+                    "type": "string",
+                    "x-order": "11",
+                    "example": "1.1.0"
+                },
+                "predictionThreshold": {
+                    "description": "이진분류 예측임계값. 모델 예측타입이 'Binary' 일 때 필수",
+                    "type": "number",
+                    "x-order": "12",
+                    "example": 0.5
+                },
+                "positiveClassLabel": {
+                    "description": "이진분류 양성명칭 지정. 모델 예측타입이 'Binary' 일 때 필수",
+                    "type": "string",
+                    "x-order": "13",
+                    "example": "True"
+                },
+                "negativeClassLabel": {
+                    "description": "이진분류 음성명칭 지정. 모델 예측타입이 'Binary' 일 때 필수",
+                    "type": "string",
+                    "x-order": "14",
+                    "example": "False"
+                },
+                "modelFileName": {
+                    "description": "모델파일 명",
+                    "type": "string",
+                    "x-order": "15",
+                    "example": "model.pkl"
+                },
+                "trainingDatasetName": {
+                    "description": "훈련 데이터셋 명",
+                    "type": "string",
+                    "x-order": "16",
+                    "example": "training.csv"
+                },
+                "holdoutDatasetName": {
+                    "description": "홀드아웃 데이터셋 명",
+                    "type": "string",
+                    "x-order": "17",
+                    "example": "test.csv"
+                },
+                "archived": {
+                    "description": "아카이브 여부",
+                    "type": "boolean",
+                    "x-order": "18",
+                    "example": false
                 }
             }
         },
@@ -4365,29 +3892,6 @@
             "properties": {
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.InferenceSvcInfo": {
-            "type": "object",
-            "properties": {
-                "infereceSvcAPISvrEndPoint": {
-                    "description": "Kserve API Server 접속주소",
-                    "type": "string",
-                    "x-order": "2",
-                    "example": "http://192.168.88.161:30070"
-                },
-                "infereceSvcHostName": {
-                    "description": "Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)",
-                    "type": "string",
-                    "x-order": "3",
-                    "example": "example.com"
-                },
-                "inferenceSvcIngressEndPoint": {
-                    "description": "Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)",
-                    "type": "string",
-                    "x-order": "4",
-                    "example": "http://192.168.88.161:31000"
                 }
             }
         },
@@ -4628,44 +4132,21 @@
                 }
             }
         },
-        "dto.UpdateClusterInfoRequestDTO": {
-            "type": "object",
-            "properties": {
-                "infereceSvcAPISvrEndPoint": {
-                    "description": "Kserve API Server 접속주소",
-                    "type": "string",
-                    "x-order": "2",
-                    "example": "http://192.168.88.161:30070"
-                },
-                "infereceSvcHostName": {
-                    "description": "Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)",
-                    "type": "string",
-                    "x-order": "3",
-                    "example": "example.com"
-                },
-                "inferenceSvcIngressEndPoint": {
-                    "description": "Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)",
-                    "type": "string",
-                    "x-order": "4",
-                    "example": "http://192.168.88.161:31000"
-                },
-                "name": {
-                    "description": "클러스터 명",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateClusterInfoResponseDTO": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.UpdateDeploymentRequestDTO": {
             "type": "object",
             "properties": {
+                "associationID": {
+                    "description": "정확도 측정을 위해 유니크한 요청 ID로 처리할 key명, 요청데이터에 별도 json key항목입력 필요",
+                    "type": "string",
+                    "x-order": "10",
+                    "example": "Index"
+                },
+                "associationIDInFeature": {
+                    "description": "요청 피쳐컬럼에 유니크한 ID값이 포함되어 있는경우 설정",
+                    "type": "boolean",
+                    "x-order": "11",
+                    "example": false
+                },
                 "importance": {
                     "description": "배포중요도",
                     "type": "string",
@@ -4814,53 +4295,6 @@
             }
         },
         "dto.UpdateModelPackageResponseDTO": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdatePredictionEnvRequestDTO": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "배포환경 명",
-                    "type": "string",
-                    "x-order": "1",
-                    "example": "PredictionEnv 01"
-                },
-                "description": {
-                    "description": "설명",
-                    "type": "string",
-                    "x-order": "2",
-                    "example": "New PredictionEnv"
-                },
-                "clusterInfoID": {
-                    "description": "클러스터정보 ID",
-                    "type": "string",
-                    "x-order": "3",
-                    "example": "12345678901234567890"
-                },
-                "useType": {
-                    "description": "클러스터 등록 타입",
-                    "type": "string",
-                    "enum": [
-                        "Default",
-                        " Custom",
-                        " PackageTest"
-                    ],
-                    "x-order": "4"
-                },
-                "namespace": {
-                    "description": "배포할 Kubernetes Namespace",
-                    "type": "string",
-                    "x-order": "5",
-                    "example": "default"
-                }
-            }
-        },
-        "dto.UpdatePredictionEnvResponseDTO": {
             "type": "object",
             "properties": {
                 "message": {

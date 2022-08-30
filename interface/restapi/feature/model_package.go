@@ -9,21 +9,22 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appModelPackage "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application"
 	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewFModelPackage new FModelPackage
-func NewModelPackage(h *handler.Handler, modelPackageService *appModelPackageSvc.ModelPackageService) (*FModelPackage, error) {
-	var err error
+func NewModelPackage(h *handler.Handler) (*FModelPackage, error) {
 
 	f := new(FModelPackage)
 	f.handler = h
 
-	if f.appModelPackage, err = appModelPackage.NewModelPackageApp(h, modelPackageService); err != nil {
+	ModelPackageApp, err := h.GetApp("modelpackage")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appModelPackage = ModelPackageApp.(*appModelPackage.ModelPackageApp)
 
 	return f, nil
 }

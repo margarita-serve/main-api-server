@@ -6,18 +6,13 @@ import (
 )
 
 // NewEmailApp new EmailApp
-func NewEmailApp(h *handler.Handler) (*EmailApp, error) {
-	var err error
+func NewEmailApp(h *handler.Handler, emailSvc *appSvc.EmailService, emailTemplateSvc *appSvc.EmailTemplateService) (*EmailApp, error) {
 
 	app := new(EmailApp)
 	app.handler = h
 
-	if app.EmailSvc, err = appSvc.NewEmailService(h); err != nil {
-		return nil, err
-	}
-	if app.EmailTemplateSvc, err = appSvc.NewEmailTemplateService(h); err != nil {
-		return nil, err
-	}
+	app.EmailSvc = emailSvc
+	app.EmailTemplateSvc = emailTemplateSvc
 
 	return app, nil
 }

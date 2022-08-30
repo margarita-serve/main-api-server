@@ -7,21 +7,21 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appResource "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application"
 	appResourceDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/dto"
-	appResourceSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewFResource new FResource
-func NewResource(h *handler.Handler, clusterInfoService *appResourceSvc.ClusterInfoService, predictionEnvService *appResourceSvc.PredictionEnvService) (*FResource, error) {
-	var err error
-
+func NewResource(h *handler.Handler) (*FResource, error) {
 	f := new(FResource)
 	f.handler = h
 
-	if f.appResource, err = appResource.NewResourceApp(h, clusterInfoService, predictionEnvService); err != nil {
+	ResourceApp, err := h.GetApp("resource")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appResource = ResourceApp.(*appResource.ResourceApp)
 
 	return f, nil
 }
@@ -32,15 +32,17 @@ type FResource struct {
 	appResource *appResource.ResourceApp
 }
 
+/*
 // @Summary Create PredictionEnv
-// @Description  프로젝트 생성
-// @Tags PredictionEnv
+// @Description  예측환경 생성
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param body body appResourceDTO.CreatePredictionEnvRequestDTO true "Create PredictionEnv"
 // @Success 200 {object} appResourceDTO.CreatePredictionEnvResponseDTO
 // @Security BearerAuth
 // @Router     /prediction-envs [post]
+*/
 func (f *FResource) Create(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -68,15 +70,17 @@ func (f *FResource) Create(c echo.Context) error {
 
 }
 
+/*
 // @Summary Delete PredictionEnv
-// @Description 프로젝트 삭제
-// @Tags PredictionEnv
+// @Description 예측환경 삭제
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Success 200 {object} appResourceDTO.DeletePredictionEnvResponseDTO
 // @Security BearerAuth
 // @Router      /prediction-envs/{predictionEnvID} [delete]
+*/
 func (f *FResource) Delete(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -102,9 +106,10 @@ func (f *FResource) Delete(c echo.Context) error {
 
 }
 
+/*
 // @Summary Edit PredictionEnv
-// @Description 프로젝트 정보수정
-// @Tags PredictionEnv
+// @Description 예측환경 정보수정
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
@@ -112,6 +117,7 @@ func (f *FResource) Delete(c echo.Context) error {
 // @Success 200 {object} appResourceDTO.UpdatePredictionEnvResponseDTO
 // @Security BearerAuth
 // @Router     /prediction-envs/{predictionEnvID} [patch]
+*/
 func (f *FResource) Update(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -140,15 +146,17 @@ func (f *FResource) Update(c echo.Context) error {
 
 }
 
+/*
 // @Summary Get PredictionEnv
-// @Description 프로젝트 상세조회
-// @Tags PredictionEnv
+// @Description 예측환경 상세조회
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Success 200 {object} appResourceDTO.GetPredictionEnvResponseDTO
 // @Security BearerAuth
 // @Router      /prediction-envs/{predictionEnvID} [get]
+*/
 func (f *FResource) GetByID(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -172,9 +180,10 @@ func (f *FResource) GetByID(c echo.Context) error {
 
 }
 
+/*
 // @Summary Get PredictionEnv List
-// @Description 프로젝트 리스트
-// @Tags PredictionEnv
+// @Description 예측환경 리스트
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param name query string false "queryName"
@@ -184,6 +193,7 @@ func (f *FResource) GetByID(c echo.Context) error {
 // @Security BearerAuth
 // @Success 200 {object} appResourceDTO.GetPredictionEnvListResponseDTO
 // @Router      /prediction-envs [get]
+*/
 func (f *FResource) GetList(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -213,15 +223,17 @@ func (f *FResource) GetList(c echo.Context) error {
 
 }
 
+/*
 // @Summary Create ClusterInfo
 // @Description  클러스터정보 생성
-// @Tags ClusterInfo
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param body body appResourceDTO.CreateClusterInfoRequestDTO true "Create ClusterInfo"
 // @Success 200 {object} appResourceDTO.CreateClusterInfoResponseDTO
 // @Security BearerAuth
 // @Router     /cluster-infos [post]
+*/
 func (f *FResource) CreateClusterInfo(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -249,15 +261,17 @@ func (f *FResource) CreateClusterInfo(c echo.Context) error {
 
 }
 
+/*
 // @Summary Delete ClusterInfo
-// @Description 프로젝트 삭제
-// @Tags ClusterInfo
+// @Description  삭제
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param predictionEnvID path string true "predictionEnvID"
 // @Success 200 {object} appResourceDTO.DeleteClusterInfoResponseDTO
 // @Security BearerAuth
 // @Router      /cluster-infos/{clusterInfoID} [delete]
+*/
 func (f *FResource) DeleteClusterInfo(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -283,9 +297,10 @@ func (f *FResource) DeleteClusterInfo(c echo.Context) error {
 
 }
 
+/*
 // @Summary Edit ClusterInfo
 // @Description  정보수정
-// @Tags ClusterInfo
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param clusterInfoID path string true "clusterInfoID"
@@ -293,6 +308,7 @@ func (f *FResource) DeleteClusterInfo(c echo.Context) error {
 // @Success 200 {object} appResourceDTO.UpdateClusterInfoResponseDTO
 // @Security BearerAuth
 // @Router     /cluster-infos/{clusterInfoID} [patch]
+*/
 func (f *FResource) ClusterInfoUpdate(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -321,15 +337,17 @@ func (f *FResource) ClusterInfoUpdate(c echo.Context) error {
 
 }
 
+/*
 // @Summary Get ClusterInfo
 // @Description  상세조회
-// @Tags ClusterInfo
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param clusterInfoID path string true "clusterInfoID"
 // @Success 200 {object} appResourceDTO.GetClusterInfoResponseDTO
 // @Security BearerAuth
 // @Router      /cluster-infos/{clusterInfoID} [get]
+*/
 func (f *FResource) ClusterInfoGetByID(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)
@@ -353,9 +371,10 @@ func (f *FResource) ClusterInfoGetByID(c echo.Context) error {
 
 }
 
+/*
 // @Summary Get ClusterInfo List
 // @Description  리스트
-// @Tags ClusterInfo
+// @Tags Resource
 // @Accept json
 // @Produce json
 // @Param name query string false "queryName"
@@ -365,6 +384,7 @@ func (f *FResource) ClusterInfoGetByID(c echo.Context) error {
 // @Security BearerAuth
 // @Success 200 {object} appResourceDTO.GetClusterInfoListResponseDTO
 // @Router      /cluster-infos [get]
+*/
 func (f *FResource) ClusterInfoGetList(c echo.Context) error {
 	//identity
 	i, err := f.SetIdentity(c)

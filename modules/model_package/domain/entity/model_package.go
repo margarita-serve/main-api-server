@@ -169,3 +169,10 @@ func (d *ModelPackage) IsValidForDelete() bool {
 func (d *ModelPackage) IsValidForUpdate() bool {
 	return !d.Archived
 }
+
+func (d *ModelPackage) IsValidForUploadFile() bool {
+	if d.DeployCount <= 0 && !d.Archived {
+		return true
+	}
+	return false
+}

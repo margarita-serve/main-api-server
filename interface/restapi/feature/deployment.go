@@ -10,24 +10,22 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	appDeployment "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application"
 	appDeploymentDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
-	appMonitorSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/service"
-	appProjectSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/service"
-	appPredictionEnvSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewFDeployment new FDeployment
-func NewDeployment(h *handler.Handler, predictionEnvSvc *appPredictionEnvSvc.PredictionEnvService, projectSvc *appProjectSvc.ProjectService, modelPackageSvc *appModelPackageSvc.ModelPackageService, monitorSvc *appMonitorSvc.MonitorService) (*FDeployment, error) {
-	var err error
+func NewDeployment(h *handler.Handler) (*FDeployment, error) {
 
 	f := new(FDeployment)
 	f.handler = h
 
-	if f.appDeployment, err = appDeployment.NewDeploymentApp(h, predictionEnvSvc, projectSvc, modelPackageSvc, monitorSvc); err != nil {
+	DeploymentApp, err := h.GetApp("deployment")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appDeployment = DeploymentApp.(*appDeployment.DeploymentApp)
 
 	return f, nil
 }

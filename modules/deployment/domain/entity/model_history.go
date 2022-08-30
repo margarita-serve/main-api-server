@@ -10,9 +10,10 @@ type ModelHistory struct {
 	EndDate         time.Time
 	ApplyHistoryTag string `gorm:"size:256"` //"current", "previous"
 	DeploymentID    string `gorm:"size:256;type:not null"`
+	ModelPackageID  string `gorm:"size:256"`
 }
 
-func newModelHistory(id string, name string, version string) *ModelHistory {
+func newModelHistory(id string, name string, version string, modelPackageID string) *ModelHistory {
 	modelHistory := &ModelHistory{
 		ID:              id,
 		Name:            name,
@@ -20,6 +21,7 @@ func newModelHistory(id string, name string, version string) *ModelHistory {
 		StartDate:       time.Now(),
 		EndDate:         time.Time{},
 		ApplyHistoryTag: "Current",
+		ModelPackageID:  modelPackageID,
 	}
 
 	return modelHistory

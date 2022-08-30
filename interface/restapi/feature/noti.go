@@ -6,22 +6,24 @@ import (
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/interface/restapi/response"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application"
+	appNoti "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application"
 	appNotiDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
-	appNotiSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // NewNoti new  FNoti
-func NewNoti(h *handler.Handler, notiService *appNotiSvc.NotiService, webHookService *appNotiSvc.WebHookService) (*FNoti, error) {
-	var err error
+func NewNoti(h *handler.Handler) (*FNoti, error) {
 
 	f := new(FNoti)
 	f.handler = h
 
-	if f.appNoti, err = application.NewNotiApp(h, notiService, webHookService); err != nil {
+	NotiApp, err := h.GetApp("noti")
+	if err != nil {
 		return nil, err
 	}
+
+	f.appNoti = NotiApp.(*appNoti.NotiApp)
 
 	return f, nil
 }

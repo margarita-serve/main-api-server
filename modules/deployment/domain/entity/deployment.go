@@ -116,7 +116,7 @@ func (d *Deployment) AddEventHistory(eventType string, logMessage string, userId
 	return nil
 }
 
-func (d *Deployment) AddModelHistory(name string, version string) string {
+func (d *Deployment) AddModelHistory(name string, version string, modelPackageID string) string {
 	var newModelHistoryID string
 	lenOfArr := len(d.ModelHistory)
 	for i, mh := range d.ModelHistory {
@@ -135,7 +135,7 @@ func (d *Deployment) AddModelHistory(name string, version string) string {
 
 	//guid := xid.New().String()
 
-	modelHistory := newModelHistory(newModelHistoryID, name, version)
+	modelHistory := newModelHistory(newModelHistoryID, name, version, modelPackageID)
 	d.ModelHistory = append(d.ModelHistory, modelHistory)
 
 	return newModelHistoryID

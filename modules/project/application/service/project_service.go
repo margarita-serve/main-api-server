@@ -37,6 +37,7 @@ type ProjectService struct {
 	BaseService
 	repo            domRepo.IProjectRepo
 	modelPackageSvc IModelPackageService
+	deploymentSvc   IDeploymentService
 }
 
 // NewProjectService new ProjectService

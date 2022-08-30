@@ -1,14 +1,14 @@
 package dto
 
 type WebHook struct {
-	ID            string `json:"id" example:""`
-	DeploymentID  string `json:"deploymentID"`
-	TriggerSource string `json:"triggerSource" enums:"Datadrift, Accuracy" example:"Datadrift" validate:"required" extensions:"x-order=1"`
-	Name          string `json:"name" validate:"required" example:"pipe-line-trigger" extensions:"x-order=1"`
-	URL           string `json:"url" validate:"required" example:"http://example.com/to/webhook/client" extensions:"x-order=2"`
-	Method        string `json:"method" enums:"POST,GET" example:"POST" validate:"required" extensions:"x-order=3"`
-	CustomHeader  string `json:"customHeader" example:"Content-Type: application/json " extensions:"x-order=4"`
-	MessageBody   string `json:"messageBody" example:"{ \"key\": \"value\"}" extensions:"x-order=5"`
+	ID            string `json:"webHookID" example:"" extensions:"x-order=01"`
+	DeploymentID  string `json:"deploymentID" extensions:"x-order=02"`
+	TriggerSource string `json:"triggerSource" enums:"Datadrift, Accuracy" example:"Datadrift" validate:"required" extensions:"x-order=03"`
+	Name          string `json:"name" validate:"required" example:"pipe-line-trigger" extensions:"x-order=04"`
+	URL           string `json:"url" validate:"required" example:"http://example.com/to/webhook/client" extensions:"x-order=05"`
+	Method        string `json:"method" enums:"POST,GET" example:"POST" validate:"required" extensions:"x-order=06"`
+	CustomHeader  string `json:"customHeader" example:"Content-Type: application/json " extensions:"x-order=07"`
+	MessageBody   string `json:"messageBody" example:"{ \"key\": \"value\"}" extensions:"x-order=08"`
 }
 
 type CreateWebHookRequestDTO struct {

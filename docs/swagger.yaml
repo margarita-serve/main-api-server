@@ -67,67 +67,33 @@ definitions:
       message:
         type: string
     type: object
-  dto.ClusterInfo:
-    properties:
-      clusterInfoID:
-        type: string
-      inferenceSvcInfo:
-        $ref: '#/definitions/dto.InferenceSvcInfo'
-      name:
-        description: 클러스터 명
-        type: string
-    type: object
-  dto.CreateClusterInfoRequestDTO:
-    properties:
-      infereceSvcAPISvrEndPoint:
-        description: Kserve API Server 접속주소
-        example: http://192.168.88.161:30070
-        type: string
-        x-order: "2"
-      infereceSvcHostName:
-        description: Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)
-        example: example.com
-        type: string
-        x-order: "3"
-      inferenceSvcIngressEndPoint:
-        description: Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)
-        example: http://192.168.88.161:31000
-        type: string
-        x-order: "4"
-      name:
-        description: 클러스터 명
-        example: ClusterInfo 01
-        type: string
-        x-order: "1"
-    type: object
-  dto.CreateClusterInfoResponseDTO:
-    properties:
-      clusterInfoID:
-        type: string
-    type: object
   dto.CreateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
         description: 정확도 모니터링 설정, 미 입력시 false
         example: false
         type: boolean
-        x-order: "9"
+        x-order: "09"
       associationID:
-        description: 정확도 측정을 위해 요청데이터에서 ID로 처리할 피쳐컬럼 명, 요청 피쳐컬럼에 유니크한 ID값이 없다면 비워두고
-          요청데이터에 별도"association_id" key항목입력 필요
+        description: 정확도 측정을 위해 유니크한 요청 ID로 처리할 key명, 요청데이터에 별도 json key항목입력 필요
         example: ""
         type: string
         x-order: "10"
+      associationIDInFeature:
+        description: 요청 피쳐컬럼에 유니크한 ID값이 포함되어 있는경우 설정
+        example: false
+        type: boolean
+        x-order: "11"
       description:
         description: 배포 설명
         example: deploy best model
         type: string
-        x-order: "3"
+        x-order: "03"
       featureDriftTracking:
         description: 데이터 드리프트 모니터링 설정, 미 입력시 false
         example: false
         type: boolean
-        x-order: "8"
+        x-order: "08"
       importance:
         description: 배포중요도   미 입력시 'Moderate'로 설정
         enum:
@@ -137,32 +103,27 @@ definitions:
         - ' Critical'
         example: Low
         type: string
-        x-order: "5"
+        x-order: "05"
       modelPackageID:
         description: 모델패키지 ID
         example: cbjmmrvr2g4j4bjpq1a0
         type: string
-        x-order: 1 x-nullable=false
+        x-order: 01 x-nullable=false
       name:
         description: 배포 명
         example: This Is a Test Deploy
         type: string
-        x-order: 2 x-nullable=false
-      predictionEnvID:
-        description: 예측 환경   미 입력시 프로젝트에 설정된 기본 배포환경에 배포
-        example: cbjmmqfr2g4j4bjpq19g
-        type: string
-        x-order: "4"
+        x-order: 02 x-nullable=false
       requestCPU:
         description: 요청 CPU 단위)1 = 1vCore = 1000millicpu, 범위)0.001 ~, 미 입력시 1
         example: 0.5
         type: number
-        x-order: "6"
+        x-order: "06"
       requestMEM:
         description: 요청 MEM 단위)1 = 1G= 1Gi  범위)0.001 ~, 미 입력시 2
         example: 1
         type: number
-        x-order: "7"
+        x-order: "07"
     required:
     - modelPackageID
     - name
@@ -185,7 +146,7 @@ definitions:
         type: string
         x-order: "06"
       modelFrameWork:
-        description: 모델 프레임워크
+        description: 모델 런타임 프레임워크
         enum:
         - TensorFlow
         - ' PyTorch'
@@ -196,7 +157,7 @@ definitions:
         type: string
         x-order: "08"
       modelFrameWorkVersion:
-        description: 모델 프레임워크 버전
+        description: 모델 런타임 프레임워크 버전
         example: 1.1.0
         type: string
         x-order: "09"
@@ -257,42 +218,6 @@ definitions:
   dto.CreateModelPackageResponseDTO:
     properties:
       modelPackageID:
-        type: string
-    type: object
-  dto.CreatePredictionEnvRequestDTO:
-    properties:
-      clusterInfoID:
-        description: 클러스터정보 ID
-        example: "12345678901234567890"
-        type: string
-        x-order: "3"
-      description:
-        description: 설명
-        example: New PredictionEnv
-        type: string
-        x-order: "2"
-      name:
-        description: 배포환경 명
-        example: PredictionEnv 01
-        type: string
-        x-order: "1"
-      namespace:
-        description: 배포할 Kubernetes Namespace
-        example: default
-        type: string
-        x-order: "5"
-      useType:
-        description: 클러스터 등록 타입
-        enum:
-        - Default
-        - ' Custom'
-        - ' PackageTest'
-        type: string
-        x-order: "4"
-    type: object
-  dto.CreatePredictionEnvResponseDTO:
-    properties:
-      predictionEnvID:
         type: string
     type: object
   dto.CreateProjectRequestDTO:
@@ -401,22 +326,12 @@ definitions:
         type: string
         x-order: "0"
     type: object
-  dto.DeleteClusterInfoResponseDTO:
-    properties:
-      message:
-        type: string
-    type: object
   dto.DeleteDeploymentResponseDTO:
     properties:
       message:
         type: string
     type: object
   dto.DeleteModelPackageResponseDTO:
-    properties:
-      message:
-        type: string
-    type: object
-  dto.DeletePredictionEnvResponseDTO:
     properties:
       message:
         type: string
@@ -449,25 +364,6 @@ definitions:
         type: string
         x-order: "2"
     type: object
-  dto.GetClusterInfoListResponseDTO:
-    properties:
-      limit:
-        type: integer
-      page:
-        type: integer
-      rows: {}
-      sort:
-        type: string
-      totalPages:
-        type: integer
-      totalRows:
-        type: integer
-    type: object
-  dto.GetClusterInfoResponseDTO:
-    properties:
-      clusterInfo:
-        $ref: '#/definitions/dto.ClusterInfo'
-    type: object
   dto.GetDeploymentListResponseDTO:
     properties:
       limit:
@@ -484,55 +380,127 @@ definitions:
     type: object
   dto.GetDeploymentResponseDTO:
     properties:
+      URI:
+        description: End Point 예측 요청 URL
+        example: http://example.com/predict
+        type: string
+        x-order: "08"
       accuracyAnalyze:
         description: 정확도 측정 설정
-        example: true
+        example: false
         type: boolean
-        x-order: "9"
+        x-order: "20"
       accuracyStatus:
+        description: 모델 정확도 상태, 사용자가 지정한 정확도 모니터 셋팅에 따라 결정 /30초간격, unknown, warning,
+          failing,  정상 = pass
+        example: pass
         type: string
+        x-order: "18"
       activeStatus:
+        description: 배포서비스 활성화 상태
+        example: active
         type: string
+        x-order: "14"
       associationID:
         description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
         example: Index
         type: string
-        x-order: "9"
-      changeRequested:
+        x-order: "21"
+      associationIDInFeature:
+        example: false
         type: boolean
+        x-order: "22"
+      changeRequested:
+        description: 미사용 컬럼
+        type: boolean
+      deploymentID:
+        description: deployment ID
+        example: cbjmmqfr2g4j4bjpq19g
+        type: string
+        x-order: "01"
       description:
+        description: 배포 설명
+        example: deploy best model
         type: string
+        x-order: "10"
       driftStatus:
+        description: 데이터 드리프트 상태, 사용자가 지정한 드리프트 모니터 셋팅에 따라 결정 /30초간격, unknown, warning,
+          failing,  정상 = pass
+        example: pass
         type: string
+        x-order: "17"
       featureDriftTracking:
         description: 데이터 드리프트 설정
-        example: true
+        example: false
         type: boolean
-        x-order: "8"
-      id:
-        type: string
+        x-order: "19"
       importance:
+        description: 배포중요도   미 입력시 'Moderate'로 설정
+        enum:
+        - Low
+        - ' Moderate'
+        - ' High'
+        - ' Critical'
+        example: Low
         type: string
+        x-order: "11"
       modelPackageID:
+        description: 모델패키지 ID
+        example: cbjmmrvr2g4j4bjpq1a0
         type: string
+        x-order: "04"
+      modelPackageName:
+        description: 모델패키지 ID
+        example: House Price Best Acuuracy
+        type: string
+        x-order: "05"
       name:
+        description: 배포 명
+        example: This Is a Test Deploy
         type: string
+        x-order: "09"
       predictionEnvID:
+        description: 예측 환경   미 입력시 프로젝트에 설정된 기본 배포환경에 배포
+        example: cbjmmqfr2g4j4bjpq19g
         type: string
+        x-order: "06"
       predictionEnvName:
+        example: Production Inference Cluster
         type: string
+        x-order: "07"
       projectID:
+        description: 프로젝트 ID
+        example: cbjmmqfr2g4j4bjpq19g
         type: string
+        x-order: "02"
+      projectName:
+        description: 프로젝트 명
+        example: House Price Project
+        type: string
+        x-order: "03"
       requestCPU:
+        description: 요청 CPU 단위)1 = 1vCore = 1000millicpu, 범위)0.001 ~, 미 입력시 1
+        example: 0.5
         type: number
+        x-order: "12"
       requestMEM:
+        description: 요청 MEM 단위)1 = 1G= 1Gi  범위)0.001 ~, 미 입력시 2
+        example: 1
         type: number
+        x-order: "13"
       serviceHealthStatus:
+        description: 서비스 상태, 24시간 기준 요청이 없을경우 = unknown, 4xx >=1 인경우 = warning, 5xx
+          >=1 인경우 = failing, 4xx or 5xx 없을경우 = pass
+        example: pass
         type: string
+        x-order: "16"
       serviceStatus:
+        description: 배포서비스 내부 처리 상태
+        example: Ready
         type: string
-      uri:
-        type: string
+        x-order: "15"
+    required:
+    - name
     type: object
   dto.GetGovernanceHistoryResponseDTO:
     properties:
@@ -559,83 +527,107 @@ definitions:
   dto.GetModelPackageResponseDTO:
     properties:
       archived:
+        description: 아카이브 여부
+        example: false
         type: boolean
+        x-order: "18"
       description:
+        description: 모델패키지 설명
+        example: New house price predict
         type: string
+        x-order: "04"
       holdoutDatasetName:
+        description: 홀드아웃 데이터셋 명
+        example: test.csv
         type: string
+        x-order: "17"
       modelDescription:
+        description: 모델 설명
+        example: Best Accuracy
         type: string
+        x-order: "08"
       modelFileName:
+        description: 모델파일 명
+        example: model.pkl
         type: string
+        x-order: "15"
       modelFrameWork:
+        description: 모델 런타임 프레임워크
+        enum:
+        - TensorFlow
+        - ' PyTorch'
+        - ' SkLearn'
+        - ' XGBoost'
+        - ' LightGBM'
+        example: SkLearn
         type: string
+        x-order: "10"
       modelFrameWorkVersion:
+        description: 모델 런타임 프레임워크 버전
+        example: 1.1.0
         type: string
+        x-order: "11"
       modelName:
+        description: 모델명
+        example: house price Regression Example Model
         type: string
+        x-order: "06"
       modelPackageID:
         type: string
+        x-order: "01"
       modelVersion:
+        description: 모델 버전
+        example: "1.0"
         type: string
+        x-order: "07"
       name:
+        description: 모델패키지 명
+        example: California house price 01
         type: string
+        x-order: "03"
       negativeClassLabel:
+        description: 이진분류 음성명칭 지정. 모델 예측타입이 'Binary' 일 때 필수
+        example: "False"
         type: string
+        x-order: "14"
       positiveClassLabel:
+        description: 이진분류 양성명칭 지정. 모델 예측타입이 'Binary' 일 때 필수
+        example: "True"
         type: string
+        x-order: "13"
       predictionTargetName:
+        description: 데이터 셋 예측타켓 컬럼 명칭
+        example: median_house_value
         type: string
+        x-order: "09"
       predictionThreshold:
+        description: 이진분류 예측임계값. 모델 예측타입이 'Binary' 일 때 필수
+        example: 0.5
         type: number
+        x-order: "12"
       projectID:
+        description: 프로젝트 ID
+        example: cbjmlbnr2g4j4bjpq18g
         type: string
+        x-order: "02"
       targetType:
+        description: 모델 예측타입 Binary(Binary classification), Regression
+        enum:
+        - Binary
+        - ' Regression'
+        example: Regression
         type: string
+        x-order: "05"
       trainingDatasetName:
+        description: 훈련 데이터셋 명
+        example: training.csv
         type: string
-    type: object
-  dto.GetPredictionEnvListResponseDTO:
-    properties:
-      limit:
-        type: integer
-      page:
-        type: integer
-      rows: {}
-      sort:
-        type: string
-      totalPages:
-        type: integer
-      totalRows:
-        type: integer
-    type: object
-  dto.GetPredictionEnvResponseDTO:
-    properties:
-      clusterInfoID:
-        $ref: '#/definitions/dto.ClusterInfo'
-        description: 클러스터정보 ID
-        x-order: "3"
-      description:
-        description: 설명
-        type: string
-        x-order: "2"
-      name:
-        description: 배포환경 명
-        type: string
-        x-order: "1"
-      namespace:
-        description: 배포할 Kubernetes Namespace
-        type: string
-        x-order: "5"
-      predictionEnvID:
-        type: string
-      projects:
-        items: {}
-        type: array
-      useType:
-        description: 클러스터 등록 타입
-        type: string
-        x-order: "4"
+        x-order: "16"
+    required:
+    - modelFrameWork
+    - name
+    - projectID
+    - targetType
     type: object
   dto.GetProjectListResponseDTO:
     properties:
@@ -670,24 +662,6 @@ definitions:
     properties:
       message:
         type: string
-    type: object
-  dto.InferenceSvcInfo:
-    properties:
-      infereceSvcAPISvrEndPoint:
-        description: Kserve API Server 접속주소
-        example: http://192.168.88.161:30070
-        type: string
-        x-order: "2"
-      infereceSvcHostName:
-        description: Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)
-        example: example.com
-        type: string
-        x-order: "3"
-      inferenceSvcIngressEndPoint:
-        description: Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)
-        example: http://192.168.88.161:31000
-        type: string
-        x-order: "4"
     type: object
   dto.LoginReqDTO:
     properties:
@@ -862,32 +836,6 @@ definitions:
       message:
         type: string
     type: object
-  dto.UpdateClusterInfoRequestDTO:
-    properties:
-      infereceSvcAPISvrEndPoint:
-        description: Kserve API Server 접속주소
-        example: http://192.168.88.161:30070
-        type: string
-        x-order: "2"
-      infereceSvcHostName:
-        description: Kserve/Knative에 설정된 호스트명(설치시 기본 example.com)
-        example: example.com
-        type: string
-        x-order: "3"
-      inferenceSvcIngressEndPoint:
-        description: Kserve Istio Ingress Host IP/Port 설정(Prediction send 요청시 사용)
-        example: http://192.168.88.161:31000
-        type: string
-        x-order: "4"
-      name:
-        description: 클러스터 명
-        type: string
-    type: object
-  dto.UpdateClusterInfoResponseDTO:
-    properties:
-      message:
-        type: string
-    type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
@@ -896,10 +844,15 @@ definitions:
         type: boolean
         x-order: "9"
       associationID:
-        description: 요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명
+        description: 정확도 측정을 위해 유니크한 요청 ID로 처리할 key명, 요청데이터에 별도 json key항목입력 필요
         example: Index
         type: string
-        x-order: "9"
+        x-order: "10"
+      associationIDInFeature:
+        description: 요청 피쳐컬럼에 유니크한 ID값이 포함되어 있는경우 설정
+        example: false
+        type: boolean
+        x-order: "11"
       description:
         description: 베포 설명
         type: string
@@ -1009,42 +962,6 @@ definitions:
         x-order: "6"
     type: object
   dto.UpdateModelPackageResponseDTO:
-    properties:
-      message:
-        type: string
-    type: object
-  dto.UpdatePredictionEnvRequestDTO:
-    properties:
-      clusterInfoID:
-        description: 클러스터정보 ID
-        example: "12345678901234567890"
-        type: string
-        x-order: "3"
-      description:
-        description: 설명
-        example: New PredictionEnv
-        type: string
-        x-order: "2"
-      name:
-        description: 배포환경 명
-        example: PredictionEnv 01
-        type: string
-        x-order: "1"
-      namespace:
-        description: 배포할 Kubernetes Namespace
-        example: default
-        type: string
-        x-order: "5"
-      useType:
-        description: 클러스터 등록 타입
-        enum:
-        - Default
-        - ' Custom'
-        - ' PackageTest'
-        type: string
-        x-order: "4"
-    type: object
-  dto.UpdatePredictionEnvResponseDTO:
     properties:
       message:
         type: string
@@ -1214,136 +1131,6 @@ paths:
       summary: register user
       tags:
       - Auth
-  /cluster-infos:
-    get:
-      consumes:
-      - application/json
-      description: 리스트
-      parameters:
-      - description: queryName
-        in: query
-        name: name
-        type: string
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: sort
-        in: query
-        name: sort
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetClusterInfoListResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Get ClusterInfo List
-      tags:
-      - ClusterInfo
-    post:
-      consumes:
-      - application/json
-      description: 클러스터정보 생성
-      parameters:
-      - description: Create ClusterInfo
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateClusterInfoRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.CreateClusterInfoResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Create ClusterInfo
-      tags:
-      - ClusterInfo
-  /cluster-infos/{clusterInfoID}:
-    delete:
-      consumes:
-      - application/json
-      description: 프로젝트 삭제
-      parameters:
-      - description: predictionEnvID
-        in: path
-        name: predictionEnvID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.DeleteClusterInfoResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Delete ClusterInfo
-      tags:
-      - ClusterInfo
-    get:
-      consumes:
-      - application/json
-      description: 상세조회
-      parameters:
-      - description: clusterInfoID
-        in: path
-        name: clusterInfoID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetClusterInfoResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Get ClusterInfo
-      tags:
-      - ClusterInfo
-    patch:
-      consumes:
-      - application/json
-      description: 정보수정
-      parameters:
-      - description: clusterInfoID
-        in: path
-        name: clusterInfoID
-        required: true
-        type: string
-      - description: Update ClusterInfo Info
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateClusterInfoRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UpdateClusterInfoResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Edit ClusterInfo
-      tags:
-      - ClusterInfo
   /deployments:
     get:
       consumes:
@@ -2852,136 +2639,6 @@ paths:
       summary: Upload Training Dataset File
       tags:
       - ModelPackage
-  /prediction-envs:
-    get:
-      consumes:
-      - application/json
-      description: 프로젝트 리스트
-      parameters:
-      - description: queryName
-        in: query
-        name: name
-        type: string
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: sort
-        in: query
-        name: sort
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetPredictionEnvListResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Get PredictionEnv List
-      tags:
-      - PredictionEnv
-    post:
-      consumes:
-      - application/json
-      description: 프로젝트 생성
-      parameters:
-      - description: Create PredictionEnv
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreatePredictionEnvRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.CreatePredictionEnvResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Create PredictionEnv
-      tags:
-      - PredictionEnv
-  /prediction-envs/{predictionEnvID}:
-    delete:
-      consumes:
-      - application/json
-      description: 프로젝트 삭제
-      parameters:
-      - description: predictionEnvID
-        in: path
-        name: predictionEnvID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.DeletePredictionEnvResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Delete PredictionEnv
-      tags:
-      - PredictionEnv
-    get:
-      consumes:
-      - application/json
-      description: 프로젝트 상세조회
-      parameters:
-      - description: predictionEnvID
-        in: path
-        name: predictionEnvID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.GetPredictionEnvResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Get PredictionEnv
-      tags:
-      - PredictionEnv
-    patch:
-      consumes:
-      - application/json
-      description: 프로젝트 정보수정
-      parameters:
-      - description: predictionEnvID
-        in: path
-        name: predictionEnvID
-        required: true
-        type: string
-      - description: Update PredictionEnv Info
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdatePredictionEnvRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UpdatePredictionEnvResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Edit PredictionEnv
-      tags:
-      - PredictionEnv
   /projects:
     get:
       consumes:

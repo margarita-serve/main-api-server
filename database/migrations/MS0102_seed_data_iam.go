@@ -34,6 +34,23 @@ func (ms01 *MS0102SeedDataIAM) Run(db *gorm.DB) error {
 		return err
 	}
 
+	// 과제 연동용 유저생성
+	// add default user: user
+	defaultUser := iamEntt.SysUser{
+		UUID:        utils.GenerateUUID(),
+		Username:    cfg.IAM.DefaultUser.Username,
+		Password:    utils.MD5([]byte(cfg.IAM.DefaultUser.Password)),
+		NickName:    cfg.IAM.DefaultUser.NickName,
+		Email:       cfg.IAM.DefaultUser.Email,
+		IsActive:    true,
+		AuthorityID: cfg.IAM.DefaultUser.AuthorityID,
+	}
+	defaultUser.CreatedBy = "system.koreserve@installation"
+
+	if err := db.Create(&defaultUser).Error; err != nil {
+		return err
+	}
+
 	// add default user: super admin
 	superAdmin := iamEntt.SysUser{
 		UUID:        utils.GenerateUUID(),

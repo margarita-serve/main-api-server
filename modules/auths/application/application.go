@@ -6,15 +6,12 @@ import (
 )
 
 // NewAuthsApp new AuthsApp
-func NewAuthsApp(h *handler.Handler) (*AuthsApp, error) {
-	var err error
+func NewAuthsApp(h *handler.Handler, appAuthsSvc *service.AuthenticationSvc) (*AuthsApp, error) {
 
 	app := new(AuthsApp)
 	app.handler = h
 
-	if app.AuthenticationSvc, err = service.NewAuthenticationSvc(h); err != nil {
-		return nil, err
-	}
+	app.AuthenticationSvc = appAuthsSvc
 
 	return app, nil
 }

@@ -24,6 +24,7 @@ type Handler struct {
 	dbGorms         map[string]*gorm.DB
 	casbinEnforcers map[string]*casbin.Enforcer
 	cachers         map[string]*cacher.Cacher
+	applications    map[string]interface{}
 }
 
 // SetConfig set Config
@@ -101,4 +102,22 @@ func (h *Handler) GetCacher(cName string) (*cacher.Cacher, error) {
 // GetCachers get Cachers
 func (h *Handler) GetCachers() map[string]*cacher.Cacher {
 	return h.cachers
+}
+
+// SetApp set Cacher
+func (h *Handler) SetApp(cName string, a interface{}) {
+	if h.applications == nil {
+		h.applications = make(map[string]interface{})
+	}
+	h.applications[cName] = a
+}
+
+// GetApp get Cacher
+func (h *Handler) GetApp(cName string) (interface{}, error) {
+	c, exist := h.applications[cName]
+	if !exist {
+		err := fmt.Errorf("App Name '%s' Not Found", cName)
+		return nil, err
+	}
+	return c, nil
 }

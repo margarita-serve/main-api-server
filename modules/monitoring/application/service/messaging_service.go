@@ -18,7 +18,7 @@ type MessagingService struct {
 	MonitorService IMonitorService
 }
 
-func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
+func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) (*MessagingService, error) {
 
 	svc := new(MessagingService)
 
@@ -26,12 +26,16 @@ func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 	svc.MonitorService = monitorSvc
 	// base service init
 	if err := svc.initBaseService(); err != nil {
-		return err
+		return nil, err
 	}
 
+	return svc, nil
+}
+
+func (m *MessagingService) MessageConsume() error {
 	ch := make(chan infMsgSvc.OrgMsg, 1000)
 
-	cfg, err := h.GetConfig()
+	cfg, err := m.handler.GetConfig()
 	if err != nil {
 		return err
 	}
@@ -103,9 +107,9 @@ func NewMessagingService(h *handler.Handler, monitorSvc IMonitorService) error {
 	//}()
 	go consumeLoop(serviceHealthConsumer, ch, "servicehealth")
 
-	// // Message Listener go routine
+	// Message Listener go routine
 	go func() {
-		svc.MessageListener(ch)
+		m.MessageListener(ch)
 	}()
 	return nil
 }
