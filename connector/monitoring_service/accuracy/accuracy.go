@@ -174,7 +174,7 @@ func (c *AccuracyMonitor) PatchAccuracyMonitor(req *monType.PatchAccuracySetting
 	url := fmt.Sprintf("%s/%s", env.ConnectionInfo, module)
 
 	reqDto := monType.PatchAccuracySettingRequestDTO{
-		DriftMetrics:     req.DriftMetrics,
+		DriftMetric:      req.DriftMetric,
 		DriftMeasurement: req.DriftMeasurement,
 		AtriskValue:      req.AtriskValue,
 		FailingValue:     req.FailingValue,

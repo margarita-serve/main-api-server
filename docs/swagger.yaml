@@ -705,36 +705,26 @@ definitions:
       tokenType:
         type: string
     type: object
-  dto.MonitorAccuracyPatchRequestDTO:
-    properties:
-      accuracySetting:
-        $ref: '#/definitions/dto.PatchAccuracySetting'
-    type: object
-  dto.MonitorAccuracyPatchResponseDTO:
-    properties:
-      deploymentID:
-        type: string
-      message:
-        type: string
-    type: object
-  dto.MonitorDriftPatchRequestDTO:
-    properties:
-      dataDriftSetting:
-        $ref: '#/definitions/dto.PatchDataDriftSetting'
-    type: object
-  dto.MonitorDriftPatchResponseDTO:
-    properties:
-      deploymentID:
-        type: string
-      message:
-        type: string
-    type: object
   dto.MonitorGetSettingResponseDTO:
     properties:
       accuracySetting:
         $ref: '#/definitions/dto.AccuracySetting'
       dataDriftSetting:
         $ref: '#/definitions/dto.DataDriftSetting'
+    type: object
+  dto.MonitorPatchRequestDTO:
+    properties:
+      accuracySetting:
+        $ref: '#/definitions/dto.PatchAccuracySetting'
+      dataDriftSetting:
+        $ref: '#/definitions/dto.PatchDataDriftSetting'
+    type: object
+  dto.MonitorPatchResponseDTO:
+    properties:
+      deploymentID:
+        type: string
+      message:
+        type: string
     type: object
   dto.PatchAccuracySetting:
     properties:
@@ -1699,6 +1689,44 @@ paths:
       summary: Get Monitor Setting
       tags:
       - Monitor
+    patch:
+      consumes:
+      - application/json
+      description: 모니터링 설정 변경
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: Patch Monitor
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MonitorPatchRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.RootResponse'
+            - properties:
+                response:
+                  allOf:
+                  - $ref: '#/definitions/response.Response'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/dto.MonitorPatchResponseDTO'
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Patch Monitor Setting
+      tags:
+      - Monitor
   /deployments/{deploymentID}/monitor/accuracy:
     get:
       consumes:
@@ -1750,44 +1778,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Accuracy
-      tags:
-      - Monitor
-    patch:
-      consumes:
-      - application/json
-      description: 정확도 모니터링 설정 변경
-      parameters:
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Patch Accuracy Monitor
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MonitorAccuracyPatchRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.RootResponse'
-            - properties:
-                response:
-                  allOf:
-                  - $ref: '#/definitions/response.Response'
-                  - properties:
-                      result:
-                        $ref: '#/definitions/dto.MonitorAccuracyPatchResponseDTO'
-                    type: object
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Patch Accuracy Monitor Setting
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/actual:
@@ -1966,44 +1956,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Data Drift
-      tags:
-      - Monitor
-    patch:
-      consumes:
-      - application/json
-      description: 드리프트 모니터링 설정 변경
-      parameters:
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Patch Drift Setting
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MonitorDriftPatchRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.RootResponse'
-            - properties:
-                response:
-                  allOf:
-                  - $ref: '#/definitions/response.Response'
-                  - properties:
-                      result:
-                        $ref: '#/definitions/dto.MonitorDriftPatchResponseDTO'
-                    type: object
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Patch Drift Monitor Setting
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/graph/accuracy:

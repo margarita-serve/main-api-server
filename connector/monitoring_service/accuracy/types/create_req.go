@@ -11,7 +11,7 @@ type CreateAccuracyRequest struct {
 	AssociationId    string  `json:"association_id"`
 	ModelType        string  `json:"model_type"`
 	Framework        string  `json:"framework"`
-	DriftMetrics     string  `json:"drift_metrics"`
+	DriftMetric      string  `json:"drift_metric"`
 	DriftMeasurement string  `json:"drift_measurement"`
 	AtriskValue      float32 `json:"atrisk_value"`
 	FailingValue     float32 `json:"failing_value"`

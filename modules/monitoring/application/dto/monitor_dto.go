@@ -78,3 +78,14 @@ type MonitorStatusCheckRequestDTO struct {
 	Status       string
 	Kind         string
 }
+
+type MonitorPatchRequestDTO struct {
+	DeploymentID     string `json:"deploymentID" swaggerignore:"true"`
+	AccuracySetting  PatchAccuracySetting
+	DataDriftSetting PatchDataDriftSetting
+}
+
+type MonitorPatchResponseDTO struct {
+	DeploymentID string
+	Message      string
+}

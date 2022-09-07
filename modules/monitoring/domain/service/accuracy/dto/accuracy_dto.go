@@ -9,7 +9,7 @@ type AccuracyCreateRequest struct {
 	AssociationID    string
 	ModelType        string
 	Framework        string
-	DriftMetrics     string
+	DriftMetric      string
 	DriftMeasurement string
 	AtriskValue      float32
 	FailingValue     float32
@@ -34,7 +34,7 @@ type AccuracyDeleteResponse struct {
 
 type AccuracyPatchRequest struct {
 	InferenceName    string
-	DriftMetrics     string
+	DriftMetric      string
 	DriftMeasurement string
 	ModelType        string
 	AtriskValue      float32

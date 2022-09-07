@@ -19,10 +19,9 @@ func SetMonitor(eg *echo.Group, h *handler.Handler, f *feature.FMonitor) {
 	gc.GET("", f.GetMonitorSetting)
 	gc.GET("/detail", f.GetDetail)
 	gc.GET("/drift", f.GetDrift)
-	gc.PATCH("/drift", f.PatchDriftSetting)
 	gc.POST("/actual", f.UploadActual)
 	gc.GET("/accuracy", f.GetAccuracy)
-	gc.PATCH("/accuracy", f.PatchAccuracySetting)
+	gc.PATCH("", f.PatchMonitorSetting)
 	gc.PATCH("/association-id", f.UpdateAssociationID)
 	//gc.POST("", f.Create)
 

@@ -31,3 +31,9 @@ func (r *MonitorGetSettingRequestDTO) Validate() error {
 		validation.Field(&r.DeploymentID, validation.Required, validation.NotNil, validation.Length(20, 20)),
 	)
 }
+
+func (r *MonitorPatchRequestDTO) Validate() error {
+	return validation.ValidateStruct(r,
+		validation.Field(&r.DeploymentID, validation.Required, validation.NotNil, validation.Length(20, 20)),
+	)
+}

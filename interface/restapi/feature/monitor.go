@@ -69,42 +69,42 @@ type FMonitor struct {
 // @Security BearerAuth
 // @Router        /deployments/{deploymentID}/monitor/drift [patch]
 // @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.MonitorDriftPatchResponseDTO}}
-func (f *FMonitor) PatchDriftSetting(c echo.Context) error {
-	req := new(appMonitorDTO.MonitorDriftPatchRequestDTO)
-	if err := c.Bind(req); err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-	deploymentID := c.Param("deploymentID")
-	req.DeploymentID = deploymentID
+//func (f *FMonitor) PatchDriftSetting(c echo.Context) error {
+//	req := new(appMonitorDTO.MonitorDriftPatchRequestDTO)
+//	if err := c.Bind(req); err != nil {
+//		return f.translateErrorMessage(err, c)
+//	}
+//	deploymentID := c.Param("deploymentID")
+//	req.DeploymentID = deploymentID
+//
+//	resp, err := f.appMonitor.MonitorSvc.PatchDriftMonitorSetting(req)
+//	if err != nil {
+//		return f.translateErrorMessage(err, c)
+//	}
+//
+//	return response.OkWithData(resp, c)
+//}
 
-	resp, err := f.appMonitor.MonitorSvc.PatchDriftMonitorSetting(req)
-	if err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-
-	return response.OkWithData(resp, c)
-}
-
-// PatchAccuracySetting
-// @Summary Patch Accuracy Monitor Setting
-// @Description  정확도 모니터링 설정 변경
+// PatchMonitorSetting
+// @Summary Patch Monitor Setting
+// @Description  모니터링 설정 변경
 // @Tags Monitor
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Param body body appMonitorDTO.MonitorAccuracyPatchRequestDTO true "Patch Accuracy Monitor"
+// @Param body body appMonitorDTO.MonitorPatchRequestDTO true "Patch Monitor"
 // @Security BearerAuth
-// @Router        /deployments/{deploymentID}/monitor/accuracy [patch]
-// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.MonitorAccuracyPatchResponseDTO}}
-func (f *FMonitor) PatchAccuracySetting(c echo.Context) error {
-	req := new(appMonitorDTO.MonitorAccuracyPatchRequestDTO)
+// @Router        /deployments/{deploymentID}/monitor [patch]
+// @Success 200 {object} response.RootResponse{response=response.Response{result=appMonitorDTO.MonitorPatchResponseDTO}}
+func (f *FMonitor) PatchMonitorSetting(c echo.Context) error {
+	req := new(appMonitorDTO.MonitorPatchRequestDTO)
 	if err := c.Bind(req); err != nil {
 		return f.translateErrorMessage(err, c)
 	}
 	deploymentID := c.Param("deploymentID")
 	req.DeploymentID = deploymentID
 
-	resp, err := f.appMonitor.MonitorSvc.PatchAccuracyMonitorSetting(req)
+	resp, err := f.appMonitor.MonitorSvc.PatchMonitorSetting(req)
 	if err != nil {
 		return f.translateErrorMessage(err, c)
 	}

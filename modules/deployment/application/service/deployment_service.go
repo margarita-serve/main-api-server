@@ -197,7 +197,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 	if req.FeatureDriftTracking {
 		featureDriftTrackingBool = req.FeatureDriftTracking
 	}
-	if req.FeatureDriftTracking {
+	if req.AccuracyAnalyze {
 		accuracyAnalyzeBool = req.AccuracyAnalyze
 	}
 

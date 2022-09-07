@@ -4,14 +4,14 @@ import "encoding/json"
 
 type PatchAccuracySettingRequest struct {
 	InferenceName    string  `json:"inference_name"`
-	DriftMetrics     string  `json:"drift_metrics"`
+	DriftMetric      string  `json:"drift_metric"`
 	DriftMeasurement string  `json:"drift_measurement"`
 	AtriskValue      float32 `json:"atrisk_value"`
 	FailingValue     float32 `json:"failing_value"`
 }
 
 type PatchAccuracySettingRequestDTO struct {
-	DriftMetrics     string  `json:"drift_metrics"`
+	DriftMetric      string  `json:"drift_metric"`
 	DriftMeasurement string  `json:"drift_measurement"`
 	AtriskValue      float32 `json:"atrisk_value"`
 	FailingValue     float32 `json:"failing_value"`

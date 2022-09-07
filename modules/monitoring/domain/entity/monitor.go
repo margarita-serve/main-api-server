@@ -256,6 +256,7 @@ func (m *Monitor) PatchDataDriftSetting(domSvc domSvcMonitor.IExternalDriftMonit
 		if err != nil {
 			return fmt.Errorf("drift setting change failed")
 		}
+		m.DriftStatus = "unknown"
 
 		return err
 	}
@@ -333,7 +334,7 @@ func (m *Monitor) PatchAccuracySetting(domSvc domSvcMonitor.IExternalAccuracyMon
 	//	return fmt.Errorf("accuracy monitoring is not ready")
 	//}
 	m.UpdateAccuracySetting(
-		reqDom.DriftMetrics,
+		reqDom.DriftMetric,
 		reqDom.DriftMeasurement,
 		reqDom.AtriskValue,
 		reqDom.FailingValue,
@@ -385,7 +386,7 @@ func (m *Monitor) PostActual(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapte
 
 func (m *Monitor) CheckDriftStatus(status string) (bool, bool) {
 	if m.DriftStatus != status {
-		result := m.checkNoti(status, m.DriftStatus)
+		result := m.checkNoti(status)
 		m.DriftStatus = status
 		return true, result
 	} else {
@@ -395,7 +396,7 @@ func (m *Monitor) CheckDriftStatus(status string) (bool, bool) {
 
 func (m *Monitor) CheckAccuracyStatus(status string) (bool, bool) {
 	if m.AccuracyStatus != status {
-		result := m.checkNoti(status, m.DriftStatus)
+		result := m.checkNoti(status)
 		m.AccuracyStatus = status
 		return true, result
 	} else {
@@ -405,7 +406,7 @@ func (m *Monitor) CheckAccuracyStatus(status string) (bool, bool) {
 
 func (m *Monitor) CheckServiceHealthStatus(status string) (bool, bool) {
 	if m.ServiceHealthStatus != status {
-		result := m.checkNoti(status, m.DriftStatus)
+		result := m.checkNoti(status)
 		m.ServiceHealthStatus = status
 		return true, result
 	} else {
@@ -413,10 +414,8 @@ func (m *Monitor) CheckServiceHealthStatus(status string) (bool, bool) {
 	}
 }
 
-func (m *Monitor) checkNoti(new, old string) bool {
-	if new == "unknown" {
-		return false
-	} else if old == "unknown" && new == "pass" {
+func (m *Monitor) checkNoti(new string) bool {
+	if new == "unknown" || new == "pass" {
 		return false
 	} else {
 		return true

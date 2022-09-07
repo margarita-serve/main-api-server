@@ -21,7 +21,7 @@ func (r *PatchDataDriftSetting) Validate() error {
 	return validation.ValidateStruct(r,
 		validation.Field(&r.DriftThreshold, validation.Min(0.0), validation.Max(1.0)),
 		validation.Field(&r.ImportanceThreshold, validation.Min(0.0), validation.Max(1.0)),
-		validation.Field(&r.DriftMetricType, validation.NotNil, validation.In("PSI")),
+		validation.Field(&r.DriftMetricType, validation.In("PSI")),
 		validation.Field(&r.LowImportanceAtRiskCount, validation.Min(0)),
 		validation.Field(&r.LowImportanceFailingCount, validation.Min(0)),
 		validation.Field(&r.HighImportanceAtRiskCount, validation.Min(0)),

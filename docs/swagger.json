@@ -957,6 +957,74 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "모니터링 설정 변경",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Patch Monitor Setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch Monitor",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MonitorPatchRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.RootResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "response": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.Response"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "result": {
+                                                            "$ref": "#/definitions/dto.MonitorPatchResponseDTO"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         },
         "/deployments/{deploymentID}/monitor/accuracy": {
@@ -1035,74 +1103,6 @@
                                                     "properties": {
                                                         "result": {
                                                             "$ref": "#/definitions/dto.AccuracyGetResponseDTO"
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "정확도 모니터링 설정 변경",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Patch Accuracy Monitor Setting",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Patch Accuracy Monitor",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.MonitorAccuracyPatchRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.RootResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "response": {
-                                            "allOf": [
-                                                {
-                                                    "$ref": "#/definitions/response.Response"
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "result": {
-                                                            "$ref": "#/definitions/dto.MonitorAccuracyPatchResponseDTO"
                                                         }
                                                     }
                                                 }
@@ -1398,74 +1398,6 @@
                                                     "properties": {
                                                         "result": {
                                                             "$ref": "#/definitions/dto.FeatureDriftGetResponseDTO"
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "드리프트 모니터링 설정 변경",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Patch Drift Monitor Setting",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Patch Drift Setting",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.MonitorDriftPatchRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.RootResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "response": {
-                                            "allOf": [
-                                                {
-                                                    "$ref": "#/definitions/response.Response"
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "result": {
-                                                            "$ref": "#/definitions/dto.MonitorDriftPatchResponseDTO"
                                                         }
                                                     }
                                                 }
@@ -4484,44 +4416,6 @@
                 }
             }
         },
-        "dto.MonitorAccuracyPatchRequestDTO": {
-            "type": "object",
-            "properties": {
-                "accuracySetting": {
-                    "$ref": "#/definitions/dto.PatchAccuracySetting"
-                }
-            }
-        },
-        "dto.MonitorAccuracyPatchResponseDTO": {
-            "type": "object",
-            "properties": {
-                "deploymentID": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.MonitorDriftPatchRequestDTO": {
-            "type": "object",
-            "properties": {
-                "dataDriftSetting": {
-                    "$ref": "#/definitions/dto.PatchDataDriftSetting"
-                }
-            }
-        },
-        "dto.MonitorDriftPatchResponseDTO": {
-            "type": "object",
-            "properties": {
-                "deploymentID": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.MonitorGetSettingResponseDTO": {
             "type": "object",
             "properties": {
@@ -4530,6 +4424,28 @@
                 },
                 "dataDriftSetting": {
                     "$ref": "#/definitions/dto.DataDriftSetting"
+                }
+            }
+        },
+        "dto.MonitorPatchRequestDTO": {
+            "type": "object",
+            "properties": {
+                "accuracySetting": {
+                    "$ref": "#/definitions/dto.PatchAccuracySetting"
+                },
+                "dataDriftSetting": {
+                    "$ref": "#/definitions/dto.PatchDataDriftSetting"
+                }
+            }
+        },
+        "dto.MonitorPatchResponseDTO": {
+            "type": "object",
+            "properties": {
+                "deploymentID": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -4780,17 +4696,17 @@
                     "x-order": "8",
                     "example": true
                 },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
-                },
                 "accuracyAnalyze": {
                     "description": "정확도 측정 설정",
                     "type": "boolean",
                     "x-order": "9",
                     "example": true
+                },
+                "associationID": {
+                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
+                    "type": "string",
+                    "x-order": "9",
+                    "example": "Index"
                 },
                 "description": {
                     "description": "베포 설명",

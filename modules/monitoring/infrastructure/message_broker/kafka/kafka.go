@@ -29,6 +29,7 @@ func (c *ConsumerKafka) RegisterConsumer(server *appDTO.RegisterServer) error {
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": server.Endpoint,
 		"group.id":          server.GroupID,
+		//"group.id":          "test",
 		"auto.offset.reset": server.AutoOffsetReset,
 	})
 	if err != nil {

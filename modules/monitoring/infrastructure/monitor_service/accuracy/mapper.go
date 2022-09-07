@@ -36,7 +36,7 @@ func MapCreateReq(req *domSchema.AccuracyCreateRequest) (*conMonitor.CreateAccur
 	reqCon.AssociationId = req.AssociationID
 	reqCon.ModelType = req.ModelType
 	reqCon.Framework = req.Framework
-	reqCon.DriftMetrics = req.DriftMetrics
+	reqCon.DriftMetric = req.DriftMetric
 	reqCon.DriftMeasurement = req.DriftMeasurement
 	reqCon.AtriskValue = req.AtriskValue
 	reqCon.FailingValue = req.FailingValue
@@ -73,7 +73,7 @@ func MapDeleteRes(res *conMonitor.DisableMonitorResponse) (*domSchema.AccuracyDe
 func MapPatchReq(req *domSchema.AccuracyPatchRequest) (*conMonitor.PatchAccuracySettingRequest, error) {
 	reqCon := new(conMonitor.PatchAccuracySettingRequest)
 	reqCon.InferenceName = req.InferenceName
-	reqCon.DriftMetrics = req.DriftMetrics
+	reqCon.DriftMetric = req.DriftMetric
 	reqCon.DriftMeasurement = req.DriftMeasurement
 	reqCon.AtriskValue = req.AtriskValue
 	reqCon.FailingValue = req.FailingValue
