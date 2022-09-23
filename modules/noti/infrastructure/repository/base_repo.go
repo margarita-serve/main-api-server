@@ -1,10 +1,7 @@
 package repository
 
 import (
-	"math"
-
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
-	"gorm.io/gorm"
 )
 
 // BaseRepo type
@@ -55,26 +52,4 @@ func (p *Pagination) GetSort() string {
 		p.Sort = "id desc"
 	}
 	return p.Sort
-}
-
-//Paging 및 Sorting을 위한 코드
-func paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string) func(db *gorm.DB) *gorm.DB {
-	var totalRows int64
-	var tmpLimit int
-
-	dbCon.Model(value).Where("name like ?", "%"+queryName+"%").Count(&totalRows)
-	pagination.TotalRows = totalRows
-
-	if pagination.Limit <= 0 {
-		tmpLimit = 1
-	} else {
-		tmpLimit = pagination.Limit
-	}
-
-	totalPages := int(math.Ceil(float64(totalRows) / float64(tmpLimit)))
-	pagination.TotalPages = totalPages
-
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort()).Where("name like ?", "%"+queryName+"%")
-	}
 }

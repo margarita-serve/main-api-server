@@ -245,33 +245,40 @@ definitions:
       customHeader:
         example: 'Content-Type: application/json '
         type: string
-        x-order: "4"
+        x-order: "06"
       messageBody:
         example: '{ "key": "value"}'
         type: string
-        x-order: "5"
+        x-order: "07"
       method:
         enum:
         - POST
         - GET
         example: POST
         type: string
-        x-order: "3"
+        x-order: "05"
       name:
         example: pipe-line-trigger
         type: string
-        x-order: "1"
+        x-order: "03"
       triggerSource:
         enum:
         - Datadrift
         - ' Accuracy'
         example: Datadrift
         type: string
-        x-order: "1"
+        x-order: "01"
+      triggerStatus:
+        enum:
+        - AtRisk
+        - ' Failing'
+        example: AtRisk
+        type: string
+        x-order: "02"
       url:
         example: http://example.com/to/webhook/client
         type: string
-        x-order: "2"
+        x-order: "04"
     required:
     - method
     - name

@@ -77,6 +77,7 @@ func (s *WebHookService) Create(req *appDTO.CreateWebHookRequestDTO, i identity.
 		req.CustomHeader,
 		req.MessageBody,
 		i.Claims.Username,
+		req.TriggerStatus,
 	)
 	if err != nil {
 		return nil, err
@@ -185,6 +186,8 @@ func (s *WebHookService) GetByID(req *appDTO.GetWebHookRequestDTO, i identity.Id
 	resDTO.MessageBody = res.MessageBody
 	resDTO.Method = res.Method
 	resDTO.URL = res.URL
+	resDTO.TriggerStatus = res.TriggerStatus
+	resDTO.TriggerSource = res.TriggerSource
 
 	return resDTO, nil
 }
@@ -235,6 +238,7 @@ func (s *WebHookService) GetList(req *appDTO.GetWebHookListRequestDTO, i identit
 		tmp.MessageBody = rec.MessageBody
 		tmp.Method = rec.Method
 		tmp.URL = rec.URL
+		tmp.TriggerStatus = rec.TriggerStatus
 
 		listWebHook = append(listWebHook, tmp)
 	}
@@ -253,6 +257,7 @@ func (s *WebHookService) GetListByInternal(req *appDTO.InternalGetWebHookRequest
 	// }
 	filterEntity := domEntity.WebHook{DeploymentID: req.DeploymentID,
 		TriggerSource: req.TriggerSource,
+		TriggerStatus: req.TriggerStatus,
 	}
 
 	resultList, err := s.repo.GetListByInternal(filterEntity)
@@ -269,6 +274,7 @@ func (s *WebHookService) GetListByInternal(req *appDTO.InternalGetWebHookRequest
 		tmp.DeploymentID = rec.DeploymentID
 		tmp.Name = rec.Name
 		tmp.TriggerSource = rec.TriggerSource
+		tmp.TriggerStatus = rec.TriggerStatus
 		tmp.CustomHeader = rec.CustomHeader
 		tmp.MessageBody = rec.MessageBody
 		tmp.Method = rec.Method
@@ -322,6 +328,7 @@ func (s *WebHookService) SendWebHook(req *appDTO.SendWebHookRequestDTO, i identi
 	reqWebHookList := &appDTO.InternalGetWebHookRequestDTO{
 		DeploymentID:  req.DeploymentID,
 		TriggerSource: req.TriggerSource,
+		TriggerStatus: req.TriggerStatus,
 	}
 	resWebHookList, err := s.GetListByInternal(reqWebHookList, i)
 	if err != nil {
@@ -329,7 +336,19 @@ func (s *WebHookService) SendWebHook(req *appDTO.SendWebHookRequestDTO, i identi
 	}
 
 	for _, rec := range resWebHookList.WebHookList {
-		go s.webHookEventSvc.ProcEvent(rec)
+		switch rec.TriggerStatus {
+		case "AtRisk":
+			if req.TriggerStatus == "AtRisk" || req.TriggerStatus == "Failing" {
+				go s.webHookEventSvc.ProcEvent(rec)
+			}
+		case "Failing":
+			if req.TriggerStatus == "Failing" {
+				go s.webHookEventSvc.ProcEvent(rec)
+			}
+		default:
+			go s.webHookEventSvc.ProcEvent(rec)
+		}
+
 	}
 
 	return nil

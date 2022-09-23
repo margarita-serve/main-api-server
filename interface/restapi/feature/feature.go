@@ -28,9 +28,9 @@ func NewFeature(h *handler.Handler) (*Feature, error) {
 		return nil, err
 	}
 
-	if f.Resource, err = NewResource(h); err != nil {
-		return nil, err
-	}
+	// if f.Resource, err = NewResource(h); err != nil {
+	// 	return nil, err
+	// }
 
 	if f.Project, err = NewProject(h); err != nil {
 		return nil, err

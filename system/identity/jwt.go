@@ -72,23 +72,23 @@ func (j *JWT) ParseToken(tokenString string) (*JWTCustomClaims, error) {
 }
 
 // RefreshToken update token
-func (j *JWT) RefreshToken(tokenString string) (string, error) {
-	jwt.TimeFunc = func() time.Time {
-		return time.Unix(0, 0)
-	}
-	token, err := jwt.ParseWithClaims(tokenString, &JWTCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return j.SigningKey, nil
-	})
-	if err != nil {
-		return "", err
-	}
-	if claims, ok := token.Claims.(*JWTCustomClaims); ok && token.Valid {
-		jwt.TimeFunc = time.Now
-		claims.StandardClaims.ExpiresAt = time.Now().Add(1 * time.Hour).Unix()
-		return j.CreateToken(*claims)
-	}
-	return "", ErrTokenInvalid
-}
+// func (j *JWT) RefreshToken(tokenString string) (string, error) {
+// 	jwt.TimeFunc = func() time.Time {
+// 		return time.Unix(0, 0)
+// 	}
+// 	token, err := jwt.ParseWithClaims(tokenString, &JWTCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+// 		return j.SigningKey, nil
+// 	})
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	if claims, ok := token.Claims.(*JWTCustomClaims); ok && token.Valid {
+// 		jwt.TimeFunc = time.Now
+// 		claims.StandardClaims.ExpiresAt = time.Now().Add(1 * time.Hour).Unix()
+// 		return j.CreateToken(*claims)
+// 	}
+// 	return "", ErrTokenInvalid
+// }
 
 // GenerateAnonymousToken generate anonymous token
 func (j *JWT) GenerateAnonymousToken() (c *JWTCustomClaims, token string, expiredAt int64, err error) {
@@ -109,7 +109,7 @@ func (j *JWT) GenerateToken(claims JWTCustomClaims) (token string, expiredAt int
 	}
 
 	//expiredAt = claims.StandardClaims.ExpiresAt * 1000
-	expiredAt = claims.StandardClaims.ExpiresAt * 0
+	//expiredAt = claims.StandardClaims.ExpiresAt * 0
 
 	return token, expiredAt, nil
 }
@@ -124,9 +124,9 @@ func (j *JWT) CreateCustomClaims(ID uint64, UUID, username, nickName, authorityI
 		NickName:    nickName,
 		AuthorityID: authorityID,
 		StandardClaims: jwt.StandardClaims{
-			NotBefore: time.Now().Unix() - 1000,       // signature effective time
-			ExpiresAt: time.Now().Unix() + 60*60*24*7, // expiration time one week
-			Issuer:    j.Issuer,                       // Issuer of the signature
+			NotBefore: time.Now().Unix() - 1000, // signature effective time
+			//ExpiresAt: time.Now().Unix() + 60*60*24*7, // expiration time one week
+			Issuer: j.Issuer, // Issuer of the signature
 		},
 	}
 }

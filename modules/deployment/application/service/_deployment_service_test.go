@@ -4,13 +4,30 @@ import (
 	"encoding/json"
 	"testing"
 
+	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/initialize"
-
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
-	appMonitoringSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring_mockup/application/service"
 )
+
+type modelPackageSvc struct{}
+
+func (s modelPackageSvc) GetByIDInternal(modelPackageID string) (*common.InternalGetModelPackageResponseDTO, error) {
+	return &common.InternalGetModelPackageResponseDTO{
+		ModelPackageID: modelPackageID,
+	}, nil
+}
+
+type projectSvc struct{}
+
+func (s projectSvc) GetListInternal(userID string) (*common.GetProjectListResponseDTO, error) {
+	return &common.GetProjectListResponseDTO{
+		Rows: "test",
+	}, nil
+}
+func (s projectSvc) GetByIDInternal(projectID string) (*common.GetProjectInternalResponseDTO, error) {
+
+}
 
 func newDeploymentSvc(t *testing.T) (*DeploymentService, *handler.Handler, error) {
 	h, err := handler.NewHandler()
@@ -28,17 +45,17 @@ func newDeploymentSvc(t *testing.T) (*DeploymentService, *handler.Handler, error
 		return nil, nil, err
 	}
 
-	modelPackageSvc, err := appModelPackageSvc.NewModelPackageService(h)
-	if err != nil {
-		return nil, nil, err
-	}
+	// modelPackageSvc, err := appModelPackageSvc.NewModelPackageService(h)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	monitorSvc, err := appMonitoringSvc.NewMonitorService(h, modelPackageSvc)
-	if err != nil {
-		return nil, nil, err
-	}
+	// monitorSvc, err := appMonitoringSvc.NewMonitorService(h, modelPackageSvc)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	r, err := NewDeploymentService(h, modelPackageSvc, monitorSvc)
+	r, err := NewDeploymentService(h, projectSvc, new(modelPackageSvc), monitorSvc, publisher)
 	if err != nil {
 		return nil, nil, err
 	}

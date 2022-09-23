@@ -250,7 +250,7 @@ func (r *AuthenticationRepo) generateJWTToken(data *domEntity.SysUser) (token st
 }
 
 // Login user
-func (r *AuthenticationRepo) GetUserByName(req string, i identity.Identity) (*domEntity.SysUser, error) {
+func (r *AuthenticationRepo) GetUserByName(req string) (*domEntity.SysUser, error) {
 	// select db
 	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
 	if err != nil {

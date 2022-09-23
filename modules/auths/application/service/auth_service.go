@@ -7,6 +7,7 @@ import (
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/auths/domain/repository"
 	domSchema "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/auths/domain/schema"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/auths/infrastructure/repository"
+	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	appEmailDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/application/dto"
 	appEmailSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/application/service"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
@@ -214,13 +215,13 @@ func (s *AuthenticationSvc) LoginApp(req *appDTO.LoginAppReqDTO, i identity.Iden
 }
 
 // Get userInfo
-func (s *AuthenticationSvc) GetUserByName(req *appDTO.GetUserByNameReqDTO, i identity.Identity) (*appDTO.GetUserByNameResDTO, error) {
-	res, err := s.repo.GetUserByName(req.UserName, i)
+func (s *AuthenticationSvc) GetUserByNameInternal(userName string) (*common.InternalGetUserByNameResponse, error) {
+	res, err := s.repo.GetUserByName(userName)
 	if err != nil {
 		return nil, err
 	}
 
-	resDTO := new(appDTO.GetUserByNameResDTO)
+	resDTO := new(common.InternalGetUserByNameResponse)
 	resDTO.Email = res.Email
 	return resDTO, nil
 }

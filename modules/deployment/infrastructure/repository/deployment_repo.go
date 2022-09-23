@@ -64,9 +64,10 @@ func (r *DeploymentRepo) GetByID(ID string, projectIdList []string) (*domEntity.
 	}
 
 	var entity = &domEntity.Deployment{}
+	var result = &domEntity.Deployment{}
 	var count int64
 
-	if err := dbCon.Where("id = ? AND project_id in ?", ID, projectIdList).Preload(clause.Associations).Find(&entity).Count(&count).Error; err != nil {
+	if err := dbCon.Model(entity).Where("id = ? AND project_id in ?", ID, projectIdList).Preload(clause.Associations).Find(&result).Count(&count).Error; err != nil {
 		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 
@@ -75,7 +76,7 @@ func (r *DeploymentRepo) GetByID(ID string, projectIdList []string) (*domEntity.
 	}
 
 	// return response
-	resp := entity
+	resp := result
 
 	return resp, nil
 
@@ -101,6 +102,32 @@ func (r *DeploymentRepo) GetByIDInternal(ID string) (*domEntity.Deployment, erro
 
 	// return response
 	resp := entity
+
+	return resp, nil
+
+}
+
+func (r *DeploymentRepo) GetGovernance(ID string) ([]*domEntity.EventHistory, error) {
+	// select db
+	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
+	if err != nil {
+		return nil, err
+	}
+
+	//var entity = &domEntity.EventHistory{}
+	var result = []*domEntity.EventHistory{}
+	var count int64
+
+	if err := dbCon.Joins(fmt.Sprintf(`JOIN %s ON deployments.id = event_histories.deployment_id`, "deployments")).Where("deployments.id = ?", ID).Order("event_histories.id desc").Find(&result).Count(&count).Error; err != nil {
+		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
+	}
+
+	if count == 0 {
+		return nil, &sysError.SystemError{StatusCode: http.StatusNotFound, Err: fmt.Errorf("invalid deployment id")}
+	}
+
+	// return response
+	resp := result
 
 	return resp, nil
 

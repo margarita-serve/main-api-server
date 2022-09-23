@@ -12,5 +12,5 @@ type IAuthenticationRepo interface {
 	ActivateRegistration(req *schema.ActivateRegistrationRequest, i identity.Identity) (*schema.ActivateRegistrationResponse, error)
 	Login(req *schema.LoginRequest, i identity.Identity) (*schema.LoginResponse, error)
 	LoginApp(req *schema.LoginAppRequest, i identity.Identity) (*schema.LoginAppResponse, error)
-	GetUserByName(req string, i identity.Identity) (*entity.SysUser, error)
+	GetUserByName(req string) (*entity.SysUser, error)
 }

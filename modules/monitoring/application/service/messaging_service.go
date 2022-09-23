@@ -135,7 +135,7 @@ func (m *MessagingService) MessageListener(ch chan infMsgSvc.OrgMsg) {
 
 		err = m.MonitorService.monitorStatusCheck(&req)
 		if err != nil {
-			fmt.Printf(err.Error())
+			//fmt.Printf(err.Error())
 		}
 	}
 }

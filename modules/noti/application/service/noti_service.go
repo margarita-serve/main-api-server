@@ -13,34 +13,18 @@ package service
 import (
 	"errors"
 
+	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
 
 	//domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/domain/repository"
-	appAuthDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/auths/application/dto"
-	appDeploymentDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
-	appEmailDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/email/application/dto"
-	appProjectDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
+
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 )
 
-type IEmailService interface {
-	Send(req *appEmailDTO.SendEmailReqDTO, i identity.Identity) (*appEmailDTO.SendEmailResDTO, error)
-}
-type IDeploymentService interface {
-	GetByIDInternal(req *appDeploymentDTO.GetDeploymentRequestDTO, i identity.Identity) (*appDeploymentDTO.GetDeploymentResponseDTO, error)
-}
-type IProjectService interface {
-	GetByIDInternal(req *appProjectDTO.GetProjectRequestDTO) (*appProjectDTO.GetProjectResponseDTO, error)
-}
-
-type IAuthService interface {
-	GetUserByName(req *appAuthDTO.GetUserByNameReqDTO, i identity.Identity) (*appAuthDTO.GetUserByNameResDTO, error)
-}
-
-type IGovernanceHistoryService interface {
-	AddGovernanceHistory(req *appDeploymentDTO.AddGovernanceHistoryRequestDTO, i identity.Identity) error
-}
+// type IAuthService interface {
+// 	GetUserByNameInternal(userName string) (*common.InternalGetUserByNameResponse, error)
+// }
 
 type IWebHookService interface {
 	SendWebHook(req *appDTO.SendWebHookRequestDTO, i identity.Identity) error
@@ -49,12 +33,11 @@ type IWebHookService interface {
 type NotiService struct {
 	BaseService
 	//repo           domRepo.IPredictionEnvRepo
-	EmailSvc             IEmailService
-	DeploymentSvc        IDeploymentService
-	ProjectSvc           IProjectService
-	AuthSvc              IAuthService
-	GovernanceHistorySvc IGovernanceHistoryService
-	WebHookSvc           IWebHookService
+	EmailSvc      common.IEmailService
+	DeploymentSvc common.IDeploymentService
+	ProjectSvc    common.IProjectService
+	AuthSvc       common.IAuthService
+	WebHookSvc    IWebHookService
 }
 
 type TemplateData struct {
@@ -64,7 +47,7 @@ type TemplateData struct {
 }
 
 // NewNotiService new NotiService
-func NewNotiService(h *handler.Handler, emailSvc IEmailService, deploymentSvc IDeploymentService, projectSvc IProjectService, authSvc IAuthService, governanceHistorySvc IGovernanceHistoryService, webHookService IWebHookService) (*NotiService, error) {
+func NewNotiService(h *handler.Handler, emailSvc common.IEmailService, deploymentSvc common.IDeploymentService, projectSvc common.IProjectService, authSvc common.IAuthService, webHookService IWebHookService) (*NotiService, error) {
 	// var err error
 
 	svc := new(NotiService)
@@ -81,14 +64,13 @@ func NewNotiService(h *handler.Handler, emailSvc IEmailService, deploymentSvc ID
 	svc.DeploymentSvc = deploymentSvc
 	svc.ProjectSvc = projectSvc
 	svc.AuthSvc = authSvc
-	svc.GovernanceHistorySvc = governanceHistorySvc
 	svc.WebHookSvc = webHookService
 
 	return svc, nil
 }
 
 // SendNoti
-func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) error {
+func (s *NotiService) SendNoti(deploymentID string, notiCategory string, additionalData string) error {
 	//authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -103,7 +85,7 @@ func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) 
 	///////////////////////////////////////////////////////
 	// to be need injection identity from monitoring module
 	///////////////////////////////////////////////////////
-	//i = s.systemIdentity
+	i := s.systemIdentity
 
 	///////////////////////
 	//Get UserIno Sequence
@@ -111,29 +93,18 @@ func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) 
 	var templateData TemplateData
 
 	//Get Deployment Info
-	reqDeploy := &appDeploymentDTO.GetDeploymentRequestDTO{
-		DeploymentID: req.DeploymentID,
-	}
-	resDeploy, err := s.DeploymentSvc.GetByIDInternal(reqDeploy, i)
+	resDeploy, err := s.DeploymentSvc.GetByIDInternal(deploymentID)
 	if err != nil {
 		return err
 	}
 
-	//Get Project UserInfo
-	reqPrj := &appProjectDTO.GetProjectRequestDTO{
-		ProjectID: resDeploy.ProjectID,
-	}
-
-	resPrj, err := s.ProjectSvc.GetByIDInternal(reqPrj)
+	resPrj, err := s.ProjectSvc.GetByIDInternal(resDeploy.ProjectID)
 	if err != nil {
 		return err
 	}
 
 	//Get UserEmail
-	reqAuth := &appAuthDTO.GetUserByNameReqDTO{
-		UserName: resPrj.CreatedBy,
-	}
-	resAuth, err := s.AuthSvc.GetUserByName(reqAuth, i)
+	resAuth, err := s.AuthSvc.GetUserByNameInternal(resPrj.CreatedBy)
 	if err != nil {
 		return err
 	}
@@ -150,24 +121,19 @@ func (s *NotiService) SendNoti(req *appDTO.NotiRequestDTO, i identity.Identity) 
 	/////////////////////////////////////
 
 	templateData.deploymentName = resDeploy.Name
-	templateData.additionalData = req.AdditionalData
+	templateData.additionalData = additionalData
 
 	//Send Email
-	err = s.sendNotiEmail(req.NotiCategory, emailAddress, nickName, templateData, i)
-	if err != nil {
-		return err
-	}
-
-	//Log Deployment Log
-	err = s.addGovernanceLog(req.NotiCategory, req.DeploymentID, req.AdditionalData, i)
+	err = s.sendNotiEmail(notiCategory, emailAddress, nickName, templateData, i)
 	if err != nil {
 		return err
 	}
 
 	//Triggering WebHook
 	reqWebHookEvent := &appDTO.SendWebHookRequestDTO{
-		DeploymentID:  req.DeploymentID,
-		TriggerSource: req.NotiCategory,
+		DeploymentID:  deploymentID,
+		TriggerSource: notiCategory,
+		TriggerStatus: additionalData,
 	}
 
 	err = s.WebHookSvc.SendWebHook(reqWebHookEvent, i)
@@ -187,7 +153,7 @@ func (s *NotiService) sendNotiEmail(notiCategory string, emailAddress string, ni
 	if err != nil {
 		return err
 	}
-	// "Datadrift", "Accuracy", "Service"
+
 	var templateCode string
 	switch notiCategory {
 	case "Datadrift":
@@ -207,48 +173,46 @@ func (s *NotiService) sendNotiEmail(notiCategory string, emailAddress string, ni
 	// activationURL := fmt.Sprintf("%s/%s/%s", url, resReg.ActivationCode, "html")
 
 	// send activate registration via email (sub)domain [email module]
-	reqEmail := new(appEmailDTO.SendEmailReqDTO)
+	reqEmail := new(common.SendEmailReqDTO)
 	reqEmail.TemplateCode = templateCode
-	reqEmail.From = &appEmailDTO.MailAddressDTO{Email: fromEmail, Name: fromName}
-	reqEmail.To = &appEmailDTO.MailAddressDTO{Email: emailAddress, Name: nickName}
+	reqEmail.From = &common.MailAddressDTO{Email: fromEmail, Name: fromName}
+	reqEmail.To = &common.MailAddressDTO{Email: emailAddress, Name: nickName}
 	reqEmail.TemplateData = map[string]interface{}{
 		"Body.deploymentName": templateData.deploymentName,
 		//"Body.deploymentURL":    templateData.deploymentURL,
 		"Body.additionalData": templateData.additionalData,
 	}
 	reqEmail.ProcessingType = "ASYNC"
-	print("test 8")
-	if _, err := s.EmailSvc.Send(reqEmail, i); err != nil {
+
+	if _, err := s.EmailSvc.SendInternal(reqEmail, i); err != nil {
 		return err
 	}
-	print("test 9")
+
 	return nil
 }
 
-func (s *NotiService) addGovernanceLog(notiCategory string, deploymentID string, logMessage string, i identity.Identity) error {
-	// "DataDriftAlert", "AccuracyAlert", "ServiceAlert"
-	var eventType string
-	switch notiCategory {
-	case "Datadrift":
-		eventType = "DataDriftAlert"
-	case "Accuracy":
-		eventType = "AccuracyAlert"
-	case "Service":
-		eventType = "ServiceAlert"
+func (s *NotiService) Update(event common.Event) {
+	switch actualEvent := event.(type) {
+	case common.MonitoringAccuracyStatusChangedToFailing:
+		//
+		s.SendNoti(actualEvent.DeploymentID(), "Accuracy", "Failing")
+	case common.MonitoringAccuracyStatusChangedToAtrisk:
+		//
+		s.SendNoti(actualEvent.DeploymentID(), "Accuracy", "Atrisk")
+	case common.MonitoringDataDriftStatusChangedToFailing:
+		//
+		s.SendNoti(actualEvent.DeploymentID(), "Datadrift", "Failing")
+	case common.MonitoringDataDriftStatusChangedToAtrisk:
+		//
+		s.SendNoti(actualEvent.DeploymentID(), "Datadrift", "Atrisk")
+	case common.MonitoringServiceHealthStatusChangedToFailing:
+		//
+		s.SendNoti(actualEvent.DeploymentID(), "Service", "Failing")
+	case common.MonitoringServiceHealthStatusChangedToAtrisk:
+		//
+		s.SendNoti(actualEvent.DeploymentID(), "Service", "Atrisk")
 	default:
-		return errors.New("eventType not found")
-	}
+		return
 
-	govReq := &appDeploymentDTO.AddGovernanceHistoryRequestDTO{
-		DeploymentID: deploymentID,
-		EventType:    eventType,
-		LogMessage:   logMessage,
 	}
-
-	err := s.GovernanceHistorySvc.AddGovernanceHistory(govReq, i)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

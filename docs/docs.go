@@ -3371,23 +3371,32 @@ const docTemplate = `{
                 "url"
             ],
             "properties": {
-                "name": {
-                    "type": "string",
-                    "x-order": "1",
-                    "example": "pipe-line-trigger"
-                },
                 "triggerSource": {
                     "type": "string",
                     "enum": [
                         "Datadrift",
                         " Accuracy"
                     ],
-                    "x-order": "1",
+                    "x-order": "01",
                     "example": "Datadrift"
+                },
+                "triggerStatus": {
+                    "type": "string",
+                    "enum": [
+                        "AtRisk",
+                        " Failing"
+                    ],
+                    "x-order": "02",
+                    "example": "AtRisk"
+                },
+                "name": {
+                    "type": "string",
+                    "x-order": "03",
+                    "example": "pipe-line-trigger"
                 },
                 "url": {
                     "type": "string",
-                    "x-order": "2",
+                    "x-order": "04",
                     "example": "http://example.com/to/webhook/client"
                 },
                 "method": {
@@ -3396,17 +3405,17 @@ const docTemplate = `{
                         "POST",
                         "GET"
                     ],
-                    "x-order": "3",
+                    "x-order": "05",
                     "example": "POST"
                 },
                 "customHeader": {
                     "type": "string",
-                    "x-order": "4",
+                    "x-order": "06",
                     "example": "Content-Type: application/json "
                 },
                 "messageBody": {
                     "type": "string",
-                    "x-order": "5",
+                    "x-order": "07",
                     "example": "{ \"key\": \"value\"}"
                 }
             }
@@ -4194,12 +4203,6 @@ const docTemplate = `{
                     "type": "boolean",
                     "x-order": "9",
                     "example": true
-                },
-                "associationID": {
-                    "description": "요청데이터에서 ID로 처리할 유일한 피쳐컬럼 명",
-                    "type": "string",
-                    "x-order": "9",
-                    "example": "Index"
                 },
                 "description": {
                     "description": "베포 설명",

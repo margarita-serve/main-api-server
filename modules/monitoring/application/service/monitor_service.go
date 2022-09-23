@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	"io"
 	"sync"
 
 	infStorageClient "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/storage/minio"
-	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
+	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/repository"
@@ -19,7 +19,8 @@ import (
 	infAccuracySvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/accuracy"
 	infDriftSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/data_drift"
 	infServiceHealthSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/infrastructure/monitor_service/service_health"
-	appNotiDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
+
+	//appNotiDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/noti/application/dto"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 
 	//domSvcMonitorSvcAccuracyDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
@@ -35,13 +36,9 @@ domain을 호출하여 사용.
 
 */
 
-type IModelPackageService interface {
-	GetByIDInternal(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
-}
-
-type INotiService interface {
-	SendNoti(req *appNotiDTO.NotiRequestDTO, i identity.Identity) error
-}
+// type INotiService interface {
+// 	SendNoti(req *appNotiDTO.NotiRequestDTO, i identity.Identity) error
+// }
 
 type StorageClient interface {
 	UploadFile(ioReader interface{}, filePath string) error
@@ -54,13 +51,16 @@ type MonitorService struct {
 	domMonitorDriftSvc         domSvcMonitorSvc.IExternalDriftMonitorAdapter
 	domMonitorAccuracySvc      domSvcMonitorSvc.IExternalAccuracyMonitorAdapter
 	domMonitorServiceHealthSvc domSvcMonitorSvc.IExternalServiceHealthMonitorAdapter
-	modelPackageSvc            IModelPackageService
-	notiSvc                    INotiService
-	repo                       domRepo.IMonitorRepo
-	storageClient              StorageClient
+	modelPackageSvc            common.IModelPackageService
+	//notiSvc                    INotiService
+	repo          domRepo.IMonitorRepo
+	storageClient StorageClient
+	publisher     common.EventPublisher
 }
 
-func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService, notiSvc INotiService) (*MonitorService, error) {
+//func NewMonitorService(h *handler.Handler, modelPackageSvc common.IModelPackageService, notiSvc INotiService, publisher common.EventPublisher) (*MonitorService, error) {
+
+func NewMonitorService(h *handler.Handler, modelPackageSvc common.IModelPackageService, publisher common.EventPublisher) (*MonitorService, error) {
 	var err error
 
 	svc := new(MonitorService)
@@ -89,7 +89,7 @@ func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService,
 
 	svc.modelPackageSvc = modelPackageSvc
 
-	svc.notiSvc = notiSvc
+	//svc.notiSvc = notiSvc
 
 	cfg, err := h.GetConfig()
 	if err != nil {
@@ -106,6 +106,8 @@ func NewMonitorService(h *handler.Handler, modelPackageSvc IModelPackageService,
 	if svc.storageClient, err = infStorageClient.NewStorageClient(config, h, context.Background()); err != nil {
 		return nil, err
 	}
+
+	svc.publisher = publisher
 
 	return svc, nil
 }
@@ -1022,12 +1024,8 @@ func (s *MonitorService) GetByID(req *appDTO.MonitorGetByIDRequestDTO) (*appDTO.
 	return resDTO, nil
 }
 
-func (s *MonitorService) getModelPackageByID(modelPackageID string) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error) {
-	reqModelPackage := &appModelPackageDTO.InternalGetModelPackageRequestDTO{
-		ModelPackageID: modelPackageID,
-	}
-
-	resModelPackage, err := s.modelPackageSvc.GetByIDInternal(reqModelPackage)
+func (s *MonitorService) getModelPackageByID(modelPackageID string) (*common.InternalGetModelPackageResponseDTO, error) {
+	resModelPackage, err := s.modelPackageSvc.GetByIDInternal(modelPackageID)
 	if err != nil {
 		return nil, err
 	}
@@ -1116,14 +1114,23 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 				return err
 			}
 			if noti == true {
-				reqNotiSvc := appNotiDTO.NotiRequestDTO{
-					DeploymentID:   req.DeploymentID,
-					NotiCategory:   "Datadrift",
-					AdditionalData: fmt.Sprintf("status : %s", req.Status),
-				}
-				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
-				if err != nil {
-					return err
+				// reqNotiSvc := appNotiDTO.NotiRequestDTO{
+				// 	DeploymentID:   req.DeploymentID,
+				// 	NotiCategory:   "Datadrift",
+				// 	AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				// }
+				// err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
+				// if err != nil {
+				// 	return err
+				// }
+
+				switch req.Status {
+				case "failing":
+					s.publisher.Notify(common.NewEventMonitoringDataDriftStatusChangedToFailing((req.DeploymentID)))
+				case "atrisk":
+					s.publisher.Notify(common.NewEventMonitoringDataDriftStatusChangedToAtrisk((req.DeploymentID)))
+				default:
+					return errors.New("datadrift status check process error")
 				}
 			}
 		}
@@ -1135,15 +1142,24 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 				return err
 			}
 			if noti == true {
-				reqNotiSvc := appNotiDTO.NotiRequestDTO{
-					DeploymentID:   req.DeploymentID,
-					NotiCategory:   "Accuracy",
-					AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				// reqNotiSvc := appNotiDTO.NotiRequestDTO{
+				// 	DeploymentID:   req.DeploymentID,
+				// 	NotiCategory:   "Accuracy",
+				// 	AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				// }
+				// err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
+				// if err != nil {
+				// 	return err
+				// }
+				switch req.Status {
+				case "failing":
+					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToFailing((req.DeploymentID)))
+				case "atrisk":
+					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToAtrisk((req.DeploymentID)))
+				default:
+					return errors.New("accurancy status check process error")
 				}
-				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
-				if err != nil {
-					return err
-				}
+
 			}
 		}
 	} else if req.Kind == "servicehealth" {
@@ -1154,14 +1170,23 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 				return err
 			}
 			if noti == true {
-				reqNotiSvc := appNotiDTO.NotiRequestDTO{
-					DeploymentID:   req.DeploymentID,
-					NotiCategory:   "Service",
-					AdditionalData: fmt.Sprintf("status : %s", req.Status),
-				}
-				err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
-				if err != nil {
-					return err
+				// reqNotiSvc := appNotiDTO.NotiRequestDTO{
+				// 	DeploymentID:   req.DeploymentID,
+				// 	NotiCategory:   "Service",
+				// 	AdditionalData: fmt.Sprintf("status : %s", req.Status),
+				// }
+				// err = s.notiSvc.SendNoti(&reqNotiSvc, s.systemIdentity)
+				// if err != nil {
+				// 	return err
+				// }
+
+				switch req.Status {
+				case "failing":
+					s.publisher.Notify(common.NewEventMonitoringServiceHealthStatusChangedToFailing((req.DeploymentID)))
+				case "atrisk":
+					s.publisher.Notify(common.NewEventMonitoringServiceHealthStatusChangedToAtrisk((req.DeploymentID)))
+				default:
+					return errors.New("service health status check process error")
 				}
 			}
 
@@ -1239,3 +1264,207 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 //
 //	return t2
 //}
+
+func (s *MonitorService) Update(event common.Event) {
+	switch actualEvent := event.(type) {
+	case common.DeploymentInferenceServiceCreated:
+		//
+		wtfAssociaionID := actualEvent.AssociationID()
+
+		req := &appDTO.MonitorCreateRequestDTO{
+			DeploymentID:         actualEvent.DeploymentID(),
+			ModelPackageID:       actualEvent.ModelPackageID(),
+			ModelHistoryID:       actualEvent.ModelHistoryID(),
+			AccuracyMonitoring:   actualEvent.AccuracyMonitoring(),
+			FeatureDriftTracking: actualEvent.FeatureDriftTracking(),
+			AssociationID:        &wtfAssociaionID,
+		}
+		_, err := s.Create(req)
+		if err != nil {
+			s.publisher.Notify(common.NewEventMonitoringCreateFailed(actualEvent.DeploymentID(), err))
+			return
+		}
+
+		s.publisher.Notify(common.NewEventMonitoringCreated((actualEvent.DeploymentID())))
+
+	case common.DeploymentModelReplaced:
+		//
+		req := &appDTO.MonitorReplaceModelRequestDTO{
+			DeploymentID:   actualEvent.DeploymentID(),
+			ModelPackageID: actualEvent.ModelPackageID(),
+			ModelHistoryID: actualEvent.ModelHistoryID(),
+		}
+		s.MonitorReplaceModel(req)
+
+	case common.DeploymentAssociationIDUpdated:
+		//
+		strAssociaionID := actualEvent.AssociationID()
+		reqUpdateAssociationID := new(appDTO.UpdateAssociationIDRequestDTO)
+		reqUpdateAssociationID.DeploymentID = actualEvent.DeploymentID()
+		reqUpdateAssociationID.AssociationID = &strAssociaionID
+		//toBe..
+		//reqUpdateAssociationID.AssociationIDInFeature = req.AssociationIDInFeature
+
+		_, err := s.UpdateAssociationID(reqUpdateAssociationID)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+		}
+
+	case common.DeploymentFeatureDriftTrackingEnabled:
+		println("FeatureDriftTracking true")
+
+		reqDriftActive := new(appDTO.MonitorDriftActiveRequestDTO)
+		reqDriftActive.DeploymentID = actualEvent.DeploymentID()
+		reqDriftActive.ModelPackageID = actualEvent.ModelPackageID()
+		reqDriftActive.CurrentModelID = actualEvent.CurrentModelID()
+
+		_, err := s.SetDriftMonitorActive(reqDriftActive)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+		}
+
+	case common.DeploymentFeatureDriftTrackingDisabled:
+		reqDriftInActive := new(appDTO.MonitorDriftInActiveRequestDTO)
+		reqDriftInActive.DeploymentID = actualEvent.DeploymentID()
+
+		_, err := s.SetDriftMonitorInActive(reqDriftInActive)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+		}
+
+	case common.DeploymentAccuracyAnalyzeEnabled:
+		println("AccuracyAnalyze true")
+		strAssociaionID := actualEvent.AssociationID()
+		reqAccuracyActive := new(appDTO.MonitorAccuracyActiveRequestDTO)
+		reqAccuracyActive.DeploymentID = actualEvent.DeploymentID()
+		reqAccuracyActive.ModelPackageID = actualEvent.ModelPackageID()
+		reqAccuracyActive.AssociationID = &strAssociaionID
+		reqAccuracyActive.CurrentModelID = actualEvent.CurrentModelID()
+		//toBe..
+		//reqAccuracyActive.AssociationIDInFeature = req.AssociationIDInFeature
+
+		_, err := s.SetAccuracyMonitorActive(reqAccuracyActive)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+		}
+
+	case common.DeploymentAccuracyAnalyzeDisabled:
+		reqAccuracyInActive := new(appDTO.MonitorAccuracyInActiveRequestDTO)
+		reqAccuracyInActive.DeploymentID = actualEvent.DeploymentID()
+
+		_, err := s.SetAccuracyMonitorInActive(reqAccuracyInActive)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+		}
+
+	case common.DeploymentDeleted:
+		//
+		reqDeleteMonitoring := &appDTO.MonitorDeleteRequestDTO{
+			DeploymentID: actualEvent.DeploymentID(),
+		}
+
+		_, err := s.Delete(reqDeleteMonitoring)
+		if err != nil {
+			//return nil, fmt.Errorf("monitoring delete error: %s", err)
+			fmt.Errorf("monitoring delete error: %s", err)
+		}
+
+	case common.DeploymentActived:
+		//monitor active
+		reqMonitor := &appDTO.MonitorGetByIDRequestDTO{
+			ID: actualEvent.DeploymentID(),
+		}
+
+		resMonitor, err := s.GetByID(reqMonitor)
+
+		reqServiceHealth := &appDTO.MonitorServiceHealthActiveRequestDTO{
+			DeploymentID:   actualEvent.DeploymentID(),
+			CurrentModelID: "",
+		}
+		_, err = s.SetServiceHealthMonitorActive(reqServiceHealth)
+		if err != nil {
+			fmt.Errorf("monitoring active error: %s", err)
+		}
+		if resMonitor.Monitor.FeatureDriftTracking == true {
+			reqDrift := &appDTO.MonitorDriftActiveRequestDTO{
+				DeploymentID:   actualEvent.DeploymentID(),
+				ModelPackageID: "",
+				CurrentModelID: "",
+			}
+			_, err = s.SetDriftMonitorActive(reqDrift)
+			if err != nil {
+				fmt.Errorf("monitoring active error: %s", err)
+			}
+		}
+		if resMonitor.Monitor.AccuracyMonitoring == true {
+			reqAccuracy := &appDTO.MonitorAccuracyActiveRequestDTO{
+				DeploymentID:   actualEvent.DeploymentID(),
+				ModelPackageID: "",
+				AssociationID:  nil,
+				CurrentModelID: "",
+			}
+			_, err = s.SetAccuracyMonitorActive(reqAccuracy)
+		}
+		if err != nil {
+			fmt.Errorf("monitoring active error: %s", err)
+		}
+	case common.DeploymentInActived:
+		//monitor inactive
+		reqMonitor := &appDTO.MonitorGetByIDRequestDTO{
+			ID: actualEvent.DeploymentID(),
+		}
+
+		resMonitor, err := s.GetByID(reqMonitor)
+		reqServiceHealth := &appDTO.MonitorServiceHealthInActiveRequestDTO{
+			DeploymentID: actualEvent.DeploymentID(),
+		}
+		_, err = s.SetServiceHealthMonitorInActive(reqServiceHealth)
+		if err != nil {
+			fmt.Errorf("monitoring inactive error: %s", err)
+		}
+		if resMonitor.Monitor.FeatureDriftTracking == true {
+			reqDrift := &appDTO.MonitorDriftInActiveRequestDTO{
+				DeploymentID: actualEvent.DeploymentID(),
+			}
+			_, err = s.SetDriftMonitorInActive(reqDrift)
+			if err != nil {
+				fmt.Errorf("monitoring inactive error: %s", err)
+			}
+		}
+		if resMonitor.Monitor.AccuracyMonitoring == true {
+			reqAccuracy := &appDTO.MonitorAccuracyInActiveRequestDTO{
+				DeploymentID: actualEvent.DeploymentID(),
+			}
+			_, err = s.SetAccuracyMonitorInActive(reqAccuracy)
+		}
+		if err != nil {
+			fmt.Errorf("monitoring inactive error: %s", err)
+		}
+
+	default:
+		return
+
+	}
+}
+
+func (s *MonitorService) GetByIDInternal(monitoringID string) (*common.MonitorGetByIDInternalResponseDTO, error) {
+
+	// if err := req.Validate(); err != nil {
+	// 	return nil, err
+	// }
+
+	res, err := s.repo.Get(monitoringID)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(common.MonitorGetByIDInternalResponseDTO)
+	resDTO.ID = res.ID
+	resDTO.ServiceHealthStatus = res.ServiceHealthStatus
+	resDTO.AccuracyStatus = res.AccuracyStatus
+	resDTO.DriftStatus = res.DriftStatus
+	resDTO.FeatureDriftTracking = res.FeatureDriftTracking
+	resDTO.AccuracyMonitoring = res.AccuracyMonitoring
+
+	return resDTO, nil
+}

@@ -11,6 +11,7 @@ package service
 */
 
 import (
+	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/domain/repository"
@@ -19,25 +20,25 @@ import (
 	"github.com/rs/xid"
 
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
-	appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
-	appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
+	//appModelPackageDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
+	//appModelPackageSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/service"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/infrastructure/repository"
 )
 
 // ProjectService type
-type IModelPackageService interface {
-	GetListByProject(req *appModelPackageDTO.GetModelPackageListByProjectRequestDTO) (*appModelPackageDTO.GetModelPackageListByProjectResponseDTO, error)
-}
+// type IModelPackageService interface {
+// 	GetListByProject(req *appModelPackageDTO.GetModelPackageListByProjectRequestDTO) (*appModelPackageDTO.GetModelPackageListByProjectResponseDTO, error)
+// }
 
-type IDeploymentService interface {
-	GetListByProject(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
-}
+// type IDeploymentService interface {
+// 	GetListByProject(req *appModelPackageDTO.InternalGetModelPackageRequestDTO) (*appModelPackageDTO.InternalGetModelPackageResponseDTO, error)
+// }
 
 type ProjectService struct {
 	BaseService
-	repo            domRepo.IProjectRepo
-	modelPackageSvc IModelPackageService
-	deploymentSvc   IDeploymentService
+	repo domRepo.IProjectRepo
+	// modelPackageSvc IModelPackageService
+	// deploymentSvc   IDeploymentService
 }
 
 // NewProjectService new ProjectService
@@ -54,9 +55,9 @@ func NewProjectService(h *handler.Handler) (*ProjectService, error) {
 		return nil, err
 	}
 
-	if svc.modelPackageSvc, err = appModelPackageSvc.NewModelPackageService(h, svc); err != nil {
-		return nil, err
-	}
+	// if svc.modelPackageSvc, err = appModelPackageSvc.NewModelPackageService(h, svc); err != nil {
+	// 	return nil, err
+	// }
 
 	return svc, nil
 }
@@ -182,27 +183,27 @@ func (s *ProjectService) GetByID(req *appDTO.GetProjectRequestDTO, i identity.Id
 	if err != nil {
 		return nil, err
 	}
-	reqByProject := &appModelPackageDTO.GetModelPackageListByProjectRequestDTO{
-		ProjectID: res.ID,
-	}
+	// reqByProject := &appModelPackageDTO.GetModelPackageListByProjectRequestDTO{
+	// 	ProjectID: res.ID,
+	// }
 
-	resModelPackage, err := s.modelPackageSvc.GetListByProject(reqByProject)
-	if err != nil {
-		return nil, err
-	}
+	// resModelPackage, err := s.modelPackageSvc.GetListByProject(reqByProject)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// response dto
 	resDTO := new(appDTO.GetProjectResponseDTO)
-	resDTO.ProjectID = reqByProject.ProjectID
+	resDTO.ProjectID = res.ID
 	resDTO.Name = res.Name
 	resDTO.Description = res.Description
-	resDTO.ModelPackages = resModelPackage.Rows
+	//resDTO.ModelPackages = resModelPackage.Rows
 	resDTO.CreatedBy = res.CreatedBy
 	resDTO.CreatedAt = res.CreatedAt.String()
 	return resDTO, nil
 }
 
-func (s *ProjectService) GetByIDInternal(req *appDTO.GetProjectRequestDTO) (*appDTO.GetProjectResponseDTO, error) {
+func (s *ProjectService) GetByIDInternal(projectID string) (*common.GetProjectInternalResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -210,14 +211,14 @@ func (s *ProjectService) GetByIDInternal(req *appDTO.GetProjectRequestDTO) (*app
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	res, err := s.repo.GetByIDInternal(req.ProjectID)
+	res, err := s.repo.GetByIDInternal(projectID)
 	if err != nil {
 		return nil, err
 	}
 
 	// response dto
-	resDTO := new(appDTO.GetProjectResponseDTO)
-	resDTO.ProjectID = req.ProjectID
+	resDTO := new(common.GetProjectInternalResponseDTO)
+	resDTO.ProjectID = projectID
 	resDTO.Name = res.Name
 	resDTO.Description = res.Description
 	resDTO.CreatedBy = res.CreatedBy
@@ -258,6 +259,38 @@ func (s *ProjectService) GetList(req *appDTO.GetProjectListRequestDTO, i identit
 	var listProject []appDTO.GetProjectResponseDTO
 	for _, rec := range resultList {
 		tmp := new(appDTO.GetProjectResponseDTO)
+
+		tmp.ProjectID = rec.ID
+		tmp.Name = rec.Name
+		tmp.Description = rec.Description
+
+		listProject = append(listProject, *tmp)
+	}
+
+	resDTO.Rows = listProject
+
+	return resDTO, nil
+}
+
+func (s *ProjectService) GetListInternal(userName string) (*common.GetProjectListResponseDTO, error) {
+	// //authorization
+	// if i.CanAccessCurrentRequest() == false {
+	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
+	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
+	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
+	// }
+
+	resultList, err := s.repo.GetListInternal(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	// response dto
+	resDTO := new(common.GetProjectListResponseDTO)
+
+	var listProject []common.GetProjectInternalResponseDTO
+	for _, rec := range resultList {
+		tmp := new(common.GetProjectInternalResponseDTO)
 
 		tmp.ProjectID = rec.ID
 		tmp.Name = rec.Name

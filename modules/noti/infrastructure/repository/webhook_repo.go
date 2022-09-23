@@ -9,7 +9,10 @@ import (
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/service"
+	"math"
+
 	sysError "git.k3.acornsoft.io/msit-auto-ml/koreserv/system/error"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -74,6 +77,28 @@ func (r *WebHookRepo) GetByID(id string) (*domEntity.WebHook, error) {
 
 }
 
+//Paging 및 Sorting을 위한 코드
+func (r *WebHookRepo) paginate(value interface{}, pagination *Pagination, dbCon *gorm.DB, queryName string, filter string) func(db *gorm.DB) *gorm.DB {
+	var totalRows int64
+	var tmpLimit int
+
+	dbCon.Model(value).Where("name like ? AND deployment_id = ?", "%"+queryName+"%", filter).Count(&totalRows)
+	pagination.TotalRows = totalRows
+
+	if pagination.Limit <= 0 {
+		tmpLimit = 1
+	} else {
+		tmpLimit = pagination.Limit
+	}
+
+	totalPages := int(math.Ceil(float64(totalRows) / float64(tmpLimit)))
+	pagination.TotalPages = totalPages
+
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort()).Where("name like ? AND deployment_id = ?", "%"+queryName+"%", filter)
+	}
+}
+
 func (r *WebHookRepo) GetList(queryName string, pagination interface{}, filterEntity interface{}) ([]*domEntity.WebHook, interface{}, error) {
 	p := pagination.(Pagination)
 
@@ -96,11 +121,9 @@ func (r *WebHookRepo) GetList(queryName string, pagination interface{}, filterEn
 	var result []*domEntity.WebHook
 
 	filterDomain := filterEntity.(domEntity.WebHook)
-	entityModel := domEntity.WebHook{
-		DeploymentID: filterDomain.DeploymentID,
-	}
+	entityModel := domEntity.WebHook{}
 
-	if err := dbCon.Model(&entityModel).Scopes(paginate(&entityModel, &p, dbCon, queryName)).Find(&result).Error; err != nil {
+	if err := dbCon.Model(&entityModel).Scopes(r.paginate(&entityModel, &p, dbCon, queryName, filterDomain.DeploymentID)).Find(&result).Error; err != nil {
 		return nil, p, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 

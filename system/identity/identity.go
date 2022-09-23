@@ -2,7 +2,6 @@ package identity
 
 import (
 	"fmt"
-	"time"
 
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/context"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
@@ -65,13 +64,13 @@ func NewIdentity(iType IdentityType, tokenType TokenType, token string, claims *
 		i.IsAnonymous = true
 	}
 
-	now := time.Now().Unix()
-	if i.Claims.ExpiresAt < now {
-		return i, fmt.Errorf("Token Expired")
-	}
-	if i.Claims.NotBefore > now {
-		return i, fmt.Errorf("Token Not Valid Berofe")
-	}
+	// now := time.Now().Unix()
+	// if i.Claims.ExpiresAt < now {
+	// 	return i, fmt.Errorf("Token Expired")
+	// }
+	// if i.Claims.NotBefore > now {
+	// 	return i, fmt.Errorf("Token Not Valid Berofe")
+	// }
 
 	i.initContextInformation()
 

@@ -17,6 +17,7 @@ import (
 	"path"
 	"path/filepath"
 
+	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/domain/repository"
@@ -28,8 +29,7 @@ import (
 	//"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	infStorageClient "git.k3.acornsoft.io/msit-auto-ml/koreserv/connector/storage/minio"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/model_package/infrastructure/repository"
-
-	appProjectDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
+	//appProjectDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/project/application/dto"
 )
 
 // ModelPackageService type
@@ -44,15 +44,16 @@ type ModelPackageService struct {
 	BaseService
 	repo          domRepo.IModelPackageRepo
 	storageClient StorageClient
-	projectSvc    IProjectService
+	projectSvc    common.IProjectService
+	publisher     common.EventPublisher
 }
 
-type IProjectService interface {
-	GetList(req *appProjectDTO.GetProjectListRequestDTO, i identity.Identity) (*appProjectDTO.GetProjectListResponseDTO, error)
-}
+// type IProjectService interface {
+// 	GetList(req *appProjectDTO.GetProjectListRequestDTO, i identity.Identity) (*appProjectDTO.GetProjectListResponseDTO, error)
+// }
 
 // NewModelPackageService new ModelPackageService
-func NewModelPackageService(h *handler.Handler, projectSvc IProjectService) (*ModelPackageService, error) {
+func NewModelPackageService(h *handler.Handler, projectSvc common.IProjectService) (*ModelPackageService, error) {
 	var err error
 
 	svc := new(ModelPackageService)
@@ -100,9 +101,9 @@ func (s *ModelPackageService) Create(req *appDTO.CreateModelPackageRequestDTO, i
 	// }
 
 	//Project validation
-	projectReq := &appProjectDTO.GetProjectListRequestDTO{}
-	projectRes, err := s.projectSvc.GetList(projectReq, i)
-	projectIdList := projectRes.Rows.([]appProjectDTO.GetProjectResponseDTO)
+	//projectReq := &appProjectDTO.GetProjectListRequestDTO{}
+	projectRes, err := s.projectSvc.GetListInternal(i.Claims.Username)
+	projectIdList := projectRes.Rows
 
 	var listProjectId []string
 	for _, rec := range projectIdList {
@@ -335,9 +336,9 @@ func (s *ModelPackageService) GetList(req *appDTO.GetModelPackageListRequestDTO,
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
-	projectReq := &appProjectDTO.GetProjectListRequestDTO{}
-	projectRes, err := s.projectSvc.GetList(projectReq, i)
-	projectIdList := projectRes.Rows.([]appProjectDTO.GetProjectResponseDTO)
+	//projectReq := &appProjectDTO.GetProjectListRequestDTO{}
+	projectRes, err := s.projectSvc.GetListInternal(i.Claims.Username)
+	projectIdList := projectRes.Rows
 
 	var listProjectId []string
 	for _, rec := range projectIdList {
@@ -621,7 +622,7 @@ func (s *ModelPackageService) UploadHoldoutDataset(req *appDTO.UploadHoldoutData
 	return resDTO, nil
 }
 
-func (s *ModelPackageService) GetByIDInternal(req *appDTO.InternalGetModelPackageRequestDTO) (*appDTO.InternalGetModelPackageResponseDTO, error) {
+func (s *ModelPackageService) GetByIDInternal(modelPackageID string) (*common.InternalGetModelPackageResponseDTO, error) {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -629,13 +630,13 @@ func (s *ModelPackageService) GetByIDInternal(req *appDTO.InternalGetModelPackag
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
 
-	res, err := s.repo.GetByID(req.ModelPackageID)
+	res, err := s.repo.GetByID(modelPackageID)
 	if err != nil {
 		return nil, err
 	}
 
 	// response dto
-	resDTO := new(appDTO.InternalGetModelPackageResponseDTO)
+	resDTO := new(common.InternalGetModelPackageResponseDTO)
 	resDTO.ModelPackageID = res.ID
 	resDTO.ProjectID = res.ProjectID
 	resDTO.Name = res.Name
@@ -706,14 +707,14 @@ func (s *ModelPackageService) GetHoldoutDatasetFile(modelPackageID string) (io.R
 	return fileReader, fileName, nil
 }
 
-func (s *ModelPackageService) AddDeployCount(req *appDTO.AddDeployCountRequestDTO) error {
+func (s *ModelPackageService) AddDeployCount(modelPackageID string) error {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
 	// 		i.RequestInfo.RequestObject, i.RequestInfo.RequestAction)
 	// 	return nil, sysError.CustomForbiddenAccess(errMsg)
 	// }
-	domAggregateModelPackage, err := s.repo.GetForUpdate(req.ModelPackageID)
+	domAggregateModelPackage, err := s.repo.GetForUpdate(modelPackageID)
 	if err != nil {
 		return err
 	}
@@ -726,4 +727,18 @@ func (s *ModelPackageService) AddDeployCount(req *appDTO.AddDeployCountRequestDT
 	}
 
 	return nil
+}
+
+func (s *ModelPackageService) Update(event common.Event) {
+	switch actualEvent := event.(type) {
+	case common.DeploymentCreated:
+		//
+		s.AddDeployCount(actualEvent.ModelPackageID())
+	case common.DeploymentModelReplaced:
+		//
+		s.AddDeployCount(actualEvent.ModelPackageID())
+	default:
+		return
+
+	}
 }

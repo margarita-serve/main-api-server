@@ -6,16 +6,16 @@ import (
 )
 
 // NewProjectApp new ProjectApp
-func NewProjectApp(h *handler.Handler, projectService *appSvc.ProjectService) (*ProjectApp, error) {
-	// var err error
+func NewProjectApp(h *handler.Handler) (*ProjectApp, error) {
+	var err error
 
 	app := new(ProjectApp)
 	app.handler = h
 
-	// if app.ProjectSvc, err = appSvc.NewProjectService(h); err != nil {
-	// 	return nil, err
-	// }
-	app.ProjectSvc = projectService
+	if app.ProjectSvc, err = appSvc.NewProjectService(h); err != nil {
+		return nil, err
+	}
+
 	return app, nil
 }
 

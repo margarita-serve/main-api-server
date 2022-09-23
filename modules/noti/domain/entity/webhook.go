@@ -12,6 +12,7 @@ type WebHook struct {
 	CustomHeader  string //Specify any custom header lines here
 	MessageBody   string //Put the body of your message here
 	//CustomParametersAndSecrets string //Custom parameters and secrets allow you to add unique parameters and secure elements such as passwords
+	TriggerStatus string // Trigger Status AtRisk, Failing
 	BaseEntity
 }
 
@@ -22,19 +23,25 @@ func Validate(r *WebHook) error {
 		validation.Field(&r.TriggerSource, validation.Required, validation.In("Datadrift", "Accuracy")),
 		validation.Field(&r.URL, validation.Required),
 		validation.Field(&r.Method, validation.Required, validation.In("POST", "GET")),
+		validation.Field(&r.TriggerStatus, validation.Required, validation.In("AtRisk", "Failing")),
 	)
 }
 
-func NewWebHook(id string, name string, deploymentID string, triggerSource string, URL string, method string, customHeader string, messageBody string, createUser string) (*WebHook, error) {
+func NewWebHook(id string, name string, deploymentID string, triggerSource string, URL string, method string, customHeader string, messageBody string, createUser string, triggerStatus string) (*WebHook, error) {
 
 	var baseEntity BaseEntity
 	baseEntity.CreatedBy = createUser
+
+	if triggerStatus == "" {
+		triggerStatus = "AtRisk"
+	}
 
 	WebHook := &WebHook{
 		ID:            id,
 		Name:          name,
 		DeploymentID:  deploymentID,
 		TriggerSource: triggerSource,
+		TriggerStatus: triggerStatus,
 		URL:           URL,
 		Method:        method,
 		CustomHeader:  customHeader,

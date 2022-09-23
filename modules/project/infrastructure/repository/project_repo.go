@@ -208,3 +208,21 @@ func (r *ProjectRepo) Delete(id string) error {
 
 	return nil
 }
+
+func (r *ProjectRepo) GetListInternal(userName string) ([]*domEntity.Project, error) {
+	// select db
+	dbCon, err := r.handler.GetGormDB(r.dbConnectionName)
+	if err != nil {
+		return nil, err
+	}
+
+	var entityModel []*domEntity.Project
+
+	if err := dbCon.Model(entityModel).Where("sys_created_by = ?", userName).Find(&entityModel).Error; err != nil {
+		return nil, &sysError.SystemError{StatusCode: http.StatusInternalServerError, Err: err}
+	}
+
+	resp := entityModel
+
+	return resp, nil
+}
