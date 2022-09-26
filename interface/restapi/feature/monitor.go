@@ -120,7 +120,7 @@ func (f *FMonitor) PatchMonitorSetting(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param body body appMonitorDTO.UpdateAssociationIDRequestDTO true "Patch AssociationID"
-// @Param Authorization header string true "Insert your access token" default(bearer <Add access token here>)
+// @Security BearerAuth
 // @Success 200 {object} appMonitorDTO.UpdateAssociationIDResponseDTO
 // @Router        /deployments/{deploymentID}/monitor/association-id [patch]
 func (f *FMonitor) UpdateAssociationID(c echo.Context) error {
@@ -389,6 +389,7 @@ func (f *FMonitor) GetPredictionOverTimeGraph(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
+// @Param targetMetric query string true "targetMetric"
 // @Param startTime query string true "example=2022-05-05:01 (UTC+0)"
 // @Param endTime query string true "example=2022-08-01:01 (UTC+0)"
 // @Success 200 string html
@@ -425,12 +426,45 @@ func (f *FMonitor) GetPredictedActual(c echo.Context) error {
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
 // @Param modelHistoryID query string true "modelHistoryID"
+// @Param targetMetric query string true "targetMetric"
 // @Param startTime query string true "example=2022-05-05:01 (UTC+0)"
 // @Param endTime query string true "example=2022-08-01:01 (UTC+0)"
 // @Success 200 string html
 // @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/graph/service [get]
 func (f *FMonitor) GetServiceGraph(c echo.Context) error {
+
+	return response.Ok(c)
+}
+
+// GetCpuGraph
+// @Summary Get CPU Graph
+// @Description cpu 사용량 그래프
+// @Tags Monitor
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param requestCPU path string true "requestCPU"
+// @Success 200 string html
+// @Security BearerAuth
+// @Router       /deployments/{deploymentID}/monitor/graph/cpu [get]
+func (f *FMonitor) GetCpuGraph(c echo.Context) error {
+
+	return response.Ok(c)
+}
+
+// GetMemoryGraph
+// @Summary Get Memory Graph
+// @Description memory 사용량 그래프
+// @Tags Monitor
+// @Accept json
+// @Produce json
+// @Param deploymentID path string true "deploymentID"
+// @Param requestCPU path string true "requestMemory"
+// @Success 200 string html
+// @Security BearerAuth
+// @Router       /deployments/{deploymentID}/monitor/graph/memory [get]
+func (f *FMonitor) GetMemoryGraph(c echo.Context) error {
 
 	return response.Ok(c)
 }

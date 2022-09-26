@@ -11,7 +11,8 @@ import (
 // SetGraph Graph Router
 func SetGraph(eg *echo.Group, h *handler.Handler) {
 	cfg, _ := h.GetConfig()
-	ProxyServer := cfg.Connectors.GraphServer.Endpoint
+	//ProxyServer := cfg.Connectors.GraphServer.Endpoint
+	ProxyServer := "http://localhost:5006"
 
 	gc := eg.Group("/deployments/graph-svr", ACAOHeaderOverwriteMiddleware)
 
@@ -23,6 +24,25 @@ func SetGraph(eg *echo.Group, h *handler.Handler) {
 	}
 
 	gc.Use(middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
+
+	ProxyServerResource := cfg.Connectors.ServiceHealthServer.Endpoint
+
+	gc2 := eg.Group("/deployments/graph-data", ACAOHeaderOverwriteMiddleware)
+
+	url2, _ := url.Parse(ProxyServerResource)
+	targetsResource := []*middleware.ProxyTarget{
+		{
+			URL: url2,
+		},
+	}
+	TransURLResource := middleware.ProxyWithConfig(middleware.ProxyConfig{
+		Balancer: middleware.NewRoundRobinBalancer(targetsResource),
+		Rewrite: map[string]string{
+			"^/api/v1/deployments/graph-data/*": "/resource-data/$1",
+		},
+	})
+
+	gc2.Use(TransURLResource)
 
 }
 

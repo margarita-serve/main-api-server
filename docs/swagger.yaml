@@ -1768,6 +1768,11 @@ paths:
         name: modelHistoryID
         required: true
         type: string
+      - description: targetMetric
+        in: query
+        name: targetMetric
+        required: true
+        type: string
       - description: example=2022-05-05:01 (UTC+0)
         in: query
         name: startTime
@@ -1788,6 +1793,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Accuracy Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/cpu:
+    get:
+      consumes:
+      - application/json
+      description: cpu 사용량 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: requestCPU
+        in: path
+        name: requestCPU
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get CPU Graph
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/graph/detail:
@@ -1864,6 +1897,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Drift Graph
+      tags:
+      - Monitor
+  /deployments/{deploymentID}/monitor/graph/memory:
+    get:
+      consumes:
+      - application/json
+      description: memory 사용량 그래프
+      parameters:
+      - description: deploymentID
+        in: path
+        name: deploymentID
+        required: true
+        type: string
+      - description: requestMemory
+        in: path
+        name: requestCPU
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get Memory Graph
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/graph/predicted-actual:
@@ -1956,6 +2017,11 @@ paths:
       - description: modelHistoryID
         in: query
         name: modelHistoryID
+        required: true
+        type: string
+      - description: targetMetric
+        in: query
+        name: targetMetric
         required: true
         type: string
       - description: example=2022-05-05:01 (UTC+0)
