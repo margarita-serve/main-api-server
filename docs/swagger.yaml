@@ -294,6 +294,8 @@ definitions:
     properties:
       driftMetricType:
         description: DataDrift 측정 Metric
+        enum:
+        - PSI
         example: PSI
         type: string
         x-order: "1"
@@ -329,6 +331,14 @@ definitions:
         x-order: "5"
       monitorRange:
         description: Monitoring 할 범위
+        enum:
+        - 2h
+        - ' 1d'
+        - ' 7d'
+        - ' 30d'
+        - ' 90d'
+        - ' 180d'
+        - ' 365d'
         example: 7d
         type: string
         x-order: "0"
@@ -750,6 +760,8 @@ definitions:
     properties:
       driftMetricType:
         description: DataDrift 측정 Metric
+        enum:
+        - PSI
         example: PSI
         type: string
         x-order: "1"
@@ -785,6 +797,14 @@ definitions:
         x-order: "5"
       monitorRange:
         description: Monitoring 할 범위
+        enum:
+        - 2h
+        - ' 1d'
+        - ' 7d'
+        - ' 30d'
+        - ' 90d'
+        - ' 180d'
+        - ' 365d'
         example: 7d
         type: string
         x-order: "0"
@@ -1640,12 +1660,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.UpdateAssociationIDRequestDTO'
-      - default: bearer <Add access token here>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1653,6 +1667,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
+      security:
+      - BearerAuth: []
       summary: Patch AssociationID
       tags:
       - Monitor
@@ -1806,8 +1822,8 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - description: requestCPU
-        in: path
+      - description: example=1
+        in: query
         name: requestCPU
         required: true
         type: string
@@ -1910,9 +1926,9 @@ paths:
         name: deploymentID
         required: true
         type: string
-      - description: requestMemory
-        in: path
-        name: requestCPU
+      - description: example=1
+        in: query
+        name: requestMemory
         required: true
         type: string
       produces:

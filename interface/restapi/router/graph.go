@@ -11,8 +11,7 @@ import (
 // SetGraph Graph Router
 func SetGraph(eg *echo.Group, h *handler.Handler) {
 	cfg, _ := h.GetConfig()
-	//ProxyServer := cfg.Connectors.GraphServer.Endpoint
-	ProxyServer := "http://localhost:5006"
+	ProxyServer := cfg.Connectors.GraphServer.Endpoint
 
 	gc := eg.Group("/deployments/graph-svr", ACAOHeaderOverwriteMiddleware)
 

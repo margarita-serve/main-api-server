@@ -444,7 +444,7 @@ func (f *FMonitor) GetServiceGraph(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Param requestCPU path string true "requestCPU"
+// @Param requestCPU query string true "example=1"
 // @Success 200 string html
 // @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/graph/cpu [get]
@@ -460,7 +460,7 @@ func (f *FMonitor) GetCpuGraph(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param deploymentID path string true "deploymentID"
-// @Param requestCPU path string true "requestMemory"
+// @Param requestMemory query string true "example=1"
 // @Success 200 string html
 // @Security BearerAuth
 // @Router       /deployments/{deploymentID}/monitor/graph/memory [get]
