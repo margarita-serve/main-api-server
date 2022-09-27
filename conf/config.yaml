@@ -15,7 +15,7 @@ applications:
         openAPIDefinition: # OpenAPIDefinition
           info:
             title: "KoreServe REST API Server"
-            description: "1. Swagger 문서 좌측 상단 Schemes를 HTTPS로 선택 \n 2. Swagger 문서 Auth 섹션에서 register API를 이용해 user를 생성\n3. 등록된 email로 인증메일 전송되며 인증 진행  \n4. Swagger 문서 Auth 섹션 login API 이용 로그인 진행\n5. 응답으로 전달 된 JWT token 을 Swagger API 문서 우측 상단 Authorize 아이콘 클릭 후 입력\n    예) bearer eyJhb......NsNTCCPTeBsOvv6Q4  \n    *bearer는 수기입력 필수\n6. Create Project API 호출 \n7. Create ModelPackage API 호출(생성 된 projectID 입력) 및 Model/TrainingDataset/HoldeOutDataset 업로드 진행(dataset은 csv 포맷으로 feature명칭/Target값 포함 필수)\n8. Create Deployment API 호출(생성 된 modelPackageID 입력)\n9. Deployment Send Prediction API 로 예측확인\n10. Noti섹션 Create Web-Hook API호출(Deployment의 Datadrift/Acuuracy 상태 변경시 호출 될 PipeLine Client정보 저장)" 
+            description: "1. Swagger 문서 좌측 상단 Schemes를 HTTPS로 선택 \n 2. Swagger 문서 Auth 섹션에서 register API를 이용해 user를 생성\n3. 등록된 email로 인증메일 전송되며 인증 진행  \n4. Swagger 문서 Auth 섹션 login API 이용 로그인 진행\n5. 응답으로 전달 된 JWT token 을 Swagger API 문서 우측 상단 Authorize 아이콘 클릭 후 입력\n    예) bearer eyJhb......NsNTCCPTeBsOvv6Q4  \n    *bearer는 수기입력 필수\n6. Create Project API 호출 \n7. Create ModelPackage API 호출(생성 된 projectID 입력) 및 Model/TrainingDataset/HoldeOutDataset 업로드 진행(dataset은 csv 포맷으로 feature명칭/Target값 포함 필수)\n8. Create Deployment API 호출(생성 된 modelPackageID 입력)\n9. Deployment Send Prediction API 로 예측확인\n10. Noti섹션 Create Web-Hook API호출(Deployment의 Datadrift/Acuuracy 상태 변경시 호출 될 PipeLine Client정보 저장)"
             version: 0.1.1
             basePath: "/api/v1"
 
@@ -83,7 +83,7 @@ IAM:
     password: "infinov"
     nickName: "user of infinov"
     email: "koreserve.acornsoft@gmail.com"
-    authorityID: "group:default"  
+    authorityID: "group:default"
   registration:
     activationURL: "http://%s/api/v1/auths/registration/activate"
     defaultAuthorityID: "group:default"
@@ -153,30 +153,30 @@ SMTPServers:
 
 # Caches
 caches:
-  # Cache with Redis engine Sample
-  # sessionCache:
-  #   connectionName: "session-cache"
-  #   engine: "redis"
-  #   driver: "redis"
-  #   configurations: # Following redis engine
-  #     network: "tcp"
-  #     host: "127.0.0.1"
-  #     port: "6379"
-  #     username: ""
-  #     password: ""
-  #     db: 1
-  #     maxRetries: 3
-  #     poolSize: 10
-  #     minIdleConns: 5
-  # Cache with GoMacaron/Cache engine Sample
-  # tmpDataCache:
-  #   connectionName: "tmp-data-cache"
-  #   engine: "gomacaron"
-  #   driver: "redis"
-  #   configurations: # Following GoMacaron/Cache engine
-  #     adapter: "redis"
-  #     adapterConfig: "addr:127.0.0.1:6379"
-  #     interval: 60
-  #     occupyMode: false
-  #     section: "cache"
+# Cache with Redis engine Sample
+# sessionCache:
+#   connectionName: "session-cache"
+#   engine: "redis"
+#   driver: "redis"
+#   configurations: # Following redis engine
+#     network: "tcp"
+#     host: "127.0.0.1"
+#     port: "6379"
+#     username: ""
+#     password: ""
+#     db: 1
+#     maxRetries: 3
+#     poolSize: 10
+#     minIdleConns: 5
+# Cache with GoMacaron/Cache engine Sample
+# tmpDataCache:
+#   connectionName: "tmp-data-cache"
+#   engine: "gomacaron"
+#   driver: "redis"
+#   configurations: # Following GoMacaron/Cache engine
+#     adapter: "redis"
+#     adapterConfig: "addr:127.0.0.1:6379"
+#     interval: 60
+#     occupyMode: false
+#     section: "cache"
 

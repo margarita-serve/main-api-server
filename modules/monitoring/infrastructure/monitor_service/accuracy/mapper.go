@@ -34,6 +34,7 @@ func MapCreateReq(req *domSchema.AccuracyCreateRequest) (*conMonitor.CreateAccur
 	reqCon.ModelPath = req.ModelPath
 	reqCon.TargetLabel = req.TargetLabel
 	reqCon.AssociationId = req.AssociationID
+	reqCon.AssociationIdInFeature = req.AssociationIDInFeature
 	reqCon.ModelType = req.ModelType
 	reqCon.Framework = req.Framework
 	reqCon.DriftMetric = req.DriftMetric

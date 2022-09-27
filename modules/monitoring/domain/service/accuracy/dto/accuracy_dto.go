@@ -1,21 +1,22 @@
 package dto
 
 type AccuracyCreateRequest struct {
-	InferenceName    string
-	ModelHistoryID   string
-	DatasetPath      string
-	ModelPath        string
-	TargetLabel      string
-	AssociationID    string
-	ModelType        string
-	Framework        string
-	DriftMetric      string
-	DriftMeasurement string
-	AtriskValue      float32
-	FailingValue     float32
-	PositiveClass    string
-	NegativeClass    string
-	BinaryThreshold  float32
+	InferenceName          string
+	ModelHistoryID         string
+	DatasetPath            string
+	ModelPath              string
+	TargetLabel            string
+	AssociationID          string
+	AssociationIDInFeature bool
+	ModelType              string
+	Framework              string
+	DriftMetric            string
+	DriftMeasurement       string
+	AtriskValue            float32
+	FailingValue           float32
+	PositiveClass          string
+	NegativeClass          string
+	BinaryThreshold        float32
 }
 
 type AccuracyCreateResponse struct {

@@ -586,9 +586,9 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	}
 
 	// Send Event
-	if req.AssociationID != nil {
-		s.publisher.Notify(common.NewEventDeploymentAssociationIDUpdated(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, *req.AssociationID))
-	}
+	//if req.AssociationID != nil {
+	//	s.publisher.Notify(common.NewEventDeploymentAssociationIDUpdated(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, *req.AssociationID))
+	//}
 
 	if req.FeatureDriftTracking != nil {
 		if *req.FeatureDriftTracking {
@@ -600,7 +600,11 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 
 	if req.AccuracyAnalyze != nil {
 		if *req.AccuracyAnalyze {
-			s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, *req.AssociationID))
+			if req.AssociationID == nil {
+				s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, "None", false))
+			} else {
+				s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, *req.AssociationID, *req.AssociationIDInFeature))
+			}
 		} else {
 			s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeDisabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID))
 		}

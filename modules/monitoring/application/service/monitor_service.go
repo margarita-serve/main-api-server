@@ -114,7 +114,6 @@ func NewMonitorService(h *handler.Handler, modelPackageSvc common.IModelPackageS
 
 func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.MonitorCreateResponseDTO, error) {
 
-	// drift accuracy monitor 생성 request channel 로 변경하여 비동기 처리로 수정해야함함
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -207,23 +206,22 @@ func (s *MonitorService) Create(req *appDTO.MonitorCreateRequestDTO) (*appDTO.Mo
 
 	if req.AccuracyMonitoring == true {
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
-			InferenceName:    req.DeploymentID,
-			ModelHistoryID:   req.ModelHistoryID,
-			DatasetPath:      resModelPackage.HoldoutDatasetPath,
-			ModelPath:        resModelPackage.ModelFilePath,
-			TargetLabel:      resModelPackage.PredictionTargetName,
-			ModelType:        resModelPackage.TargetType,
-			Framework:        resModelPackage.ModelFrameWork,
-			DriftMetric:      domAggregateMonitor.MetricType,
-			DriftMeasurement: domAggregateMonitor.Measurement,
-			AtriskValue:      domAggregateMonitor.AtRiskValue,
-			FailingValue:     domAggregateMonitor.FailingValue,
-			PositiveClass:    resModelPackage.PositiveClassLabel,
-			NegativeClass:    resModelPackage.NegativeClassLabel,
-			BinaryThreshold:  resModelPackage.PredictionThreshold,
-		}
-		if req.AssociationID != nil {
-			reqDomAccuracySvc.AssociationID = *req.AssociationID
+			InferenceName:          req.DeploymentID,
+			ModelHistoryID:         req.ModelHistoryID,
+			DatasetPath:            resModelPackage.HoldoutDatasetPath,
+			ModelPath:              resModelPackage.ModelFilePath,
+			TargetLabel:            resModelPackage.PredictionTargetName,
+			AssociationID:          *req.AssociationID,
+			AssociationIDInFeature: req.AssociationIDInFeature,
+			ModelType:              resModelPackage.TargetType,
+			Framework:              resModelPackage.ModelFrameWork,
+			DriftMetric:            domAggregateMonitor.MetricType,
+			DriftMeasurement:       domAggregateMonitor.Measurement,
+			AtriskValue:            domAggregateMonitor.AtRiskValue,
+			FailingValue:           domAggregateMonitor.FailingValue,
+			PositiveClass:          resModelPackage.PositiveClassLabel,
+			NegativeClass:          resModelPackage.NegativeClassLabel,
+			BinaryThreshold:        resModelPackage.PredictionThreshold,
 		}
 		go func() {
 			defer wait.Done()
@@ -303,6 +301,13 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 	}
 
 	// ServiceHealth
+	reqDomServiceHealthSvcOff := domSvcMonitorSvcServiceHealthDTO.ServiceHealthDeleteRequest{
+		InferenceName: req.DeploymentID,
+	}
+	err = domAggregateMonitor.SetServiceHealthMonitorTrackingOff(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvcOff)
+	if err != nil {
+		return nil, err
+	}
 	domAggregateMonitor.SetServiceHealthCreatedFalse()
 	reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthCreateRequest{
 		InferenceName:  req.DeploymentID,
@@ -320,6 +325,13 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 
 	// Drift
 	if domAggregateMonitor.FeatureDriftTracking == true {
+		reqDomDriftSvcOff := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
+			InferenceName: req.DeploymentID,
+		}
+		err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvcOff)
+		if err != nil {
+			return nil, err
+		}
 		domAggregateMonitor.SetDriftCreatedFalse()
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
 			InferenceName:              req.DeploymentID,
@@ -353,23 +365,31 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 
 	// Accuracy
 	if domAggregateMonitor.AccuracyMonitoring == true {
+		reqDomAccuracySvcOff := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
+			InferenceName: req.DeploymentID,
+		}
+		err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvcOff)
+		if err != nil {
+			return nil, err
+		}
 		domAggregateMonitor.SetAccuracyCreatedFalse()
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
-			InferenceName:    req.DeploymentID,
-			ModelHistoryID:   req.ModelHistoryID,
-			DatasetPath:      resModelPackage.HoldoutDatasetPath,
-			ModelPath:        resModelPackage.ModelFilePath,
-			TargetLabel:      resModelPackage.PredictionTargetName,
-			AssociationID:    domAggregateMonitor.AssociationID,
-			ModelType:        resModelPackage.TargetType,
-			Framework:        resModelPackage.ModelFrameWork,
-			DriftMetric:      domAggregateMonitor.MetricType,
-			DriftMeasurement: domAggregateMonitor.Measurement,
-			AtriskValue:      domAggregateMonitor.AtRiskValue,
-			FailingValue:     domAggregateMonitor.FailingValue,
-			PositiveClass:    resModelPackage.PositiveClassLabel,
-			NegativeClass:    resModelPackage.NegativeClassLabel,
-			BinaryThreshold:  resModelPackage.PredictionThreshold,
+			InferenceName:          req.DeploymentID,
+			ModelHistoryID:         req.ModelHistoryID,
+			DatasetPath:            resModelPackage.HoldoutDatasetPath,
+			ModelPath:              resModelPackage.ModelFilePath,
+			TargetLabel:            resModelPackage.PredictionTargetName,
+			AssociationID:          domAggregateMonitor.AssociationID,
+			AssociationIDInFeature: domAggregateMonitor.AssociationIDInFeature,
+			ModelType:              resModelPackage.TargetType,
+			Framework:              resModelPackage.ModelFrameWork,
+			DriftMetric:            domAggregateMonitor.MetricType,
+			DriftMeasurement:       domAggregateMonitor.Measurement,
+			AtriskValue:            domAggregateMonitor.AtRiskValue,
+			FailingValue:           domAggregateMonitor.FailingValue,
+			PositiveClass:          resModelPackage.PositiveClassLabel,
+			NegativeClass:          resModelPackage.NegativeClassLabel,
+			BinaryThreshold:        resModelPackage.PredictionThreshold,
 		}
 
 		err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
@@ -433,83 +453,6 @@ func (s *MonitorService) Delete(req *appDTO.MonitorDeleteRequestDTO) (*appDTO.Mo
 
 	resDTO := new(appDTO.MonitorDeleteResponseDTO)
 	resDTO.Message = "DataDrift Monitor Delete Success"
-
-	return resDTO, nil
-}
-
-func (s *MonitorService) PatchDriftMonitorSetting(req *appDTO.MonitorDriftPatchRequestDTO) (*appDTO.MonitorDriftPatchResponseDTO, error) {
-	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-	if err != nil {
-		return nil, err
-	}
-	resDTO := new(appDTO.MonitorDriftPatchResponseDTO)
-	// false 여도 patch 가능
-
-	if err := req.Validate(); err != nil {
-		return nil, err
-	}
-	if err = req.DataDriftSetting.Validate(); err != nil {
-		return nil, err
-	}
-
-	reqDomDriftSvc := new(domSvcMonitorSvcDriftDTO.DataDriftPatchRequest)
-
-	reqDomDriftSvc.InferenceName = req.DeploymentID
-
-	if req.DataDriftSetting.MonitorRange != "" {
-		reqDomDriftSvc.MonitorRange = req.DataDriftSetting.MonitorRange
-	} else {
-		reqDomDriftSvc.MonitorRange = domAggregateMonitor.MonitorRange
-	}
-
-	if req.DataDriftSetting.DriftThreshold != nil {
-		reqDomDriftSvc.DriftThreshold = *req.DataDriftSetting.DriftThreshold
-	} else {
-		reqDomDriftSvc.DriftThreshold = domAggregateMonitor.DriftThreshold
-	}
-
-	if req.DataDriftSetting.ImportanceThreshold != nil {
-		reqDomDriftSvc.ImportanceThreshold = *req.DataDriftSetting.ImportanceThreshold
-	} else {
-		reqDomDriftSvc.ImportanceThreshold = domAggregateMonitor.ImportanceThreshold
-	}
-
-	if req.DataDriftSetting.LowImportanceAtRiskCount != nil {
-		reqDomDriftSvc.LowImportanceAtRiskCount = *req.DataDriftSetting.LowImportanceAtRiskCount
-	} else {
-		reqDomDriftSvc.LowImportanceAtRiskCount = domAggregateMonitor.LowImportanceAtRiskCount
-	}
-
-	if req.DataDriftSetting.LowImportanceFailingCount != nil {
-		reqDomDriftSvc.LowImportanceFailingCount = *req.DataDriftSetting.LowImportanceFailingCount
-	} else {
-		reqDomDriftSvc.LowImportanceFailingCount = domAggregateMonitor.LowImportanceFailingCount
-	}
-
-	if req.DataDriftSetting.HighImportanceAtRiskCount != nil {
-		reqDomDriftSvc.HighImportanceAtRiskCount = *req.DataDriftSetting.HighImportanceAtRiskCount
-	} else {
-		reqDomDriftSvc.HighImportanceAtRiskCount = domAggregateMonitor.HighImportanceAtRiskCount
-	}
-
-	if req.DataDriftSetting.HighImportanceFailingCount != nil {
-		reqDomDriftSvc.HighImportanceFailingCount = *req.DataDriftSetting.HighImportanceFailingCount
-	} else {
-		reqDomDriftSvc.HighImportanceFailingCount = domAggregateMonitor.HighImportanceFailingCount
-	}
-
-	err = domAggregateMonitor.PatchDataDriftSetting(s.domMonitorDriftSvc, *reqDomDriftSvc)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.repo.Save(domAggregateMonitor)
-	if err != nil {
-		return nil, err
-	}
-
-	resDTO.DeploymentID = req.DeploymentID
-	resDTO.Message = "DataDrift Monitor Patch Success"
 
 	return resDTO, nil
 }
@@ -819,93 +762,34 @@ func (s *MonitorService) PatchMonitorSetting(req *appDTO.MonitorPatchRequestDTO)
 	return resDTO, nil
 }
 
-func (s *MonitorService) PatchAccuracyMonitorSetting(req *appDTO.MonitorAccuracyPatchRequestDTO) (*appDTO.MonitorAccuracyPatchResponseDTO, error) {
-	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-	if err != nil {
-		return nil, err
-	}
-	resDTO := new(appDTO.MonitorAccuracyPatchResponseDTO)
-	// false 여도 patch는 가능
-
-	if err := req.Validate(); err != nil {
-		return nil, err
-	}
-	if err = req.AccuracySetting.Validate(); err != nil {
-		return nil, err
-	}
-
-	reqDomAccuracySvc := new(domSvcMonitorSvcAccuracyDTO.AccuracyPatchRequest)
-
-	reqDomAccuracySvc.InferenceName = req.DeploymentID
-
-	if req.AccuracySetting.MetricType != "" {
-		reqDomAccuracySvc.DriftMetric = req.AccuracySetting.MetricType
-	} else {
-		reqDomAccuracySvc.DriftMetric = domAggregateMonitor.MetricType
-	}
-
-	if req.AccuracySetting.Measurement != "" {
-		reqDomAccuracySvc.DriftMeasurement = req.AccuracySetting.Measurement
-	} else {
-		reqDomAccuracySvc.DriftMeasurement = domAggregateMonitor.Measurement
-	}
-
-	if req.AccuracySetting.AtRiskValue != nil {
-		reqDomAccuracySvc.AtriskValue = *req.AccuracySetting.AtRiskValue
-	} else {
-		reqDomAccuracySvc.AtriskValue = domAggregateMonitor.AtRiskValue
-	}
-
-	if req.AccuracySetting.FailingValue != nil {
-		reqDomAccuracySvc.FailingValue = *req.AccuracySetting.FailingValue
-	} else {
-		reqDomAccuracySvc.FailingValue = domAggregateMonitor.FailingValue
-	}
-
-	err = domAggregateMonitor.PatchAccuracySetting(s.domMonitorAccuracySvc, *reqDomAccuracySvc)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.repo.Save(domAggregateMonitor)
-	if err != nil {
-		return nil, err
-	}
-
-	resDTO.DeploymentID = req.DeploymentID
-	resDTO.Message = "Accuracy Monitor Patch Success"
-
-	return resDTO, nil
-}
-
-func (s *MonitorService) UpdateAssociationID(req *appDTO.UpdateAssociationIDRequestDTO) (*appDTO.UpdateAssociationIDResponseDTO, error) {
-	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
-	if err != nil {
-		return nil, err
-	}
-
-	reqDomAccuracySvc := new(domSvcMonitorSvcAccuracyDTO.AccuracyUpdateAssociationIDRequest)
-	reqDomAccuracySvc.InferenceName = req.DeploymentID
-
-	if req.AssociationID != nil {
-		reqDomAccuracySvc.AssociationID = *req.AssociationID
-	}
-
-	err = domAggregateMonitor.SetAssociationID(s.domMonitorAccuracySvc, *reqDomAccuracySvc)
-	if err != nil {
-		return nil, err
-	}
-	err = s.repo.Save(domAggregateMonitor)
-	if err != nil {
-		return nil, err
-	}
-
-	resDTO := new(appDTO.UpdateAssociationIDResponseDTO)
-	resDTO.Message = "Association ID change Success"
-	resDTO.DeploymentID = domAggregateMonitor.ID
-
-	return resDTO, nil
-}
+//func (s *MonitorService) UpdateAssociationID(req *appDTO.UpdateAssociationIDRequestDTO) (*appDTO.UpdateAssociationIDResponseDTO, error) {
+//	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	reqDomAccuracySvc := new(domSvcMonitorSvcAccuracyDTO.AccuracyUpdateAssociationIDRequest)
+//	reqDomAccuracySvc.InferenceName = req.DeploymentID
+//
+//	if req.AssociationID != nil {
+//		reqDomAccuracySvc.AssociationID = *req.AssociationID
+//	}
+//
+//	err = domAggregateMonitor.SetAssociationID(s.domMonitorAccuracySvc, *reqDomAccuracySvc)
+//	if err != nil {
+//		return nil, err
+//	}
+//	err = s.repo.Save(domAggregateMonitor)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	resDTO := new(appDTO.UpdateAssociationIDResponseDTO)
+//	resDTO.Message = "Association ID change Success"
+//	resDTO.DeploymentID = domAggregateMonitor.ID
+//
+//	return resDTO, nil
+//}
 
 func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyActiveRequestDTO) (*appDTO.MonitorAccuracyActiveResponseDTO, error) {
 	// drift와 동일하게 on 기능 + accuracy monitor가 없을 경우 생성 있을경우 on 만. accuracy monitor 생성 여부 상태 저장해야함
@@ -916,24 +800,29 @@ func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyAct
 		return nil, err
 	}
 
-	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
-		InferenceName:    req.DeploymentID,
-		ModelHistoryID:   req.CurrentModelID,
-		DatasetPath:      resModelPackage.HoldoutDatasetPath,
-		ModelPath:        resModelPackage.ModelFilePath,
-		TargetLabel:      resModelPackage.PredictionTargetName,
-		ModelType:        resModelPackage.TargetType,
-		Framework:        resModelPackage.ModelFrameWork,
-		DriftMetric:      domAggregateMonitor.MetricType,
-		DriftMeasurement: domAggregateMonitor.Measurement,
-		AtriskValue:      domAggregateMonitor.AtRiskValue,
-		FailingValue:     domAggregateMonitor.FailingValue,
-		PositiveClass:    resModelPackage.PositiveClassLabel,
-		NegativeClass:    resModelPackage.NegativeClassLabel,
-		BinaryThreshold:  resModelPackage.PredictionThreshold,
+	if domAggregateMonitor.AssociationID != "None" {
+		if *req.AssociationID != "None" {
+			return nil, fmt.Errorf("AssociationID(AssociationIDInFeature) value already exists. AssociationID(AssociationIDInFeature) cannot be changed")
+		}
 	}
-	if req.AssociationID != nil {
-		reqDomAccuracySvc.AssociationID = *req.AssociationID
+
+	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
+		InferenceName:          req.DeploymentID,
+		ModelHistoryID:         req.CurrentModelID,
+		DatasetPath:            resModelPackage.HoldoutDatasetPath,
+		ModelPath:              resModelPackage.ModelFilePath,
+		TargetLabel:            resModelPackage.PredictionTargetName,
+		AssociationID:          *req.AssociationID,
+		AssociationIDInFeature: req.AssociationIDInFeature,
+		ModelType:              resModelPackage.TargetType,
+		Framework:              resModelPackage.ModelFrameWork,
+		DriftMetric:            domAggregateMonitor.MetricType,
+		DriftMeasurement:       domAggregateMonitor.Measurement,
+		AtriskValue:            domAggregateMonitor.AtRiskValue,
+		FailingValue:           domAggregateMonitor.FailingValue,
+		PositiveClass:          resModelPackage.PositiveClassLabel,
+		NegativeClass:          resModelPackage.NegativeClassLabel,
+		BinaryThreshold:        resModelPackage.PredictionThreshold,
 	}
 
 	err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
@@ -1126,9 +1015,9 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 
 				switch req.Status {
 				case "failing":
-					s.publisher.Notify(common.NewEventMonitoringDataDriftStatusChangedToFailing((req.DeploymentID)))
+					s.publisher.Notify(common.NewEventMonitoringDataDriftStatusChangedToFailing(req.DeploymentID))
 				case "atrisk":
-					s.publisher.Notify(common.NewEventMonitoringDataDriftStatusChangedToAtrisk((req.DeploymentID)))
+					s.publisher.Notify(common.NewEventMonitoringDataDriftStatusChangedToAtrisk(req.DeploymentID))
 				default:
 					return errors.New("datadrift status check process error")
 				}
@@ -1153,9 +1042,9 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 				// }
 				switch req.Status {
 				case "failing":
-					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToFailing((req.DeploymentID)))
+					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToFailing(req.DeploymentID))
 				case "atrisk":
-					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToAtrisk((req.DeploymentID)))
+					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToAtrisk(req.DeploymentID))
 				default:
 					return errors.New("accurancy status check process error")
 				}
@@ -1182,9 +1071,9 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 
 				switch req.Status {
 				case "failing":
-					s.publisher.Notify(common.NewEventMonitoringServiceHealthStatusChangedToFailing((req.DeploymentID)))
+					s.publisher.Notify(common.NewEventMonitoringServiceHealthStatusChangedToFailing(req.DeploymentID))
 				case "atrisk":
-					s.publisher.Notify(common.NewEventMonitoringServiceHealthStatusChangedToAtrisk((req.DeploymentID)))
+					s.publisher.Notify(common.NewEventMonitoringServiceHealthStatusChangedToAtrisk(req.DeploymentID))
 				default:
 					return errors.New("service health status check process error")
 				}
@@ -1272,12 +1161,13 @@ func (s *MonitorService) Update(event common.Event) {
 		wtfAssociaionID := actualEvent.AssociationID()
 
 		req := &appDTO.MonitorCreateRequestDTO{
-			DeploymentID:         actualEvent.DeploymentID(),
-			ModelPackageID:       actualEvent.ModelPackageID(),
-			ModelHistoryID:       actualEvent.ModelHistoryID(),
-			AccuracyMonitoring:   actualEvent.AccuracyMonitoring(),
-			FeatureDriftTracking: actualEvent.FeatureDriftTracking(),
-			AssociationID:        &wtfAssociaionID,
+			DeploymentID:           actualEvent.DeploymentID(),
+			ModelPackageID:         actualEvent.ModelPackageID(),
+			ModelHistoryID:         actualEvent.ModelHistoryID(),
+			AccuracyMonitoring:     actualEvent.AccuracyMonitoring(),
+			FeatureDriftTracking:   actualEvent.FeatureDriftTracking(),
+			AssociationID:          &wtfAssociaionID,
+			AssociationIDInFeature: actualEvent.AssociationIDInFeature(),
 		}
 		_, err := s.Create(req)
 		if err != nil {
@@ -1285,7 +1175,7 @@ func (s *MonitorService) Update(event common.Event) {
 			return
 		}
 
-		s.publisher.Notify(common.NewEventMonitoringCreated((actualEvent.DeploymentID())))
+		s.publisher.Notify(common.NewEventMonitoringCreated(actualEvent.DeploymentID()))
 
 	case common.DeploymentModelReplaced:
 		//
@@ -1296,19 +1186,19 @@ func (s *MonitorService) Update(event common.Event) {
 		}
 		s.MonitorReplaceModel(req)
 
-	case common.DeploymentAssociationIDUpdated:
-		//
-		strAssociaionID := actualEvent.AssociationID()
-		reqUpdateAssociationID := new(appDTO.UpdateAssociationIDRequestDTO)
-		reqUpdateAssociationID.DeploymentID = actualEvent.DeploymentID()
-		reqUpdateAssociationID.AssociationID = &strAssociaionID
-		//toBe..
-		//reqUpdateAssociationID.AssociationIDInFeature = req.AssociationIDInFeature
-
-		_, err := s.UpdateAssociationID(reqUpdateAssociationID)
-		if err != nil {
-			fmt.Printf("err: %v\n", err)
-		}
+	//case common.DeploymentAssociationIDUpdated:
+	//	//
+	//	strAssociaionID := actualEvent.AssociationID()
+	//	reqUpdateAssociationID := new(appDTO.UpdateAssociationIDRequestDTO)
+	//	reqUpdateAssociationID.DeploymentID = actualEvent.DeploymentID()
+	//	reqUpdateAssociationID.AssociationID = &strAssociaionID
+	//	//toBe..
+	//	//reqUpdateAssociationID.AssociationIDInFeature = req.AssociationIDInFeature
+	//
+	//	_, err := s.UpdateAssociationID(reqUpdateAssociationID)
+	//	if err != nil {
+	//		fmt.Printf("err: %v\n", err)
+	//	}
 
 	case common.DeploymentFeatureDriftTrackingEnabled:
 		println("FeatureDriftTracking true")
@@ -1339,6 +1229,7 @@ func (s *MonitorService) Update(event common.Event) {
 		reqAccuracyActive.DeploymentID = actualEvent.DeploymentID()
 		reqAccuracyActive.ModelPackageID = actualEvent.ModelPackageID()
 		reqAccuracyActive.AssociationID = &strAssociaionID
+		reqAccuracyActive.AssociationIDInFeature = actualEvent.AssociationIDInFeature()
 		reqAccuracyActive.CurrentModelID = actualEvent.CurrentModelID()
 		//toBe..
 		//reqAccuracyActive.AssociationIDInFeature = req.AssociationIDInFeature
@@ -1398,10 +1289,11 @@ func (s *MonitorService) Update(event common.Event) {
 		}
 		if resMonitor.Monitor.AccuracyMonitoring == true {
 			reqAccuracy := &appDTO.MonitorAccuracyActiveRequestDTO{
-				DeploymentID:   actualEvent.DeploymentID(),
-				ModelPackageID: "",
-				AssociationID:  nil,
-				CurrentModelID: "",
+				DeploymentID:           actualEvent.DeploymentID(),
+				ModelPackageID:         "",
+				AssociationID:          nil,
+				AssociationIDInFeature: false,
+				CurrentModelID:         "",
 			}
 			_, err = s.SetAccuracyMonitorActive(reqAccuracy)
 		}
@@ -1465,6 +1357,8 @@ func (s *MonitorService) GetByIDInternal(monitoringID string) (*common.MonitorGe
 	resDTO.DriftStatus = res.DriftStatus
 	resDTO.FeatureDriftTracking = res.FeatureDriftTracking
 	resDTO.AccuracyMonitoring = res.AccuracyMonitoring
+	resDTO.AssociationID = res.AssociationID
+	resDTO.AssociationIDInFeature = res.AssociationIDInFeature
 
 	return resDTO, nil
 }

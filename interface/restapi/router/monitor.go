@@ -22,7 +22,7 @@ func SetMonitor(eg *echo.Group, h *handler.Handler, f *feature.FMonitor) {
 	gc.POST("/actual", f.UploadActual)
 	gc.GET("/accuracy", f.GetAccuracy)
 	gc.PATCH("", f.PatchMonitorSetting)
-	gc.PATCH("/association-id", f.UpdateAssociationID)
+	//gc.PATCH("/association-id", f.UpdateAssociationID)
 	//gc.POST("", f.Create)
 
 	url1, _ := url.Parse(ProxyServer)

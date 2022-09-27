@@ -229,10 +229,11 @@ func NewEventDeploymentFeatureDriftTrackingDisabled(deploymentID string, modelPa
 
 // DeploymentAccuracyAnalyzeEnabled Event
 type DeploymentAccuracyAnalyzeEnabled struct {
-	deploymentID   string
-	modelPackageID string
-	currentModelID string
-	associationID  string
+	deploymentID           string
+	modelPackageID         string
+	currentModelID         string
+	associationID          string
+	associationIDInFeature bool
 }
 
 func (e DeploymentAccuracyAnalyzeEnabled) Name() string {
@@ -255,8 +256,12 @@ func (e DeploymentAccuracyAnalyzeEnabled) AssociationID() string {
 	return e.associationID
 }
 
-func NewEventDeploymentAccuracyAnalyzeEnabled(deploymentID string, modelPackageID string, currentModelID string, associationID string) DeploymentAccuracyAnalyzeEnabled {
-	return DeploymentAccuracyAnalyzeEnabled{deploymentID: deploymentID, modelPackageID: modelPackageID, currentModelID: currentModelID, associationID: associationID}
+func (e DeploymentAccuracyAnalyzeEnabled) AssociationIDInFeature() bool {
+	return e.associationIDInFeature
+}
+
+func NewEventDeploymentAccuracyAnalyzeEnabled(deploymentID string, modelPackageID string, currentModelID string, associationID string, associationIDInFeature bool) DeploymentAccuracyAnalyzeEnabled {
+	return DeploymentAccuracyAnalyzeEnabled{deploymentID: deploymentID, modelPackageID: modelPackageID, currentModelID: currentModelID, associationID: associationID, associationIDInFeature: associationIDInFeature}
 }
 
 // DeploymentAccuracyAnalyzeDisabled Event

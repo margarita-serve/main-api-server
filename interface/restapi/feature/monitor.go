@@ -123,21 +123,21 @@ func (f *FMonitor) PatchMonitorSetting(c echo.Context) error {
 // @Security BearerAuth
 // @Success 200 {object} appMonitorDTO.UpdateAssociationIDResponseDTO
 // @Router        /deployments/{deploymentID}/monitor/association-id [patch]
-func (f *FMonitor) UpdateAssociationID(c echo.Context) error {
-	req := new(appMonitorDTO.UpdateAssociationIDRequestDTO)
-	if err := c.Bind(req); err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-	deploymentID := c.Param("deploymentID")
-	req.DeploymentID = deploymentID
-
-	resp, err := f.appMonitor.MonitorSvc.UpdateAssociationID(req)
-	if err != nil {
-		return f.translateErrorMessage(err, c)
-	}
-
-	return response.OkWithData(resp, c)
-}
+//func (f *FMonitor) UpdateAssociationID(c echo.Context) error {
+//	req := new(appMonitorDTO.UpdateAssociationIDRequestDTO)
+//	if err := c.Bind(req); err != nil {
+//		return f.translateErrorMessage(err, c)
+//	}
+//	deploymentID := c.Param("deploymentID")
+//	req.DeploymentID = deploymentID
+//
+//	resp, err := f.appMonitor.MonitorSvc.UpdateAssociationID(req)
+//	if err != nil {
+//		return f.translateErrorMessage(err, c)
+//	}
+//
+//	return response.OkWithData(resp, c)
+//}
 
 // GetDetail
 // @Summary Get Feature Detail

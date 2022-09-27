@@ -12,17 +12,18 @@ import (
 // Monitor type
 type Monitor struct {
 	// drift, accuracy 생성 상태값 추가
-	ID                   string `gorm:"size:256"`
-	ModelPackageID       string `gorm:"size:256"`
-	FeatureDriftTracking bool
-	AccuracyMonitoring   bool
-	AssociationID        string `gorm:"size:256"`
-	DriftStatus          string `gorm:"size:256"`
-	AccuracyStatus       string `gorm:"size:256"`
-	ServiceHealthStatus  string `gorm:"size:256"`
-	DriftCreated         bool
-	AccuracyCreated      bool
-	ServiceHealthCreated bool
+	ID                     string `gorm:"size:256"`
+	ModelPackageID         string `gorm:"size:256"`
+	FeatureDriftTracking   bool
+	AccuracyMonitoring     bool
+	AssociationID          string `gorm:"size:256"`
+	AssociationIDInFeature bool   `gorm:"size:256"`
+	DriftStatus            string `gorm:"size:256"`
+	AccuracyStatus         string `gorm:"size:256"`
+	ServiceHealthStatus    string `gorm:"size:256"`
+	DriftCreated           bool
+	AccuracyCreated        bool
+	ServiceHealthCreated   bool
 	DataDriftSetting
 	AccuracySetting
 	ServiceHealthSetting
@@ -38,6 +39,7 @@ func NewMonitor(id string, modelPackageID string) (*Monitor, error) {
 		false,
 		false,
 		"None",
+		false,
 		"unknown",
 		"unknown",
 		"unknown",
@@ -307,6 +309,7 @@ func (m *Monitor) SetAccuracyMonitoringOn(domSvc domSvcMonitor.IExternalAccuracy
 			return err
 		}
 		m.AssociationID = reqDom.AssociationID
+		m.AssociationIDInFeature = reqDom.AssociationIDInFeature
 		m.AccuracyCreated = true
 		m.AccuracyMonitoring = true
 		m.AccuracyStatus = "unknown"
@@ -354,19 +357,19 @@ func (m *Monitor) PatchAccuracySetting(domSvc domSvcMonitor.IExternalAccuracyMon
 
 }
 
-func (m *Monitor) SetAssociationID(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyUpdateAssociationIDRequest) error {
-	m.AssociationID = reqDom.AssociationID
-
-	if m.AccuracyCreated == true {
-		res, err := domSvc.MonitorAssociationIDPatch(&reqDom)
-		fmt.Printf("res: %v\n", res)
-		if err != nil {
-			return fmt.Errorf("association ID change failed")
-		}
-		return err
-	}
-	return nil
-}
+//func (m *Monitor) SetAssociationID(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyUpdateAssociationIDRequest) error {
+//	m.AssociationID = reqDom.AssociationID
+//
+//	if m.AccuracyCreated == true {
+//		res, err := domSvc.MonitorAssociationIDPatch(&reqDom)
+//		fmt.Printf("res: %v\n", res)
+//		if err != nil {
+//			return fmt.Errorf("association ID change failed")
+//		}
+//		return err
+//	}
+//	return nil
+//}
 
 func (m *Monitor) GetAccuracy(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyGetRequest) (*domAccuracySvcMonitorDTO.AccuracyGetResponse, error) {
 	res, err := domSvc.MonitorGetAccuracy(&reqDom)
