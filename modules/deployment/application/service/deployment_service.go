@@ -474,6 +474,9 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
+	//Find Monitor
+	resMonitor, _ := s.getMonitorByID(req.DeploymentID)
+
 	var updateInfoString string = ""
 
 	if req.Name != nil {
@@ -598,13 +601,23 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		}
 	}
 
+	associationID := resMonitor.AssociationID
+	associationIDInFeature := resMonitor.AssociationIDInFeature
+	if associationID != "" && req.AssociationID != nil {
+		return nil, fmt.Errorf("change AssociationID is impossible")
+	}
+	if associationID != "" && req.AssociationIDInFeature != nil {
+		return nil, fmt.Errorf("change AssociationIDInFeature is impossible")
+	}
+
 	if req.AccuracyAnalyze != nil {
 		if *req.AccuracyAnalyze {
-			if req.AssociationID == nil {
-				s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, "None", false))
-			} else {
-				s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, *req.AssociationID, *req.AssociationIDInFeature))
+			if associationID == "" {
+				associationID = *req.AssociationID
+				associationIDInFeature = *req.AssociationIDInFeature
 			}
+
+			s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, associationID, associationIDInFeature))
 		} else {
 			s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeDisabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID))
 		}

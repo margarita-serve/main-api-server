@@ -44,7 +44,7 @@ databases:
     config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
     maxOpenConns: 10
-    logMode: true # shoud be "false" on production
+    logMode: false # shoud be "false" on production
   # logDB:
   #   connectionName: "db-log"
   #   driver: "mysql" # mysql, postgres, sqlserver, sqlite3

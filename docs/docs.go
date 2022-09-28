@@ -1003,55 +1003,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/{deploymentID}/monitor/association-id": {
-            "patch": {
-                "description": "AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용 삭제예정.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Monitor"
-                ],
-                "summary": "Patch AssociationID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "deploymentID",
-                        "name": "deploymentID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Patch AssociationID",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateAssociationIDRequestDTO"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "default": "bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateAssociationIDResponseDTO"
-                        }
-                    }
-                }
-            }
-        },
         "/deployments/{deploymentID}/monitor/detail": {
             "get": {
                 "security": [
@@ -1251,6 +1202,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "targetMetric",
+                        "name": "targetMetric",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "example=2022-05-05:01 (UTC+0)",
                         "name": "startTime",
                         "in": "query",
@@ -1260,6 +1218,50 @@ const docTemplate = `{
                         "type": "string",
                         "description": "example=2022-08-01:01 (UTC+0)",
                         "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/cpu": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "cpu 사용량 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get CPU Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=1",
+                        "name": "requestCPU",
                         "in": "query",
                         "required": true
                     }
@@ -1376,6 +1378,50 @@ const docTemplate = `{
                         "type": "string",
                         "description": "example=2022-08-01:01",
                         "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentID}/monitor/graph/memory": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "memory 사용량 그래프",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Get Memory Graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "deploymentID",
+                        "name": "deploymentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "example=1",
+                        "name": "requestMemory",
                         "in": "query",
                         "required": true
                     }
@@ -1536,6 +1582,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "modelHistoryID",
                         "name": "modelHistoryID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "targetMetric",
+                        "name": "targetMetric",
                         "in": "query",
                         "required": true
                     },
@@ -3434,12 +3487,24 @@ const docTemplate = `{
                 "monitorRange": {
                     "description": "Monitoring 할 범위",
                     "type": "string",
+                    "enum": [
+                        "2h",
+                        " 1d",
+                        " 7d",
+                        " 30d",
+                        " 90d",
+                        " 180d",
+                        " 365d"
+                    ],
                     "x-order": "0",
                     "example": "7d"
                 },
                 "driftMetricType": {
                     "description": "DataDrift 측정 Metric",
                     "type": "string",
+                    "enum": [
+                        "PSI"
+                    ],
                     "x-order": "1",
                     "example": "PSI"
                 },
@@ -4027,12 +4092,24 @@ const docTemplate = `{
                 "monitorRange": {
                     "description": "Monitoring 할 범위",
                     "type": "string",
+                    "enum": [
+                        "2h",
+                        " 1d",
+                        " 7d",
+                        " 30d",
+                        " 90d",
+                        " 180d",
+                        " 365d"
+                    ],
                     "x-order": "0",
                     "example": "7d"
                 },
                 "driftMetricType": {
                     "description": "DataDrift 측정 Metric",
                     "type": "string",
+                    "enum": [
+                        "PSI"
+                    ],
                     "x-order": "1",
                     "example": "PSI"
                 },
@@ -4127,27 +4204,6 @@ const docTemplate = `{
         "dto.ReplaceModelResponseDTO": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateAssociationIDRequestDTO": {
-            "type": "object",
-            "properties": {
-                "associationID": {
-                    "type": "string",
-                    "x-order": "0",
-                    "example": "index"
-                }
-            }
-        },
-        "dto.UpdateAssociationIDResponseDTO": {
-            "type": "object",
-            "properties": {
-                "deploymentID": {
-                    "type": "string"
-                },
                 "message": {
                     "type": "string"
                 }

@@ -16,6 +16,7 @@ func (r *CreateDeploymentRequestDTO) Validate() error {
 		validation.Field(&r.RequestCPU, validation.Min(0.1), validation.Max(2.0)),
 		validation.Field(&r.RequestMEM, validation.Min(0.1), validation.Max(2.0)),
 		validation.Field(&r.AssociationID, validation.When(r.AccuracyAnalyze == true, validation.Required)),
+		validation.Field(&r.AssociationIDInFeature, validation.When(r.AssociationID != "", validation.Required)),
 	)
 }
 
@@ -29,6 +30,7 @@ func (r *ReplaceModelRequestDTO) Validate() error {
 }
 
 func (r *UpdateDeploymentRequestDTO) Validate() error {
+
 	return validation.ValidateStruct(r,
 		validation.Field(&r.DeploymentID, validation.Required, validation.NotNil, validation.Length(20, 20)),
 		validation.Field(&r.Name, validation.Length(0, 255)),
@@ -36,9 +38,7 @@ func (r *UpdateDeploymentRequestDTO) Validate() error {
 		validation.Field(&r.Importance, validation.In("Low", "Moderate", "High", "Critical")),
 		validation.Field(&r.RequestCPU, validation.Min(0.1), validation.Max(2.0)),
 		validation.Field(&r.RequestMEM, validation.Min(0.1), validation.Max(2.0)),
-		//validation.Field(&r.AssociationID, validation.When(*r.AccuracyAnalyze == true, validation.Required)),
-		validation.Field(&r.AssociationID, validation.When(&r.AssociationIDInFeature != nil, validation.Required)),
-		//validation.Field(&r.AssociationIDInFeature, validation.When(&r.AssociationID != nil, validation.Required)),
+		validation.Field(&r.AssociationIDInFeature, validation.When(r.AssociationID != nil, validation.Required)),
 	)
 }
 

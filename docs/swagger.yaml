@@ -849,20 +849,6 @@ definitions:
       message:
         type: string
     type: object
-  dto.UpdateAssociationIDRequestDTO:
-    properties:
-      associationID:
-        example: index
-        type: string
-        x-order: "0"
-    type: object
-  dto.UpdateAssociationIDResponseDTO:
-    properties:
-      deploymentID:
-        type: string
-      message:
-        type: string
-    type: object
   dto.UpdateDeploymentRequestDTO:
     properties:
       accuracyAnalyze:
@@ -1640,36 +1626,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Upload Actual file
-      tags:
-      - Monitor
-  /deployments/{deploymentID}/monitor/association-id:
-    patch:
-      consumes:
-      - application/json
-      description: AssociationID 패치, 변경이전의 Association ID로 예측한 데이터들은 사용 불가능 합니다. 테스트용
-        삭제예정.
-      parameters:
-      - description: deploymentID
-        in: path
-        name: deploymentID
-        required: true
-        type: string
-      - description: Patch AssociationID
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateAssociationIDRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UpdateAssociationIDResponseDTO'
-      security:
-      - BearerAuth: []
-      summary: Patch AssociationID
       tags:
       - Monitor
   /deployments/{deploymentID}/monitor/detail:
