@@ -56,7 +56,7 @@ type CreateDeploymentRequestDTO struct {
 	FeatureDriftTracking   bool    `json:"featureDriftTracking" example:"false" extensions:"x-order=08"`                                               // 데이터 드리프트 모니터링 설정, 미 입력시 false
 	AccuracyAnalyze        bool    `json:"accuracyAnalyze" example:"false" extensions:"x-order=09"`                                                    // 정확도 모니터링 설정, 미 입력시 false
 	AssociationID          string  `json:"associationID" example:"" extensions:"x-order=10"`                                                           // 정확도 측정을 위해 유니크한 요청 ID로 처리할 key명, 요청데이터에 별도 json key항목입력 필요
-	AssociationIDInFeature bool    `json:"associationIDInFeature" example:"false" extensions:"x-order=11"`                                             // 요청 피쳐컬럼에 유니크한 ID값이 포함되어 있는경우 설정
+	AssociationIDInFeature *bool   `json:"associationIDInFeature" example:"false" extensions:"x-order=11"`                                             // 요청 피쳐컬럼에 유니크한 ID값이 포함되어 있는경우 설정
 }
 
 type CreateDeploymentResponseDTO struct {

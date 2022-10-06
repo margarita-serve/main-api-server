@@ -160,11 +160,15 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 
 	featureDriftTrackingBool := false
 	accuracyAnalyzeBool := false
+	associationIDInFeature := false
 	if req.FeatureDriftTracking {
 		featureDriftTrackingBool = req.FeatureDriftTracking
 	}
 	if req.AccuracyAnalyze {
 		accuracyAnalyzeBool = req.AccuracyAnalyze
+	}
+	if req.AssociationIDInFeature != nil {
+		associationIDInFeature = *req.AssociationIDInFeature
 	}
 
 	// WaitGroup 생성. 2개의 Go루틴을 기다림.
@@ -234,7 +238,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 	// }
 
 	//s.addModelPackageDeployCount(req.ModelPackageID)
-	s.publisher.Notify(common.NewEventDeploymentInferenceServiceCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, featureDriftTrackingBool, accuracyAnalyzeBool, req.AssociationID, req.AssociationIDInFeature, newModelHistoryID))
+	s.publisher.Notify(common.NewEventDeploymentInferenceServiceCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, featureDriftTrackingBool, accuracyAnalyzeBool, req.AssociationID, associationIDInFeature, newModelHistoryID))
 
 	//Find Domain Entity
 	checkStatus, err := s.repo.GetByIDInternal(domAggregateDeployment.ID)
@@ -264,7 +268,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		return nil, err
 	}
 
-	s.publisher.Notify(common.NewEventDeploymentCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, featureDriftTrackingBool, accuracyAnalyzeBool, req.AssociationID, req.AssociationIDInFeature, newModelHistoryID))
+	s.publisher.Notify(common.NewEventDeploymentCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, featureDriftTrackingBool, accuracyAnalyzeBool, req.AssociationID, associationIDInFeature, newModelHistoryID))
 
 	// response dto
 	resDTO := new(appDTO.CreateDeploymentResponseDTO)
