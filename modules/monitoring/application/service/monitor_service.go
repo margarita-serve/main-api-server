@@ -301,13 +301,6 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 	}
 
 	// ServiceHealth
-	reqDomServiceHealthSvcOff := domSvcMonitorSvcServiceHealthDTO.ServiceHealthDeleteRequest{
-		InferenceName: req.DeploymentID,
-	}
-	err = domAggregateMonitor.SetServiceHealthMonitorTrackingOff(s.domMonitorServiceHealthSvc, reqDomServiceHealthSvcOff)
-	if err != nil {
-		return nil, err
-	}
 	domAggregateMonitor.SetServiceHealthCreatedFalse()
 	reqDomServiceHealthSvc := domSvcMonitorSvcServiceHealthDTO.ServiceHealthCreateRequest{
 		InferenceName:  req.DeploymentID,
@@ -325,13 +318,6 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 
 	// Drift
 	if domAggregateMonitor.FeatureDriftTracking == true {
-		reqDomDriftSvcOff := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
-			InferenceName: req.DeploymentID,
-		}
-		err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvcOff)
-		if err != nil {
-			return nil, err
-		}
 		domAggregateMonitor.SetDriftCreatedFalse()
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
 			InferenceName:              req.DeploymentID,
@@ -365,13 +351,6 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 
 	// Accuracy
 	if domAggregateMonitor.AccuracyMonitoring == true {
-		reqDomAccuracySvcOff := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
-			InferenceName: req.DeploymentID,
-		}
-		err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvcOff)
-		if err != nil {
-			return nil, err
-		}
 		domAggregateMonitor.SetAccuracyCreatedFalse()
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
 			InferenceName:          req.DeploymentID,
@@ -948,6 +927,10 @@ func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appD
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
+	}
+
+	if domAggregateMonitor.AccuracyMonitoring == false {
+		return nil, errors.New("accuracy monitoring is turned off")
 	}
 
 	cfg, err := s.handler.GetConfig()

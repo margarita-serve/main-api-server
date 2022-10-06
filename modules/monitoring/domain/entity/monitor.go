@@ -38,7 +38,7 @@ func NewMonitor(id string, modelPackageID string) (*Monitor, error) {
 		modelPackageID,
 		false,
 		false,
-		"None",
+		"",
 		false,
 		"unknown",
 		"unknown",
