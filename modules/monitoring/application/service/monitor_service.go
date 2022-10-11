@@ -779,8 +779,8 @@ func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyAct
 		return nil, err
 	}
 
-	if domAggregateMonitor.AssociationID != "None" {
-		if *req.AssociationID != "None" {
+	if domAggregateMonitor.AssociationID != "" {
+		if *req.AssociationID != "" {
 			return nil, fmt.Errorf("AssociationID(AssociationIDInFeature) value already exists. AssociationID(AssociationIDInFeature) cannot be changed")
 		}
 	}
@@ -954,9 +954,9 @@ func (s *MonitorService) UploadActual(req *appDTO.UploadActualRequestDTO) (*appD
 
 	res, err := domAggregateMonitor.PostActual(s.domMonitorAccuracySvc, reqDomActualSvc)
 	if err != nil {
-		err = s.storageClient.DeleteFile(uploadFilePath)
-		if err != nil {
-			return nil, err
+		errs := s.storageClient.DeleteFile(uploadFilePath)
+		if errs != nil {
+			return nil, errs
 		}
 		return nil, err
 	}
