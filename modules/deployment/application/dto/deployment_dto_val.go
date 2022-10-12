@@ -30,7 +30,10 @@ func (r *ReplaceModelRequestDTO) Validate() error {
 }
 
 func (r *UpdateDeploymentRequestDTO) Validate() error {
-	var checkAcc bool = *r.AccuracyAnalyze
+	var checkAcc bool
+	if r.AccuracyAnalyze != nil {
+		checkAcc = *r.AccuracyAnalyze
+	}
 
 	return validation.ValidateStruct(r,
 		validation.Field(&r.DeploymentID, validation.Required, validation.NotNil, validation.Length(20, 20)),

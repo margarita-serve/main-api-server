@@ -317,7 +317,7 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 	}
 
 	// Drift
-	if domAggregateMonitor.FeatureDriftTracking == true {
+	if domAggregateMonitor.DriftCreated == true {
 		domAggregateMonitor.SetDriftCreatedFalse()
 		reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
 			InferenceName:              req.DeploymentID,
@@ -335,14 +335,21 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 			HighImportanceAtRiskCount:  domAggregateMonitor.HighImportanceAtRiskCount,
 			HighImportanceFailingCount: domAggregateMonitor.HighImportanceFailingCount,
 		}
-
+		driftMonitor := domAggregateMonitor.FeatureDriftTracking
 		err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
 		if err != nil {
 			return nil, err
 		}
-
 		domAggregateMonitor.SetDriftCreatedTrue()
-
+		if driftMonitor == false {
+			reqDomDriftSvcOff := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
+				InferenceName: req.DeploymentID,
+			}
+			err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvcOff)
+			if err != nil {
+				return nil, err
+			}
+		}
 		err = s.repo.Save(domAggregateMonitor)
 		if err != nil {
 			return nil, err
@@ -350,7 +357,7 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 	}
 
 	// Accuracy
-	if domAggregateMonitor.AccuracyMonitoring == true {
+	if domAggregateMonitor.AccuracyCreated == true {
 		domAggregateMonitor.SetAccuracyCreatedFalse()
 		reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
 			InferenceName:          req.DeploymentID,
@@ -370,13 +377,21 @@ func (s *MonitorService) MonitorReplaceModel(req *appDTO.MonitorReplaceModelRequ
 			NegativeClass:          resModelPackage.NegativeClassLabel,
 			BinaryThreshold:        resModelPackage.PredictionThreshold,
 		}
-
+		accuracyMonitor := domAggregateMonitor.AccuracyMonitoring
 		err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
 		if err != nil {
 			return nil, err
 		}
 		domAggregateMonitor.SetAccuracyCreatedTrue()
-
+		if accuracyMonitor == false {
+			reqDomAccuracySvcOff := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
+				InferenceName: req.DeploymentID,
+			}
+			err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvcOff)
+			if err != nil {
+				return nil, err
+			}
+		}
 		err = s.repo.Save(domAggregateMonitor)
 		if err != nil {
 			return nil, err
