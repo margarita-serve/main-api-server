@@ -238,6 +238,17 @@ func (m *Monitor) SetFeatureDriftTrackingOff(domSvc domSvcMonitor.IExternalDrift
 	return nil
 }
 
+func (m *Monitor) SetFeatureDriftInActive(domSvc domSvcMonitor.IExternalDriftMonitorAdapter, reqDom domDriftSvcMonitorDTO.DataDriftDeleteRequest) error {
+	err := domSvc.MonitorDisable(&reqDom)
+	if err != nil {
+		return err
+	}
+
+	m.DriftStatus = "unknown"
+
+	return nil
+}
+
 func (m *Monitor) PatchDataDriftSetting(domSvc domSvcMonitor.IExternalDriftMonitorAdapter, reqDom domDriftSvcMonitorDTO.DataDriftPatchRequest) error {
 	//if m.FeatureDriftTracking == false {
 	//	return fmt.Errorf("drift tracking is not ready")
@@ -327,6 +338,18 @@ func (m *Monitor) SetAccuracyMonitoringOff(domSvc domSvcMonitor.IExternalAccurac
 	}
 
 	m.AccuracyMonitoring = false
+	m.AccuracyStatus = "unknown"
+
+	return nil
+}
+
+func (m *Monitor) SetAccuracyInActive(domSvc domSvcMonitor.IExternalAccuracyMonitorAdapter, reqDom domAccuracySvcMonitorDTO.AccuracyDeleteRequest) error {
+
+	err := domSvc.MonitorDisable(&reqDom)
+	if err != nil {
+		return err
+	}
+
 	m.AccuracyStatus = "unknown"
 
 	return nil

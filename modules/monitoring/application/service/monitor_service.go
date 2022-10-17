@@ -500,7 +500,7 @@ func (s *MonitorService) SetServiceHealthMonitorInActive(req *appDTO.MonitorServ
 	return resDTO, nil
 }
 
-func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveRequestDTO) (*appDTO.MonitorDriftActiveResponseDTO, error) {
+func (s *MonitorService) SetDriftMonitorEnable(req *appDTO.MonitorDriftActiveRequestDTO) (*appDTO.MonitorDriftActiveResponseDTO, error) {
 	// active 는 드리프트 셋팅과 연관이 없음. 단순 on 만 가능하게 하는데 drift monitor가 만들어지지 않을경우엔 생성, 이미 있을 경우엔 단순 on만. drift monitor 생성여부 상태값 저장해야함
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 
@@ -541,7 +541,29 @@ func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveReq
 	return resDTO, nil
 }
 
-func (s *MonitorService) SetDriftMonitorInActive(req *appDTO.MonitorDriftInActiveRequestDTO) (*appDTO.MonitorDriftInActiveResponseDTO, error) {
+func (s *MonitorService) SetDriftMonitorActive(req *appDTO.MonitorDriftActiveRequestDTO) (*appDTO.MonitorDriftActiveResponseDTO, error) {
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+
+	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftCreateRequest{
+		InferenceName: req.DeploymentID,
+	}
+
+	err = domAggregateMonitor.SetFeatureDriftTrackingOn(s.domMonitorDriftSvc, reqDomDriftSvc)
+	if err != nil {
+		return nil, err
+	}
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.MonitorDriftActiveResponseDTO)
+	resDTO.DeploymentID = domAggregateMonitor.ID
+
+	return resDTO, nil
+}
+
+func (s *MonitorService) SetDriftMonitorDisable(req *appDTO.MonitorDriftInActiveRequestDTO) (*appDTO.MonitorDriftInActiveResponseDTO, error) {
 	// 단순 off 만 구현
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
@@ -551,6 +573,31 @@ func (s *MonitorService) SetDriftMonitorInActive(req *appDTO.MonitorDriftInActiv
 		InferenceName: req.DeploymentID,
 	}
 	err = domAggregateMonitor.SetFeatureDriftTrackingOff(s.domMonitorDriftSvc, reqDomDriftSvc)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.MonitorDriftInActiveResponseDTO)
+	resDTO.Message = "DataDrift Monitor InActive Success"
+
+	return resDTO, nil
+}
+
+func (s *MonitorService) SetDriftMonitorInActive(req *appDTO.MonitorDriftInActiveRequestDTO) (*appDTO.MonitorDriftInActiveResponseDTO, error) {
+	// 단순 off 만 구현
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+	reqDomDriftSvc := domSvcMonitorSvcDriftDTO.DataDriftDeleteRequest{
+		InferenceName: req.DeploymentID,
+	}
+	err = domAggregateMonitor.SetFeatureDriftInActive(s.domMonitorDriftSvc, reqDomDriftSvc)
 	if err != nil {
 		return nil, err
 	}
@@ -785,7 +832,7 @@ func (s *MonitorService) PatchMonitorSetting(req *appDTO.MonitorPatchRequestDTO)
 //	return resDTO, nil
 //}
 
-func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyActiveRequestDTO) (*appDTO.MonitorAccuracyActiveResponseDTO, error) {
+func (s *MonitorService) SetAccuracyMonitorEnable(req *appDTO.MonitorAccuracyActiveRequestDTO) (*appDTO.MonitorAccuracyActiveResponseDTO, error) {
 	// drift와 동일하게 on 기능 + accuracy monitor가 없을 경우 생성 있을경우 on 만. accuracy monitor 생성 여부 상태 저장해야함
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 
@@ -834,7 +881,29 @@ func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyAct
 	return resDTO, nil
 }
 
-func (s *MonitorService) SetAccuracyMonitorInActive(req *appDTO.MonitorAccuracyInActiveRequestDTO) (*appDTO.MonitorAccuracyInActiveResponseDTO, error) {
+func (s *MonitorService) SetAccuracyMonitorActive(req *appDTO.MonitorAccuracyActiveRequestDTO) (*appDTO.MonitorAccuracyActiveResponseDTO, error) {
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+
+	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyCreateRequest{
+		InferenceName: req.DeploymentID,
+	}
+
+	err = domAggregateMonitor.SetAccuracyMonitoringOn(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+	if err != nil {
+		return nil, err
+	}
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.MonitorAccuracyActiveResponseDTO)
+	resDTO.DeploymentID = domAggregateMonitor.ID
+
+	return resDTO, nil
+}
+
+func (s *MonitorService) SetAccuracyMonitorDisable(req *appDTO.MonitorAccuracyInActiveRequestDTO) (*appDTO.MonitorAccuracyInActiveResponseDTO, error) {
 	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
 	if err != nil {
 		return nil, err
@@ -843,6 +912,30 @@ func (s *MonitorService) SetAccuracyMonitorInActive(req *appDTO.MonitorAccuracyI
 		InferenceName: req.DeploymentID,
 	}
 	err = domAggregateMonitor.SetAccuracyMonitoringOff(s.domMonitorAccuracySvc, reqDomAccuracySvc)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.Save(domAggregateMonitor)
+	if err != nil {
+		return nil, err
+	}
+
+	resDTO := new(appDTO.MonitorAccuracyInActiveResponseDTO)
+	resDTO.Message = "Accuracy Monitor InActive Success"
+
+	return resDTO, nil
+}
+
+func (s *MonitorService) SetAccuracyMonitorInActive(req *appDTO.MonitorAccuracyInActiveRequestDTO) (*appDTO.MonitorAccuracyInActiveResponseDTO, error) {
+	domAggregateMonitor, err := s.repo.Get(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+	reqDomAccuracySvc := domSvcMonitorSvcAccuracyDTO.AccuracyDeleteRequest{
+		InferenceName: req.DeploymentID,
+	}
+	err = domAggregateMonitor.SetAccuracyInActive(s.domMonitorAccuracySvc, reqDomAccuracySvc)
 	if err != nil {
 		return nil, err
 	}
@@ -1044,7 +1137,7 @@ func (s *MonitorService) monitorStatusCheck(req *appDTO.MonitorStatusCheckReques
 				case "atrisk":
 					s.publisher.Notify(common.NewEventMonitoringAccuracyStatusChangedToAtrisk(req.DeploymentID))
 				default:
-					return errors.New("accurancy status check process error")
+					return errors.New("accuracy status check process error")
 				}
 
 			}
@@ -1156,7 +1249,7 @@ func (s *MonitorService) Update(event common.Event) {
 	switch actualEvent := event.(type) {
 	case common.DeploymentInferenceServiceCreated:
 		//
-		wtfAssociaionID := actualEvent.AssociationID()
+		wtfAssociationID := actualEvent.AssociationID()
 
 		req := &appDTO.MonitorCreateRequestDTO{
 			DeploymentID:           actualEvent.DeploymentID(),
@@ -1164,7 +1257,7 @@ func (s *MonitorService) Update(event common.Event) {
 			ModelHistoryID:         actualEvent.ModelHistoryID(),
 			AccuracyMonitoring:     actualEvent.AccuracyMonitoring(),
 			FeatureDriftTracking:   actualEvent.FeatureDriftTracking(),
-			AssociationID:          &wtfAssociaionID,
+			AssociationID:          &wtfAssociationID,
 			AssociationIDInFeature: actualEvent.AssociationIDInFeature(),
 		}
 		_, err := s.Create(req)
@@ -1182,7 +1275,10 @@ func (s *MonitorService) Update(event common.Event) {
 			ModelPackageID: actualEvent.ModelPackageID(),
 			ModelHistoryID: actualEvent.ModelHistoryID(),
 		}
-		s.MonitorReplaceModel(req)
+		_, err := s.MonitorReplaceModel(req)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+		}
 
 	//case common.DeploymentAssociationIDUpdated:
 	//	//
@@ -1206,7 +1302,7 @@ func (s *MonitorService) Update(event common.Event) {
 		reqDriftActive.ModelPackageID = actualEvent.ModelPackageID()
 		reqDriftActive.CurrentModelID = actualEvent.CurrentModelID()
 
-		_, err := s.SetDriftMonitorActive(reqDriftActive)
+		_, err := s.SetDriftMonitorEnable(reqDriftActive)
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
 		}
@@ -1215,24 +1311,22 @@ func (s *MonitorService) Update(event common.Event) {
 		reqDriftInActive := new(appDTO.MonitorDriftInActiveRequestDTO)
 		reqDriftInActive.DeploymentID = actualEvent.DeploymentID()
 
-		_, err := s.SetDriftMonitorInActive(reqDriftInActive)
+		_, err := s.SetDriftMonitorDisable(reqDriftInActive)
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
 		}
 
 	case common.DeploymentAccuracyAnalyzeEnabled:
 		println("AccuracyAnalyze true")
-		strAssociaionID := actualEvent.AssociationID()
+		strAssociationID := actualEvent.AssociationID()
 		reqAccuracyActive := new(appDTO.MonitorAccuracyActiveRequestDTO)
 		reqAccuracyActive.DeploymentID = actualEvent.DeploymentID()
 		reqAccuracyActive.ModelPackageID = actualEvent.ModelPackageID()
-		reqAccuracyActive.AssociationID = &strAssociaionID
+		reqAccuracyActive.AssociationID = &strAssociationID
 		reqAccuracyActive.AssociationIDInFeature = actualEvent.AssociationIDInFeature()
 		reqAccuracyActive.CurrentModelID = actualEvent.CurrentModelID()
-		//toBe..
-		//reqAccuracyActive.AssociationIDInFeature = req.AssociationIDInFeature
 
-		_, err := s.SetAccuracyMonitorActive(reqAccuracyActive)
+		_, err := s.SetAccuracyMonitorEnable(reqAccuracyActive)
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
 		}
@@ -1241,7 +1335,7 @@ func (s *MonitorService) Update(event common.Event) {
 		reqAccuracyInActive := new(appDTO.MonitorAccuracyInActiveRequestDTO)
 		reqAccuracyInActive.DeploymentID = actualEvent.DeploymentID()
 
-		_, err := s.SetAccuracyMonitorInActive(reqAccuracyInActive)
+		_, err := s.SetAccuracyMonitorDisable(reqAccuracyInActive)
 		if err != nil {
 			fmt.Printf("err: %v\n", err)
 		}
@@ -1255,7 +1349,7 @@ func (s *MonitorService) Update(event common.Event) {
 		_, err := s.Delete(reqDeleteMonitoring)
 		if err != nil {
 			//return nil, fmt.Errorf("monitoring delete error: %s", err)
-			fmt.Errorf("monitoring delete error: %s", err)
+			fmt.Printf("monitoring delete error: %s", err)
 		}
 
 	case common.DeploymentActived:
@@ -1272,31 +1366,25 @@ func (s *MonitorService) Update(event common.Event) {
 		}
 		_, err = s.SetServiceHealthMonitorActive(reqServiceHealth)
 		if err != nil {
-			fmt.Errorf("monitoring active error: %s", err)
+			fmt.Printf("monitoring active error: %s", err)
 		}
 		if resMonitor.Monitor.FeatureDriftTracking == true {
 			reqDrift := &appDTO.MonitorDriftActiveRequestDTO{
-				DeploymentID:   actualEvent.DeploymentID(),
-				ModelPackageID: "",
-				CurrentModelID: "",
+				DeploymentID: actualEvent.DeploymentID(),
 			}
 			_, err = s.SetDriftMonitorActive(reqDrift)
 			if err != nil {
-				fmt.Errorf("monitoring active error: %s", err)
+				fmt.Printf("monitoring active error: %s", err)
 			}
 		}
 		if resMonitor.Monitor.AccuracyMonitoring == true {
 			reqAccuracy := &appDTO.MonitorAccuracyActiveRequestDTO{
-				DeploymentID:           actualEvent.DeploymentID(),
-				ModelPackageID:         "",
-				AssociationID:          nil,
-				AssociationIDInFeature: false,
-				CurrentModelID:         "",
+				DeploymentID: actualEvent.DeploymentID(),
 			}
 			_, err = s.SetAccuracyMonitorActive(reqAccuracy)
 		}
 		if err != nil {
-			fmt.Errorf("monitoring active error: %s", err)
+			fmt.Printf("monitoring active error: %s", err)
 		}
 	case common.DeploymentInActived:
 		//monitor inactive
@@ -1310,7 +1398,7 @@ func (s *MonitorService) Update(event common.Event) {
 		}
 		_, err = s.SetServiceHealthMonitorInActive(reqServiceHealth)
 		if err != nil {
-			fmt.Errorf("monitoring inactive error: %s", err)
+			fmt.Printf("monitoring inactive error: %s", err)
 		}
 		if resMonitor.Monitor.FeatureDriftTracking == true {
 			reqDrift := &appDTO.MonitorDriftInActiveRequestDTO{
@@ -1318,7 +1406,7 @@ func (s *MonitorService) Update(event common.Event) {
 			}
 			_, err = s.SetDriftMonitorInActive(reqDrift)
 			if err != nil {
-				fmt.Errorf("monitoring inactive error: %s", err)
+				fmt.Printf("monitoring inactive error: %s", err)
 			}
 		}
 		if resMonitor.Monitor.AccuracyMonitoring == true {
@@ -1328,7 +1416,7 @@ func (s *MonitorService) Update(event common.Event) {
 			_, err = s.SetAccuracyMonitorInActive(reqAccuracy)
 		}
 		if err != nil {
-			fmt.Errorf("monitoring inactive error: %s", err)
+			fmt.Printf("monitoring inactive error: %s", err)
 		}
 
 	default:
