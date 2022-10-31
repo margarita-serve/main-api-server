@@ -65,9 +65,9 @@ type CreateDeploymentResponseDTO struct {
 
 type ReplaceModelRequestDTO struct {
 	//ProjectID      string `json:"projectID" validate:"false" swaggerignore:"true"`                                                           // 프로젝트 ID
-	DeploymentID   string `json:"deploymentID" validate:"required" swaggerignore:"true"`                                                     // 베포 ID
-	ModelPackageID string `json:"modelPackageID" validate:"required"`                                                                        // 교체 할 모델패키지 ID
-	Reason         string `json:"reason" validate:"required" enums:"Accurancy, DataDrift, Errors, ScheduledRefresh, PredictionSpeed, Other"` // 교체 이유
+	DeploymentID   string `json:"deploymentID" validate:"required" swaggerignore:"true"`                                                    // 베포 ID
+	ModelPackageID string `json:"modelPackageID" validate:"required"`                                                                       // 교체 할 모델패키지 ID
+	Reason         string `json:"reason" validate:"required" enums:"Accuracy, DataDrift, Errors, ScheduledRefresh, PredictionSpeed, Other"` // 교체 이유
 	//ManualApplication bool
 }
 

@@ -24,7 +24,7 @@ func (r *ReplaceModelRequestDTO) Validate() error {
 	return validation.ValidateStruct(r,
 		validation.Field(&r.DeploymentID, validation.Required, validation.NotNil, validation.Length(20, 20)),
 		validation.Field(&r.ModelPackageID, validation.Required, validation.NotNil, validation.Length(20, 20)),
-		validation.Field(&r.Reason, validation.Required, validation.In("Accurancy", "DataDrift", "Errors", "ScheduledRefresh", "PredictionSpeed", "Other")),
+		validation.Field(&r.Reason, validation.Required, validation.In("Accuracy", "DataDrift", "Errors", "ScheduledRefresh", "PredictionSpeed", "Other")),
 		//validation.Field(&r.ManualApplication, validation.In("True", "False")),
 	)
 }

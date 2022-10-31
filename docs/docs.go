@@ -4191,7 +4191,7 @@ const docTemplate = `{
                     "description": "교체 이유",
                     "type": "string",
                     "enum": [
-                        "Accurancy",
+                        "Accuracy",
                         " DataDrift",
                         " Errors",
                         " ScheduledRefresh",

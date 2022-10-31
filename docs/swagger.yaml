@@ -833,7 +833,7 @@ definitions:
       reason:
         description: 교체 이유
         enum:
-        - Accurancy
+        - Accuracy
         - ' DataDrift'
         - ' Errors'
         - ' ScheduledRefresh'

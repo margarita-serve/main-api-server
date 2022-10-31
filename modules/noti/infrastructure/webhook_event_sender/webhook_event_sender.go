@@ -57,11 +57,11 @@ func (c *WebHookEventSender) SendWebHookEvent(url string, method string, header 
 		return nil, err
 	}
 
-	procHeadersCR := strings.Split(strings.ReplaceAll(header, "\r\n", "\n"), "\n")
+	procHeadersCR := strings.Split(strings.ReplaceAll(header, "\\n", "\n"), "\n")
 	for _, str := range procHeadersCR {
 		fmt.Println(str)
 		slice := strings.Split(str, ":")
-		req.Header.Add(slice[0], slice[1])
+		req.Header.Add(strings.Trim(slice[0], " "), strings.Trim(slice[1], " "))
 	}
 
 	resp, err := c.doRequest(req)
