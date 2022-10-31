@@ -30,10 +30,10 @@ func (r *ReplaceModelRequestDTO) Validate() error {
 }
 
 func (r *UpdateDeploymentRequestDTO) Validate() error {
-	var checkAcc bool
-	if r.AccuracyAnalyze != nil {
-		checkAcc = *r.AccuracyAnalyze
-	}
+	//var checkAcc bool
+	//if r.AccuracyAnalyze != nil {
+	//	checkAcc = *r.AccuracyAnalyze
+	//}
 
 	return validation.ValidateStruct(r,
 		validation.Field(&r.DeploymentID, validation.Required, validation.NotNil, validation.Length(20, 20)),
@@ -42,8 +42,8 @@ func (r *UpdateDeploymentRequestDTO) Validate() error {
 		validation.Field(&r.Importance, validation.In("Low", "Moderate", "High", "Critical")),
 		validation.Field(&r.RequestCPU, validation.Min(0.1), validation.Max(2.0)),
 		validation.Field(&r.RequestMEM, validation.Min(0.1), validation.Max(2.0)),
-		validation.Field(&r.AssociationID, validation.When(checkAcc == true, validation.Required, validation.NotNil)),
-		validation.Field(&r.AssociationIDInFeature, validation.When(checkAcc == true, validation.NotNil)),
+		//validation.Field(&r.AssociationID, validation.When(checkAcc == true, validation.Required, validation.NotNil)),
+		//validation.Field(&r.AssociationIDInFeature, validation.When(checkAcc == true, validation.NotNil)),
 	)
 }
 

@@ -1448,3 +1448,15 @@ func (s *MonitorService) GetByIDInternal(monitoringID string) (*common.MonitorGe
 
 	return resDTO, nil
 }
+
+func (s *MonitorService) CheckIsAssociationID(monitoringID string) (bool, error) {
+	res, err := s.repo.Get(monitoringID)
+	if err != nil {
+		return true, err
+	}
+	if res.AssociationID != "" {
+		return true, nil
+	}
+
+	return false, nil
+}

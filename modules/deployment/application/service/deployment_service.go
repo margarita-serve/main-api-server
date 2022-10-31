@@ -481,6 +481,17 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 	//Find Monitor
 	resMonitor, _ := s.getMonitorByID(req.DeploymentID)
 
+	isAssociationID, err := s.checkIsAssociationID(req.DeploymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	if *req.AccuracyAnalyze == true {
+		if isAssociationID == true && (req.AssociationID != nil || req.AssociationIDInFeature != nil) {
+			return nil, fmt.Errorf("AssociaiotnID or AssociationIDInFeature are not changed")
+		}
+	}
+
 	var updateInfoString string = ""
 
 	if req.Name != nil {
@@ -1268,6 +1279,15 @@ func (s *DeploymentService) getMonitorByID(monitorID string) (*common.MonitorGet
 	}
 
 	return resMonitor, err
+}
+
+func (s *DeploymentService) checkIsAssociationID(monitorID string) (bool, error) {
+	check, err := s.monitoringSvc.CheckIsAssociationID(monitorID)
+	if err != nil {
+		return check, err
+	}
+
+	return check, nil
 }
 
 func (s *DeploymentService) Update(event common.Event) {

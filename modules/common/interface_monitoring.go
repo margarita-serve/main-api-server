@@ -2,6 +2,7 @@ package common
 
 type IMonitorService interface {
 	GetByIDInternal(monitoringID string) (*MonitorGetByIDInternalResponseDTO, error)
+	CheckIsAssociationID(monitoringID string) (bool, error)
 }
 
 type MonitorGetByIDInternalResponseDTO struct {
