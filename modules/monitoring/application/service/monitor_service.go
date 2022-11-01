@@ -842,7 +842,7 @@ func (s *MonitorService) SetAccuracyMonitorEnable(req *appDTO.MonitorAccuracyAct
 	}
 
 	if domAggregateMonitor.AssociationID != "" {
-		if *req.AssociationID != "" {
+		if *req.AssociationID != domAggregateMonitor.AssociationID {
 			return nil, fmt.Errorf("AssociationID(AssociationIDInFeature) value already exists. AssociationID(AssociationIDInFeature) cannot be changed")
 		}
 	}
