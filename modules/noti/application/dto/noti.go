@@ -2,7 +2,7 @@ package dto
 
 type NotiRequestDTO struct {
 	DeploymentID   string
-	NotiCategory   string //"Datadrift", "Accuracy", "Service"
+	NotiCategory   string //"DataDrift", "Accuracy", "Service"
 	AdditionalData string //
 }
 

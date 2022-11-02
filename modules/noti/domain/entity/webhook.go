@@ -20,7 +20,7 @@ type WebHook struct {
 func Validate(r *WebHook) error {
 	return validation.ValidateStruct(r,
 		validation.Field(&r.DeploymentID, validation.Required),
-		validation.Field(&r.TriggerSource, validation.Required, validation.In("Datadrift", "Accuracy")),
+		validation.Field(&r.TriggerSource, validation.Required, validation.In("DataDrift", "Accuracy")),
 		validation.Field(&r.URL, validation.Required),
 		validation.Field(&r.Method, validation.Required, validation.In("POST", "GET")),
 		validation.Field(&r.TriggerStatus, validation.Required, validation.In("AtRisk", "Failing")),

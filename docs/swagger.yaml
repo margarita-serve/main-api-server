@@ -263,9 +263,9 @@ definitions:
         x-order: "03"
       triggerSource:
         enum:
-        - Datadrift
+        - DataDrift
         - ' Accuracy'
-        example: Datadrift
+        example: DataDrift
         type: string
         x-order: "01"
       triggerStatus:
@@ -1020,9 +1020,9 @@ definitions:
         x-order: "2"
       triggerSource:
         enum:
-        - Datadrift
+        - DataDrift
         - ' Accuracy'
-        example: Datadrift
+        example: DataDrift
         type: string
         x-order: "1"
       url:

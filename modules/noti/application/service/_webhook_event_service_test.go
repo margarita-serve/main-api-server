@@ -47,7 +47,7 @@ func TestWebHookEventSvc_SendEvent(t *testing.T) {
 
 	req := dto.CreateWebHookEventRequestDTO{}
 	req.DeploymentID = "cbq6c77r2g4prn3pmqjg"
-	req.TriggerSource = "Datadrift"
+	req.TriggerSource = "DataDrift"
 
 	err = svc.SendWebHookEvent(&req, svc.systemIdentity)
 	if err != nil {

@@ -486,9 +486,11 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
-	if *req.AccuracyAnalyze == true {
-		if isAssociationID == true && (req.AssociationID != nil || req.AssociationIDInFeature != nil) {
-			return nil, fmt.Errorf("AssociaiotnID or AssociationIDInFeature are not changed")
+	if req.AccuracyAnalyze != nil {
+		if *req.AccuracyAnalyze == true {
+			if isAssociationID == true && (req.AssociationID != nil || req.AssociationIDInFeature != nil) {
+				return nil, fmt.Errorf("AssociaiotnID or AssociationIDInFeature are not changed")
+			}
 		}
 	}
 

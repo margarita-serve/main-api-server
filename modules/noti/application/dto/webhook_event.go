@@ -3,7 +3,7 @@ package dto
 type WebHookEvent struct {
 	ID            string
 	Name          string
-	TriggerSource string //Datadrift, Accuracy
+	TriggerSource string //DataDrift, Accuracy
 	URL           string
 	Method        string
 	CustomHeader  string

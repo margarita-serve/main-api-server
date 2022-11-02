@@ -3,7 +3,7 @@ package dto
 type WebHook struct {
 	ID            string `json:"webHookID" example:"" extensions:"x-order=01"`
 	DeploymentID  string `json:"deploymentID" extensions:"x-order=02"`
-	TriggerSource string `json:"triggerSource" enums:"Datadrift, Accuracy" example:"Datadrift" validate:"required" extensions:"x-order=03"`
+	TriggerSource string `json:"triggerSource" enums:"DataDrift, Accuracy" example:"DataDrift" validate:"required" extensions:"x-order=03"`
 	Name          string `json:"name" validate:"required" example:"pipe-line-trigger" extensions:"x-order=05"`
 	URL           string `json:"url" validate:"required" example:"http://example.com/to/webhook/client" extensions:"x-order=06"`
 	Method        string `json:"method" enums:"POST,GET" example:"POST" validate:"required" extensions:"x-order=07"`
@@ -14,7 +14,7 @@ type WebHook struct {
 
 type CreateWebHookRequestDTO struct {
 	DeploymentID  string `json:"deploymentID" validate:"required" swaggerignore:"true"`
-	TriggerSource string `json:"triggerSource" enums:"Datadrift, Accuracy" example:"Datadrift" validate:"required" extensions:"x-order=01"`
+	TriggerSource string `json:"triggerSource" enums:"DataDrift, Accuracy" example:"DataDrift" validate:"required" extensions:"x-order=01"`
 	Name          string `json:"name" validate:"required" example:"pipe-line-trigger" extensions:"x-order=03"`
 	URL           string `json:"url" validate:"required" example:"http://example.com/to/webhook/client" extensions:"x-order=04"`
 	Method        string `json:"method" enums:"POST,GET" example:"POST" validate:"required" extensions:"x-order=05"`
@@ -34,7 +34,7 @@ type DeleteWebHookRequestDTO struct {
 
 type UpdateWebHookRequestDTO struct {
 	DeploymentID  string  `json:"deploymentID" validate:"required" swaggerignore:"true"`
-	TriggerSource *string `json:"triggerSource" enums:"Datadrift, Accuracy" example:"Datadrift" validate:"required" extensions:"x-order=1"`
+	TriggerSource *string `json:"triggerSource" enums:"DataDrift, Accuracy" example:"DataDrift" validate:"required" extensions:"x-order=1"`
 	WebHookID     string  `json:"webHookID" validate:"required" swaggerignore:"true"`
 	Name          *string `json:"name" validate:"required" example:"pipe-line-trigger" extensions:"x-order=2"`
 	URL           *string `json:"url" validate:"required" example:"http://example.com/to/webhook/client" extensions:"x-order=3"`
@@ -81,7 +81,7 @@ type InternalGetWebHookResponseDTO struct {
 
 type TestWebHookRequestDTO struct {
 	DeploymentID  string `json:"deploymentID" validate:"required" swaggerignore:"true"`                                                     // 배포 ID
-	TriggerSource string `json:"triggerSource" enums:"Datadrift, Accuracy" example:"Datadrift" validate:"required" extensions:"x-order=01"` // 트리거링 될 모니터링 종류
+	TriggerSource string `json:"triggerSource" enums:"DataDrift, Accuracy" example:"DataDrift" validate:"required" extensions:"x-order=01"` // 트리거링 될 모니터링 종류
 	Name          string `json:"name" validate:"required" example:"pipe-line-trigger" extensions:"x-order=03"`                              // 등록할 웹훅 명
 	URL           string `json:"url" validate:"required" example:"http://example.com/to/webhook/client" extensions:"x-order=04"`            // callback URL
 	Method        string `json:"method" enums:"POST,GET" example:"POST" validate:"required" extensions:"x-order=05"`                        // http method

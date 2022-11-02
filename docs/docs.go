@@ -3427,11 +3427,11 @@ const docTemplate = `{
                 "triggerSource": {
                     "type": "string",
                     "enum": [
-                        "Datadrift",
+                        "DataDrift",
                         " Accuracy"
                     ],
                     "x-order": "01",
-                    "example": "Datadrift"
+                    "example": "DataDrift"
                 },
                 "triggerStatus": {
                     "type": "string",
@@ -4410,11 +4410,11 @@ const docTemplate = `{
                 "triggerSource": {
                     "type": "string",
                     "enum": [
-                        "Datadrift",
+                        "DataDrift",
                         " Accuracy"
                     ],
                     "x-order": "1",
-                    "example": "Datadrift"
+                    "example": "DataDrift"
                 },
                 "name": {
                     "type": "string",

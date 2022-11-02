@@ -156,7 +156,7 @@ func (s *NotiService) sendNotiEmail(notiCategory string, emailAddress string, ni
 
 	var templateCode string
 	switch notiCategory {
-	case "Datadrift":
+	case "DataDrift":
 		templateCode = "datadrift-alert-html"
 	case "Accuracy":
 		templateCode = "accuracy-alert-html"
@@ -201,10 +201,10 @@ func (s *NotiService) Update(event common.Event) {
 		s.SendNoti(actualEvent.DeploymentID(), "Accuracy", "Atrisk")
 	case common.MonitoringDataDriftStatusChangedToFailing:
 		//
-		s.SendNoti(actualEvent.DeploymentID(), "Datadrift", "Failing")
+		s.SendNoti(actualEvent.DeploymentID(), "DataDrift", "Failing")
 	case common.MonitoringDataDriftStatusChangedToAtrisk:
 		//
-		s.SendNoti(actualEvent.DeploymentID(), "Datadrift", "Atrisk")
+		s.SendNoti(actualEvent.DeploymentID(), "DataDrift", "Atrisk")
 	case common.MonitoringServiceHealthStatusChangedToFailing:
 		//
 		s.SendNoti(actualEvent.DeploymentID(), "Service", "Failing")
