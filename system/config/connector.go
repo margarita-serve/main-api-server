@@ -8,7 +8,8 @@ type Connectors struct {
 	AccuracyServer      AccuracyServer      `json:"accuracyServer" yaml:"accuracyServer"`
 	ServiceHealthServer ServiceHealthServer `json:"serviceHealthServer" yaml:"serviceHealthServer"`
 	GraphServer         GraphServer         `json:"graphServer" yaml:"graphServer"`
-	Kafka               KafkaServer         `json:"Kafka" yaml:"kafka"`
+	Kafka               KafkaServer         `json:"kafka" yaml:"kafka"`
+	InferenceSvc        InferenceSvc        `json:"inferenceSvc" yaml:"inferenceSvc"`
 }
 
 // Identity type
@@ -57,4 +58,11 @@ type KafkaServer struct {
 	Endpoint        string `json:"endpoint" yaml:"endpoint"`
 	GroupID         string `json:"groupID"`
 	AutoOffsetReset string `json:"autoOffsetReset"`
+}
+
+type InferenceSvc struct {
+	KserveAPISvrEndPoint  string `json:"kserveAPISvrEndPoint" yaml:"kserveAPISvrEndPoint"`
+	KserveHostName        string `json:"kserveHostName" yaml:"kserveHostName"`
+	KserveIngressEndPoint string `json:"kserveIngressEndPoint" yaml:"kserveIngressEndPoint"`
+	InferenceNamespace    string `json:"inferenceNamespace" yaml:"inferenceNamespace"`
 }

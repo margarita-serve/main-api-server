@@ -27,61 +27,6 @@ func InitAllApplication(h *handler.Handler) error {
 // OpenCacheConnection open CacheConnection
 func InintApplication(h *handler.Handler, publisher common.EventPublisher) error {
 	if h != nil {
-		//Service init
-		// AuthenticationSvc, err := appAuthsSvc.NewAuthenticationSvc(h)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// ClusterInfoSvc, err := appResourceSvc.NewClusterInfoService(h)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// PredictionEnvSvc, err := appResourceSvc.NewPredictionEnvService(h, ClusterInfoSvc)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// ProjectSvc, err := appProjectSvc.NewProjectService(h)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// ModelPackageSvc, err := appModelPackageSvc.NewModelPackageService(h, ProjectSvc)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// DeploymentGetByIDInternalSvc, err := appDeploymentSvc.NewDeploymentGetByIDInternalService(h)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// MonitorSvc, err := appMonitorSvc.NewMonitorService(h, appModelPackageInstance.ModelPackageSvc, publisher)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// MonitorMessagingSvc, err := appMonitorSvc.NewMessagingService(h, MonitorSvc)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// DeploymentSvc, err := appDeploymentSvc.NewDeploymentService(h, PredictionEnvSvc, ProjectSvc, appModelPackageInstance.ModelPackageSvc, appMonitorInstance.MonitorSvc, publisher)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// DeploymentGovernanceHistorySvc, err := appDeploymentSvc.NewDeploymentGovernanceHistoryService(h)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// NotiSvc, err := appNotiSvc.NewNotiService(h, EmailSvc, DeploymentSvc, ProjectSvc, AuthenticationSvc, DeploymentGovernanceHistorySvc, WebHookSvc)
-		// if err != nil {
-		// 	return err
-		// }
 
 		//Application init
 		appProjectService, err := appProject.NewProjectApp(h)
@@ -133,8 +78,8 @@ func InintApplication(h *handler.Handler, publisher common.EventPublisher) error
 		h.SetApp("noti", appNotiInstance)
 
 		publisher.Subscribe(appModelPackageService.ModelPackageSvc, common.DeploymentCreated{}, common.DeploymentModelReplaced{})
-		publisher.Subscribe(appMonitorService.MonitorSvc, common.DeploymentInferenceServiceCreated{}, common.DeploymentDeleted{}, common.DeploymentActived{}, common.DeploymentInActived{}, common.DeploymentModelReplaced{}, common.DeploymentFeatureDriftTrackingEnabled{}, common.DeploymentFeatureDriftTrackingDisabled{}, common.DeploymentAccuracyAnalyzeEnabled{}, common.DeploymentAccuracyAnalyzeDisabled{}, common.DeploymentAssociationIDUpdated{})
-		publisher.Subscribe(appDeploymentService.DeploymentSvc, common.MonitoringCreated{}, common.MonitoringCreateFailed{}, common.MonitoringAccuracyStatusChangedToFailing{}, common.MonitoringAccuracyStatusChangedToAtrisk{}, common.MonitoringDataDriftStatusChangedToFailing{}, common.MonitoringDataDriftStatusChangedToAtrisk{}, common.MonitoringServiceHealthStatusChangedToFailing{}, common.MonitoringServiceHealthStatusChangedToAtrisk{})
+		publisher.Subscribe(appMonitorService.MonitorSvc, common.DeploymentActived{}, common.DeploymentInActived{})
+		publisher.Subscribe(appDeploymentService.DeploymentSvc, common.MonitoringAccuracyMonitorDisabled{}, common.MonitoringAccuracyMonitorEnabled{}, common.MonitoringDataDriftMonitorDisabled{}, common.MonitoringDataDriftMonitorEnabled{}, common.MonitoringAccuracyStatusChangedToFailing{}, common.MonitoringAccuracyStatusChangedToAtrisk{}, common.MonitoringDataDriftStatusChangedToFailing{}, common.MonitoringDataDriftStatusChangedToAtrisk{}, common.MonitoringServiceHealthStatusChangedToFailing{}, common.MonitoringServiceHealthStatusChangedToAtrisk{})
 		publisher.Subscribe(appNotiInstance.NotiSvc, common.MonitoringAccuracyStatusChangedToFailing{}, common.MonitoringAccuracyStatusChangedToAtrisk{}, common.MonitoringDataDriftStatusChangedToFailing{}, common.MonitoringDataDriftStatusChangedToAtrisk{}, common.MonitoringServiceHealthStatusChangedToFailing{}, common.MonitoringServiceHealthStatusChangedToAtrisk{})
 	}
 

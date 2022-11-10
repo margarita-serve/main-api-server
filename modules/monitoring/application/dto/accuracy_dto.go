@@ -42,7 +42,7 @@ type AccuracyGetResponseDTO struct {
 type MonitorAccuracyActiveRequestDTO struct {
 	DeploymentID           string
 	ModelPackageID         string
-	AssociationID          *string
+	AssociationID          string
 	AssociationIDInFeature bool
 	CurrentModelID         string
 }

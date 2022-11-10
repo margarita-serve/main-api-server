@@ -12,12 +12,12 @@ package service
 
 import (
 	"fmt"
+	"sync"
 
 	common "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/common"
 	appDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/application/dto"
 	domEntity "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/entity"
 	domRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/repository"
-	domSchema "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/schema"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/handler"
 	"git.k3.acornsoft.io/msit-auto-ml/koreserv/system/identity"
 	"github.com/rs/xid"
@@ -25,6 +25,7 @@ import (
 	domSvcInferenceSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service"
 	domSvcInferenceSvcDto "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/domain/service/inference_service/dto"
 	infInfSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/inference_service/kserve"
+
 	predictionSendSvc "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/prediction_sender"
 	infRepo "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/deployment/infrastructure/repository"
 	appResourceDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/resource/application/dto"
@@ -93,6 +94,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 	}
 
 	guid := xid.New().String()
+	newModelHistoryID := xid.New().String()
 
 	//Find ModelPackage
 	resModelPackage, err := s.getModelPackageByID(req.ModelPackageID)
@@ -151,112 +153,62 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		LimitMEM:              domAggregateDeployment.LimitMEM,
 	}
 
-	if err := reqDomSvc.Validate(); err != nil {
-		return nil, err
-	}
-
-	newModelHistoryID := xid.New().String()
-	domAggregateDeployment.AddModelHistory(newModelHistoryID, resModelPackage.ModelName, resModelPackage.ModelVersion, resModelPackage.ModelPackageID)
-
-	featureDriftTrackingBool := false
-	accuracyAnalyzeBool := false
-	associationIDInFeature := false
-	if req.FeatureDriftTracking {
-		featureDriftTrackingBool = req.FeatureDriftTracking
-	}
-	if req.AccuracyAnalyze {
-		accuracyAnalyzeBool = req.AccuracyAnalyze
-	}
-	if req.AssociationIDInFeature != nil {
-		associationIDInFeature = *req.AssociationIDInFeature
-	}
-
-	// WaitGroup 생성. 2개의 Go루틴을 기다림.
-	// var wait sync.WaitGroup
-	// var checkErrMsg error
-	// wait.Add(2)
-
-	// // ch생성
-	// errs := make(chan error, 1)
-
-	// go func() {
-	// 	defer wait.Done() //끝나면 .Done() 호출
-	// 	_, err = s.monitoringSvc.Create(reqMonitoring)
-	// 	if err != nil {
-	// 		errs <- err
-	// 	}
-
-	// }()
-
-	// go func() {
-	// 	defer wait.Done() //끝나면 .Done() 호출
-	// 	err = domAggregateDeployment.RequestCreateInferenceService(s.domInferenceSvc, reqDomSvc)
-	// 	if err != nil {
-	// 		errs <- err
-	// 	}
-	// }()
-
-	// wait.Wait() //Go루틴 모두 끝날 때까지 대기
-	// close(errs)
-
-	// checkErrMsg = <-errs
-
-	// if checkErrMsg != nil {
-	// 	reqDeleteInference := &appDTO.DeleteDeploymentRequestDTO{
-	// 		//ProjectID:    req.ProjectID,
-	// 		DeploymentID: guid,
-	// 	}
-
-	// 	_, err := s.Delete(reqDeleteInference, i)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("deployment create error: %s, %s", checkErrMsg, err)
-	// 	}
-
-	// 	return nil, fmt.Errorf("deployment create error: %s", checkErrMsg)
-	// }
-
-	err = domAggregateDeployment.RequestCreateInferenceService(s.domInferenceSvc, reqDomSvc)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.repo.Save(domAggregateDeployment)
-	if err != nil {
-		return nil, err
-	}
-
 	//Create Monitoring Service
-	// reqMonitoring := &appMonitoringDTO.MonitorCreateRequestDTO{
-	// 	DeploymentID:         domAggregateDeployment.ID,
-	// 	ModelPackageID:       domAggregateDeployment.ModelPackageID,
-	// 	FeatureDriftTracking: featureDriftTrackingBool,
-	// 	AccuracyMonitoring:   accuracyAnalyzeBool,
-	// 	AssociationID:        &req.AssociationID,
-	// 	//toBe..
-	// 	//AssociationIDInFeature:        &req.AssociationIDInFeature,
-	// 	ModelHistoryID: newModelHistoryID,
-	// }
-
-	//s.addModelPackageDeployCount(req.ModelPackageID)
-	s.publisher.Notify(common.NewEventDeploymentInferenceServiceCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, featureDriftTrackingBool, accuracyAnalyzeBool, req.AssociationID, associationIDInFeature, newModelHistoryID))
-
-	//Find Domain Entity
-	checkStatus, err := s.repo.GetByIDInternal(domAggregateDeployment.ID)
-	if err != nil {
-		return nil, err
+	reqMonitoring := &common.CreateMonitoringRequest{
+		DeploymentID:           domAggregateDeployment.ID,
+		ModelPackageID:         domAggregateDeployment.ModelPackageID,
+		FeatureDriftTracking:   req.FeatureDriftTracking,
+		AccuracyMonitoring:     req.AccuracyAnalyze,
+		AssociationID:          req.AssociationID,
+		AssociationIDInFeature: req.AssociationIDInFeature,
+		ModelHistoryID:         newModelHistoryID,
 	}
 
-	//checkErrMsg = <-errs
+	//WaitGroup 생성. 2개의 Go루틴을 기다림.
+	var wait sync.WaitGroup
+	var checkErrMsg error
+	wait.Add(2)
 
-	if checkStatus.ServiceStatus != "Ready" {
+	// ch생성
+	errs := make(chan error, 1)
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		err = s.monitoringSvc.CreateMonitoring(reqMonitoring)
+		if err != nil {
+			errs <- err
+		}
+
+	}()
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		err = domAggregateDeployment.RequestCreateInferenceService(s.domInferenceSvc, reqDomSvc)
+		if err != nil {
+			errs <- err
+		}
+	}()
+
+	wait.Wait() //Go루틴 모두 끝날 때까지 대기
+	close(errs)
+
+	checkErrMsg = <-errs
+
+	if checkErrMsg != nil {
 		reqDeleteInference := &appDTO.DeleteDeploymentRequestDTO{
 			//ProjectID:    req.ProjectID,
 			DeploymentID: guid,
 		}
 
-		_, _ = s.Delete(reqDeleteInference, i)
-		return nil, fmt.Errorf("deployment create error: check monitoring system")
+		_, err := s.Delete(reqDeleteInference, i)
+		if err != nil {
+			return nil, fmt.Errorf("deployment create error: %s, %s", checkErrMsg, err)
+		}
+
+		return nil, fmt.Errorf("deployment create error: %s", checkErrMsg)
 	}
+
+	domAggregateDeployment.AddModelHistory(newModelHistoryID, resModelPackage.ModelName, resModelPackage.ModelVersion, resModelPackage.ModelPackageID)
 
 	err = domAggregateDeployment.AddEventHistory("Create", "Deployment Created", i.Claims.Username)
 	if err != nil {
@@ -268,7 +220,7 @@ func (s *DeploymentService) Create(req *appDTO.CreateDeploymentRequestDTO, i ide
 		return nil, err
 	}
 
-	s.publisher.Notify(common.NewEventDeploymentCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, featureDriftTrackingBool, accuracyAnalyzeBool, req.AssociationID, associationIDInFeature, newModelHistoryID))
+	s.publisher.Notify(common.NewEventDeploymentCreated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, req.FeatureDriftTracking, req.AccuracyAnalyze, req.AssociationID, req.AssociationIDInFeature, newModelHistoryID))
 
 	// response dto
 	resDTO := new(appDTO.CreateDeploymentResponseDTO)
@@ -340,59 +292,58 @@ func (s *DeploymentService) ReplaceModel(req *appDTO.ReplaceModelRequestDTO, i i
 	newModelHistoryID := xid.New().String()
 	domAggregateDeployment.AddModelHistory(newModelHistoryID, resModelPackage.ModelName, resModelPackage.ModelVersion, resModelPackage.ModelPackageID)
 
-	// //Call Monitoring Service
-	// //Send Replaced Model Info 수정
-	// reqReplaceMonitoring := &appMonitoringDTO.MonitorReplaceModelRequestDTO{
-	// 	DeploymentID:   req.DeploymentID,
-	// 	ModelPackageID: req.ModelPackageID,
-	// 	ModelHistoryID: newModelHistoryID,
-	// }
-
-	// // WaitGroup 생성. 2개의 Go루틴을 기다림.
-	// var wait sync.WaitGroup
-	// var checkErrMsg error
-	// wait.Add(2)
-
-	// // ch생성
-	// errs := make(chan error, 1)
-
-	// go func() {
-	// 	defer wait.Done() //끝나면 .Done() 호출
-	// 	_, err = s.monitoringSvc.MonitorReplaceModel(reqReplaceMonitoring)
-	// 	if err != nil {
-	// 		errs <- err
-	// 	}
-
-	// }()
-
-	// go func() {
-	// 	defer wait.Done() //끝나면 .Done() 호출
-	// 	err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
-	// 	if err != nil {
-	// 		errs <- err
-	// 	}
-	// }()
-
-	// wait.Wait() //Go루틴 모두 끝날 때까지 대기
-	// close(errs)
-
-	// checkErrMsg = <-errs
-
-	// if checkErrMsg != nil {
-	// 	domAggregateDeployment.SetServiceStatusReady()
-
-	// 	err = s.repo.Save(domAggregateDeployment)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	return nil, fmt.Errorf("deployment replace error: %s", checkErrMsg)
-	// }
-
-	err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
-	if err != nil {
-		return nil, err
+	//Send Replaced Model Info
+	reqReplaceMonitoring := &common.ReplaceModelMonitoringRequest{
+		DeploymentID:   req.DeploymentID,
+		ModelPackageID: req.ModelPackageID,
+		ModelHistoryID: newModelHistoryID,
 	}
+
+	// WaitGroup 생성. 2개의 Go루틴을 기다림.
+	var wait sync.WaitGroup
+	var checkErrMsg error
+	wait.Add(2)
+
+	// ch생성
+	errs := make(chan error, 1)
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		err = s.monitoringSvc.ReplaceModelMonitoring(reqReplaceMonitoring)
+		if err != nil {
+			errs <- err
+		}
+
+	}()
+
+	go func() {
+		defer wait.Done() //끝나면 .Done() 호출
+		err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
+		if err != nil {
+			errs <- err
+		}
+	}()
+
+	wait.Wait() //Go루틴 모두 끝날 때까지 대기
+	close(errs)
+
+	checkErrMsg = <-errs
+
+	if checkErrMsg != nil {
+		domAggregateDeployment.SetServiceStatusReady()
+
+		err = s.repo.Save(domAggregateDeployment)
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, fmt.Errorf("deployment replace error: %s", checkErrMsg)
+	}
+
+	// err = domAggregateDeployment.RequestReplaceModelInferenceService(s.domInferenceSvc, reqDomSvc)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	err = domAggregateDeployment.AddEventHistory("ReplaceModel", reqDomSvc.ModelName+" Reason: "+req.Reason, i.Claims.Username)
 	if err != nil {
@@ -473,123 +424,80 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
-	resModelPackage, err := s.getModelPackageByID(domAggregateDeployment.ModelPackageID)
-	if err != nil {
-		return nil, err
-	}
+	//Find Current Model
+	currentModelID := s.getCurrentModelID(domAggregateDeployment)
 
-	//Find Monitor
-	resMonitor, _ := s.getMonitorByID(req.DeploymentID)
+	if req.FeatureDriftTracking != nil || req.AccuracyAnalyze != nil || req.AssociationID != nil || req.AssociationIDInFeature != nil {
+		req := &common.UpdateMonitoringOptionsRequest{
+			Identity:               i,
+			DeploymentID:           domAggregateDeployment.ID,
+			ModelPackageID:         domAggregateDeployment.ModelPackageID,
+			ModelHistoryID:         currentModelID,
+			FeatureDriftTracking:   req.FeatureDriftTracking,
+			AccuracyMonitoring:     req.AccuracyAnalyze,
+			AssociationID:          req.AssociationID,
+			AssociationIDInFeature: req.AssociationIDInFeature,
+		}
+		err := s.monitoringSvc.UpdateMonitoringOptions(req)
 
-	isAssociationID, err := s.checkIsAssociationID(req.DeploymentID)
-	if err != nil {
-		return nil, err
-	}
-
-	if req.AccuracyAnalyze != nil {
-		if *req.AccuracyAnalyze == true {
-			if isAssociationID == true && (req.AssociationID != nil || req.AssociationIDInFeature != nil) {
-				return nil, fmt.Errorf("AssociaiotnID or AssociationIDInFeature are not changed")
-			}
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	var updateInfoString string = ""
-
 	if req.Name != nil {
-		updateInfoString += fmt.Sprintf("%s: %s -> %s  ", "Name", domAggregateDeployment.Name, *req.Name)
+		updateInfoString := fmt.Sprintf("%s: %s -> %s  ", "Name", domAggregateDeployment.Name, *req.Name)
 		domAggregateDeployment.UpdateDeploymentName(*req.Name)
+
+		err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if req.Description != nil {
-		updateInfoString += fmt.Sprintf("%s: %s -> %s  ", "Description", domAggregateDeployment.Description, *req.Description)
+		updateInfoString := fmt.Sprintf("%s: %s -> %s  ", "Description", domAggregateDeployment.Description, *req.Description)
 		domAggregateDeployment.UpdateDeploymentDescription(*req.Description)
+
+		err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if req.Importance != nil {
-		updateInfoString += fmt.Sprintf("%s: %s ->% s  ", "Importance", domAggregateDeployment.Importance, *req.Importance)
+		updateInfoString := fmt.Sprintf("%s: %s ->% s  ", "Importance", domAggregateDeployment.Importance, *req.Importance)
 		domAggregateDeployment.UpdateDeploymentImportance(*req.Importance)
+
+		err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
+		if err != nil {
+			return nil, err
+		}
 	}
-	// if req.AssociationID != nil {
-	// 	reqUpdateAssociationID := new(appMonitoringDTO.UpdateAssociationIDRequestDTO)
-	// 	reqUpdateAssociationID.DeploymentID = req.DeploymentID
-	// 	reqUpdateAssociationID.AssociationID = req.AssociationID
-	// 	//toBe..
-	// 	//reqUpdateAssociationID.AssociationIDInFeature = req.AssociationIDInFeature
-
-	// 	_, err = s.monitoringSvc.UpdateAssociationID(reqUpdateAssociationID)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	// if req.FeatureDriftTracking != nil {
-	// 	if *req.FeatureDriftTracking {
-	// 		println("FeatureDriftTracking true")
-
-	// 		reqDriftActive := new(appMonitoringDTO.MonitorDriftActiveRequestDTO)
-	// 		reqDriftActive.DeploymentID = req.DeploymentID
-	// 		reqDriftActive.ModelPackageID = resModelPackage.ModelPackageID
-	// 		reqDriftActive.CurrentModelID = currentModelID
-
-	// 		_, err = s.monitoringSvc.SetDriftMonitorActive(reqDriftActive)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-
-	// 	} else {
-	// 		reqDriftInActive := new(appMonitoringDTO.MonitorDriftInActiveRequestDTO)
-	// 		reqDriftInActive.DeploymentID = req.DeploymentID
-
-	// 		_, err = s.monitoringSvc.SetDriftMonitorInActive(reqDriftInActive)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 	}
-	// }
-	// if req.AccuracyAnalyze != nil {
-	// 	if *req.AccuracyAnalyze {
-	// 		println("AccuracyAnalyze true")
-	// 		reqAccuracyActive := new(appMonitoringDTO.MonitorAccuracyActiveRequestDTO)
-	// 		reqAccuracyActive.DeploymentID = req.DeploymentID
-	// 		reqAccuracyActive.ModelPackageID = resModelPackage.ModelPackageID
-	// 		reqAccuracyActive.AssociationID = req.AssociationID
-	// 		reqAccuracyActive.CurrentModelID = currentModelID
-	// 		//toBe..
-	// 		//reqAccuracyActive.AssociationIDInFeature = req.AssociationIDInFeature
-
-	// 		_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracyActive)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 	} else {
-	// 		reqAccuracyInActive := new(appMonitoringDTO.MonitorAccuracyInActiveRequestDTO)
-	// 		reqAccuracyInActive.DeploymentID = req.DeploymentID
-
-	// 		_, err = s.monitoringSvc.SetAccuracyMonitorInActive(reqAccuracyInActive)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 	}
-	// }
 
 	if (req.RequestCPU != nil) || (req.RequestMEM != nil) {
 		if req.RequestCPU != nil {
-			updateInfoString += fmt.Sprintf("%s: %f->%f\n", "RequestCPU", domAggregateDeployment.RequestCPU, *req.RequestCPU)
+			updateInfoString := fmt.Sprintf("%s: %f->%f\n", "RequestCPU", domAggregateDeployment.RequestCPU, *req.RequestCPU)
 			domAggregateDeployment.UpdateDeploymentRequestCPU(*req.RequestCPU)
+
+			err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
+			if err != nil {
+				return nil, err
+			}
 		}
 		if req.RequestMEM != nil {
-			updateInfoString += fmt.Sprintf("%s: %f->%f\n", "RequestMEM", domAggregateDeployment.RequestMEM, *req.RequestMEM)
+			updateInfoString := fmt.Sprintf("%s: %f->%f\n", "RequestMEM", domAggregateDeployment.RequestMEM, *req.RequestMEM)
 			domAggregateDeployment.UpdateDeploymentRequestMEM(*req.RequestMEM)
+
+			err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		err := s.updateResources(domAggregateDeployment, i)
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	err = domAggregateDeployment.AddEventHistory("Update", fmt.Sprintf("%s (%s)", "Deployment is Updated", updateInfoString), i.Claims.Username)
-	if err != nil {
-		return nil, err
 	}
 
 	err = s.repo.Save(domAggregateDeployment)
@@ -597,48 +505,7 @@ func (s *DeploymentService) UpdateDeployment(req *appDTO.UpdateDeploymentRequest
 		return nil, err
 	}
 
-	var currentModelID string
-	for _, history := range domAggregateDeployment.ModelHistory {
-		if history.ApplyHistoryTag == "Current" {
-			currentModelID = history.ID
-			break
-		}
-	}
-
-	// Send Event
-	//if req.AssociationID != nil {
-	//	s.publisher.Notify(common.NewEventDeploymentAssociationIDUpdated(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, *req.AssociationID))
-	//}
-
-	if req.FeatureDriftTracking != nil {
-		if *req.FeatureDriftTracking {
-			s.publisher.Notify(common.NewEventDeploymentFeatureDriftTrackingEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID))
-		} else {
-			s.publisher.Notify(common.NewEventDeploymentFeatureDriftTrackingDisabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID))
-		}
-	}
-
-	associationID := resMonitor.AssociationID
-	associationIDInFeature := resMonitor.AssociationIDInFeature
-	if associationID != "" && req.AssociationID != nil {
-		return nil, fmt.Errorf("change AssociationID is impossible")
-	}
-	if associationID != "" && req.AssociationIDInFeature != nil {
-		return nil, fmt.Errorf("change AssociationIDInFeature is impossible")
-	}
-
-	if req.AccuracyAnalyze != nil {
-		if *req.AccuracyAnalyze {
-			if associationID == "" {
-				associationID = *req.AssociationID
-				associationIDInFeature = *req.AssociationIDInFeature
-			}
-
-			s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeEnabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID, associationID, associationIDInFeature))
-		} else {
-			s.publisher.Notify(common.NewEventDeploymentAccuracyAnalyzeDisabled(domAggregateDeployment.ID, resModelPackage.ModelPackageID, currentModelID))
-		}
-	}
+	s.publisher.Notify(common.NewEventDeploymentUpdated(domAggregateDeployment.ID, domAggregateDeployment.ModelPackageID, req.FeatureDriftTracking, req.AccuracyAnalyze, req.AssociationID, req.AssociationIDInFeature, currentModelID))
 
 	// response dto
 	resDTO := new(appDTO.UpdateDeploymentResponseDTO)
@@ -688,15 +555,15 @@ func (s *DeploymentService) Delete(req *appDTO.DeleteDeploymentRequestDTO, i ide
 		return nil, err
 	}
 
-	// reqDeleteMonitoring := &appMonitoringDTO.MonitorDeleteRequestDTO{
-	// 	DeploymentID: domAggregateDeployment.ID,
-	// }
+	reqDeleteMonitoring := &common.DeleteMonitoringRequest{
+		DeploymentID: domAggregateDeployment.ID,
+	}
 
-	// _, err = s.monitoringSvc.Delete(reqDeleteMonitoring)
-	// if err != nil {
-	// 	//return nil, fmt.Errorf("monitoring delete error: %s", err)
-	// 	fmt.Errorf("monitoring delete error: %s", err)
-	// }
+	err = s.monitoringSvc.DeleteMonitoring(reqDeleteMonitoring)
+	if err != nil {
+		// return nil, fmt.Errorf("monitoring delete error: %s", err)
+		fmt.Errorf("monitoring delete error: %s", err)
+	}
 
 	err = s.repo.Delete(req.DeploymentID)
 	if err != nil {
@@ -730,25 +597,19 @@ func (s *DeploymentService) GetByID(req *appDTO.GetDeploymentRequestDTO, i ident
 	}
 
 	//Find Monitor
-	resMonitor, _ := s.getMonitorByID(res.ID)
+	reqMonitor := &common.MonitorGetByIDInternalRequest{
+		DeploymentID: res.ID,
+	}
+	resMonitor, _ := s.monitoringSvc.GetByIDInternal(reqMonitor)
 
 	//Find ModelPackage
 	resModelPackage, _ := s.getModelPackageByID(res.ModelPackageID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	//Find PredictionEnv
 	resPredictionEnv, _ := s.getPredictionEnvByID(res.PredictionEnvID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	//Find ProjectInfo
 	resProject, _ := s.getProjectByID(res.ProjectID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	// response dto
 	resDTO := new(appDTO.GetDeploymentResponseDTO)
@@ -854,7 +715,10 @@ func (s *DeploymentService) GetList(req *appDTO.GetDeploymentListRequestDTO, i i
 	var listDeployment []*appDTO.DeploymentList
 	for _, rec := range resultList {
 		//Find Monitor
-		resMonitor, _ := s.getMonitorByID(rec.ID)
+		reqMonitor := &common.MonitorGetByIDInternalRequest{
+			DeploymentID: rec.ID,
+		}
+		resMonitor, _ := s.monitoringSvc.GetByIDInternal(reqMonitor)
 
 		//Find ModelPackage
 		resModelPackage, _ := s.getModelPackageByID(rec.ModelPackageID)
@@ -953,45 +817,6 @@ func (s *DeploymentService) SetActive(req *appDTO.ActiveDeploymentRequestDTO, i 
 		return nil, err
 	}
 
-	// //monitor active
-	// reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
-	// 	ID: req.DeploymentID,
-	// }
-
-	// resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
-
-	// reqServiceHealth := &appMonitoringDTO.MonitorServiceHealthActiveRequestDTO{
-	// 	DeploymentID:   req.DeploymentID,
-	// 	CurrentModelID: "",
-	// }
-	// _, err = s.monitoringSvc.SetServiceHealthMonitorActive(reqServiceHealth)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if resMonitor.Monitor.FeatureDriftTracking == true {
-	// 	reqDrift := &appMonitoringDTO.MonitorDriftActiveRequestDTO{
-	// 		DeploymentID:   req.DeploymentID,
-	// 		ModelPackageID: "",
-	// 		CurrentModelID: "",
-	// 	}
-	// 	_, err = s.monitoringSvc.SetDriftMonitorActive(reqDrift)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-	// if resMonitor.Monitor.AccuracyMonitoring == true {
-	// 	reqAccuracy := &appMonitoringDTO.MonitorAccuracyActiveRequestDTO{
-	// 		DeploymentID:   req.DeploymentID,
-	// 		ModelPackageID: "",
-	// 		AssociationID:  nil,
-	// 		CurrentModelID: "",
-	// 	}
-	// 	_, err = s.monitoringSvc.SetAccuracyMonitorActive(reqAccuracy)
-	// }
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	err = s.repo.Save(domAggregateDeployment)
 	if err != nil {
 		return nil, err
@@ -1048,38 +873,6 @@ func (s *DeploymentService) SetInActive(req *appDTO.InActiveDeploymentRequestDTO
 	if err != nil {
 		return nil, err
 	}
-
-	// //monitor inactive
-	// reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
-	// 	ID: req.DeploymentID,
-	// }
-
-	// resMonitor, err := s.monitoringSvc.GetByID(reqMonitor)
-	// reqServiceHealth := &appMonitoringDTO.MonitorServiceHealthInActiveRequestDTO{
-	// 	DeploymentID: req.DeploymentID,
-	// }
-	// _, err = s.monitoringSvc.SetServiceHealthMonitorInActive(reqServiceHealth)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if resMonitor.Monitor.FeatureDriftTracking == true {
-	// 	reqDrift := &appMonitoringDTO.MonitorDriftInActiveRequestDTO{
-	// 		DeploymentID: req.DeploymentID,
-	// 	}
-	// 	_, err = s.monitoringSvc.SetDriftMonitorInActive(reqDrift)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-	// if resMonitor.Monitor.AccuracyMonitoring == true {
-	// 	reqAccuracy := &appMonitoringDTO.MonitorAccuracyInActiveRequestDTO{
-	// 		DeploymentID: req.DeploymentID,
-	// 	}
-	// 	_, err = s.monitoringSvc.SetAccuracyMonitorInActive(reqAccuracy)
-	// }
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	err = s.repo.Save(domAggregateDeployment)
 	if err != nil {
@@ -1148,34 +941,22 @@ func (s *DeploymentService) getModelPackageByID(modelPackageID string) (*common.
 	return resModelPackage, err
 }
 
-func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string) (*domSchema.PredictionEnv, error) {
-	// req := &appResourceDTO.InternalGetPredictionEnvRequestDTO{
-	// 	PredictionEnvID: predictionEnvID,
-	// }
-
-	// res, err := s.predictionEnvSvc.GetByIDInternal(req, i)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// //dev mode only
-	// predictionEnvInfo := &domSchema.PredictionEnv{
-	// 	Namespace:                   res.Namespace,
-	// 	InfereceSvcAPISvrEndPoint:   res.ClusterInfo.InferenceSvcInfo.InfereceSvcAPISvrEndPoint,
-	// 	InfereceSvcHostName:         res.ClusterInfo.InferenceSvcInfo.InfereceSvcHostName,
-	// 	InferenceSvcIngressEndPoint: res.ClusterInfo.InferenceSvcInfo.InferenceSvcIngressEndPoint,
-	// }
+func (s *DeploymentService) getPredictionEnvByID(predictionEnvID string) (*common.PredictionEnv, error) {
+	cfg, err := s.handler.GetConfig()
+	if err != nil {
+		return nil, err
+	}
 
 	//dev mode only
-	predictionEnvInfo := &domSchema.PredictionEnv{
+	predictionEnvInfo := &common.PredictionEnv{
 		Name:            "Default",
-		PredictionEnvID: "test",
-		Namespace:       "koreserve",
-		ClusterInfo: domSchema.ClusterInfo{
-			InferenceSvcInfo: domSchema.InferenceSvcInfo{
-				InfereceSvcAPISvrEndPoint:   "http://192.168.88.161:30070",
-				InfereceSvcHostName:         "kserve.acornsoft.io",
-				InferenceSvcIngressEndPoint: "http://192.168.88.161:31000",
+		PredictionEnvID: predictionEnvID,
+		Namespace:       cfg.Connectors.InferenceSvc.InferenceNamespace,
+		ClusterInfo: common.ClusterInfo{
+			InferenceSvcInfo: common.InferenceSvcInfo{
+				InfereceSvcAPISvrEndPoint:   cfg.Connectors.InferenceSvc.KserveAPISvrEndPoint,
+				InfereceSvcHostName:         cfg.Connectors.InferenceSvc.KserveHostName,
+				InferenceSvcIngressEndPoint: cfg.Connectors.InferenceSvc.KserveIngressEndPoint,
 			},
 		},
 	}
@@ -1270,12 +1051,12 @@ func (s *DeploymentService) getProjectByID(projectID string) (*common.GetProject
 	return resProject, err
 }
 
-func (s *DeploymentService) getMonitorByID(monitorID string) (*common.MonitorGetByIDInternalResponseDTO, error) {
-	// reqMonitor := &appMonitoringDTO.MonitorGetByIDRequestDTO{
-	// 	ID: monitorID,
-	// }
+func (s *DeploymentService) getMonitorByID(req common.MonitorGetByIDInternalRequest) (*common.MonitorGetByIDInternalResponse, error) {
+	reqMonitor := &common.MonitorGetByIDInternalRequest{
+		DeploymentID: req.DeploymentID,
+	}
 
-	resMonitor, err := s.monitoringSvc.GetByIDInternal(monitorID)
+	resMonitor, err := s.monitoringSvc.GetByIDInternal(reqMonitor)
 	if err != nil {
 		return nil, err
 	}
@@ -1283,59 +1064,35 @@ func (s *DeploymentService) getMonitorByID(monitorID string) (*common.MonitorGet
 	return resMonitor, err
 }
 
-func (s *DeploymentService) checkIsAssociationID(monitorID string) (bool, error) {
-	check, err := s.monitoringSvc.CheckIsAssociationID(monitorID)
-	if err != nil {
-		return check, err
-	}
-
-	return check, nil
-}
-
 func (s *DeploymentService) Update(event common.Event) {
 	switch actualEvent := event.(type) {
-	case common.MonitoringCreated:
-		//
-		fmt.Sprintf("MonitoringCreated %s", actualEvent.DeploymentID())
-
-		//Find Domain Entity
-		domAggregateDeployment, _ := s.repo.GetByIDInternal(actualEvent.DeploymentID())
-		domAggregateDeployment.SetServiceStatusReady()
-		err := s.repo.Save(domAggregateDeployment)
-		fmt.Printf("err: %v\n", err)
-	case common.MonitoringCreateFailed:
-		//
-		fmt.Sprintf("MonitoringCreateFailed %s", actualEvent.DeploymentID())
-
-		domAggregateDeployment, _ := s.repo.GetByIDInternal(actualEvent.DeploymentID())
-		domAggregateDeployment.SetServiceStatusError()
-		err := s.repo.Save(domAggregateDeployment)
-		fmt.Printf("err: %v\n", err)
 	case common.MonitoringAccuracyStatusChangedToFailing:
-		//
-		s.AddGovernanceHistory(actualEvent.DeploymentID(), "AccuracyAlert", "failing")
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "AccuracyAlert", "failing", "system")
 	case common.MonitoringAccuracyStatusChangedToAtrisk:
-		//
-		s.AddGovernanceHistory(actualEvent.DeploymentID(), "AccuracyAlert", "atrisk")
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "AccuracyAlert", "atrisk", "system")
 	case common.MonitoringDataDriftStatusChangedToFailing:
-		//
-		s.AddGovernanceHistory(actualEvent.DeploymentID(), "DataDriftAlert", "failing")
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "DataDriftAlert", "failing", "system")
 	case common.MonitoringDataDriftStatusChangedToAtrisk:
-		//
-		s.AddGovernanceHistory(actualEvent.DeploymentID(), "DataDriftAlert", "atrisk")
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "DataDriftAlert", "atrisk", "system")
 	case common.MonitoringServiceHealthStatusChangedToFailing:
-		//
-		s.AddGovernanceHistory(actualEvent.DeploymentID(), "ServiceAlert", "failing")
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "ServiceAlert", "failing", "system")
 	case common.MonitoringServiceHealthStatusChangedToAtrisk:
-		//
-		s.AddGovernanceHistory(actualEvent.DeploymentID(), "ServiceAlert", "atrisk")
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "ServiceAlert", "atrisk", "system")
+	case common.MonitoringDataDriftMonitorEnabled:
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "Update", actualEvent.Name(), actualEvent.UserID())
+	case common.MonitoringDataDriftMonitorDisabled:
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "Update", actualEvent.Name(), actualEvent.UserID())
+	case common.MonitoringAccuracyMonitorEnabled:
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "Update", actualEvent.Name(), actualEvent.UserID())
+	case common.MonitoringAccuracyMonitorDisabled:
+		s.AddGovernanceHistory(actualEvent.DeploymentID(), "Update", actualEvent.Name(), actualEvent.UserID())
 	default:
 		return
 
 	}
 }
 
-func (s *DeploymentService) AddGovernanceHistory(deploymentID string, eventType string, logMessage string) error {
+func (s *DeploymentService) AddGovernanceHistory(deploymentID string, eventType string, logMessage string, userID string) error {
 	// //authorization
 	// if i.CanAccessCurrentRequest() == false {
 	// 	errMsg := fmt.Sprintf("You are not authorized to access [`%s.%s`]",
@@ -1348,7 +1105,7 @@ func (s *DeploymentService) AddGovernanceHistory(deploymentID string, eventType 
 		return err
 	}
 
-	err = res.AddEventHistory(eventType, logMessage, "system")
+	err = res.AddEventHistory(eventType, logMessage, userID)
 	if err != nil {
 		return err
 	}
@@ -1359,4 +1116,15 @@ func (s *DeploymentService) AddGovernanceHistory(deploymentID string, eventType 
 	}
 
 	return nil
+}
+
+func (s *DeploymentService) getCurrentModelID(domAggregateDeployment *domEntity.Deployment) string {
+	var currentModelID string
+	for _, history := range domAggregateDeployment.ModelHistory {
+		if history.ApplyHistoryTag == "Current" {
+			currentModelID = history.ID
+			break
+		}
+	}
+	return currentModelID
 }

@@ -1,4 +1,4 @@
-package schema
+package common
 
 type PredictionEnv struct {
 	PredictionEnvID string      //

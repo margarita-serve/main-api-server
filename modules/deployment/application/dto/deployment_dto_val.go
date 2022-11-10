@@ -15,8 +15,8 @@ func (r *CreateDeploymentRequestDTO) Validate() error {
 		validation.Field(&r.Importance, validation.In("Low", "Moderate", "High", "Critical")),
 		validation.Field(&r.RequestCPU, validation.Min(0.1), validation.Max(2.0)),
 		validation.Field(&r.RequestMEM, validation.Min(0.1), validation.Max(2.0)),
-		validation.Field(&r.AssociationID, validation.When(r.AccuracyAnalyze == true, validation.Required)),
-		validation.Field(&r.AssociationIDInFeature, validation.When(r.AccuracyAnalyze == true, validation.NotNil)),
+		// validation.Field(&r.AssociationID, validation.When(r.AccuracyAnalyze == true, validation.Required)),
+		// validation.Field(&r.AssociationIDInFeature, validation.When(r.AccuracyAnalyze == true, validation.NotNil)),
 	)
 }
 

@@ -2,11 +2,12 @@ package entity
 
 import (
 	"fmt"
+	"strings"
+
 	domSvcMonitor "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service"
 	domAccuracySvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/accuracy/dto"
 	domDriftSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/data_drift/dto"
 	domServiceHealthSvcMonitorDTO "git.k3.acornsoft.io/msit-auto-ml/koreserv/modules/monitoring/domain/service/service_health/dto"
-	"strings"
 )
 
 // Monitor type
@@ -312,6 +313,9 @@ func (m *Monitor) SetAccuracyMonitoringOn(domSvc domSvcMonitor.IExternalAccuracy
 
 		return nil
 	} else {
+		if reqDom.AssociationID == "" {
+			return fmt.Errorf("associationID is required")
+		}
 		// 만들어지지 않은 경우에는 생성 이후 on
 		res, err := domSvc.MonitorCreate(&reqDom)
 		fmt.Printf("res: %v\n", res)
