@@ -98,7 +98,7 @@ dirLocations:
   monitoringFileRootPath: "koreserve-monitoring"
   actualDataPath: "/actual-data"
 
-#MicroService & ThirdParty Service
+# MicroService & ThirdParty Services
 connectors:
   storages:
     minio:
@@ -119,11 +119,10 @@ connectors:
     groupID: "monitor-group-t"
     autoOffsetReset: "latest"
   inferenceSvc:
-	  kserveAPISvrEndPoint: "http://192.168.88.161:30070"
-	  kserveHostName: "kserve.acornsoft.io"
-	  kserveIngressEndPoint: "http://192.168.88.161:31000"
-    inferenceNamespace: "koreserve"		
-}
+    kserveAPISvrEndPoint: "http://192.168.88.161:30070"
+    kserveHostName: "kserve.acornsoft.io"
+    kserveIngressEndPoint: "http://192.168.88.161:31000"
+    inferenceNamespace: "koreserve"
 
 # SMTP Servers
 SMTPServers:
