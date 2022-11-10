@@ -182,9 +182,10 @@ func (f *FDeployment) GetByID(c echo.Context) error {
 func (f *FDeployment) getPredictionURL(c echo.Context) string {
 	//...
 	//cfg, _ := f.handler.GetConfig()
-	hostname := c.Request().Host
+	//hostname := c.Request().Host
 	//port := cfg.Applications.Servers.RestAPI.Options.Listener.Port
-
+	cfg, _ := f.handler.GetConfig()
+	hostname := cfg.Applications.Servers.RestAPI.Options.Hostname
 	predictURI := fmt.Sprintf("%s%s/%s", hostname, c.Request().RequestURI, "predict")
 
 	return predictURI

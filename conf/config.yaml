@@ -6,7 +6,7 @@ applications:
       options:
         showEngineHeader: true
         displayOpenAPI: true
-        hostname: "http://localhost"
+        hostname: "http://localhost:8080"
         listener:
           port: 8080
         middlewares:
