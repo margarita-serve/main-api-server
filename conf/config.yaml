@@ -16,7 +16,7 @@ applications:
           info:
             title: "KoreServe REST API Server"
             description: "1. Swagger 문서 좌측 상단 Schemes를 HTTPS로 선택 \n 2. Swagger 문서 Auth 섹션에서 register API를 이용해 user를 생성\n3. 등록된 email로 인증메일 전송되며 인증 진행  \n4. Swagger 문서 Auth 섹션 login API 이용 로그인 진행\n5. 응답으로 전달 된 JWT token 을 Swagger API 문서 우측 상단 Authorize 아이콘 클릭 후 입력\n    예) bearer eyJhb......NsNTCCPTeBsOvv6Q4  \n    *bearer는 수기입력 필수\n6. Create Project API 호출 \n7. Create ModelPackage API 호출(생성 된 projectID 입력) 및 Model/TrainingDataset/HoldeOutDataset 업로드 진행(dataset은 csv 포맷으로 feature명칭/Target값 포함 필수)\n8. Create Deployment API 호출(생성 된 modelPackageID 입력)\n9. Deployment Send Prediction API 로 예측확인\n10. Noti섹션 Create Web-Hook API호출(Deployment의 Datadrift/Acuuracy 상태 변경시 호출 될 PipeLine Client정보 저장)"
-            version: 0.1.1
+            version: 0.2
             basePath: "/api/v1"
 
 # Databases
@@ -27,7 +27,7 @@ databases:
     # mysql
     username: "gorm"
     password: "gorm"
-    hostName: "127.0.0.1:3306" # hostname:port OR path
+    hostName: "mariadb" # hostname:port OR path
     dbName: "koreserve"
     config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
@@ -39,7 +39,7 @@ databases:
     # mysql
     username: "gorm"
     password: "gorm"
-    hostName: "127.0.0.1:3306" # hostname:port OR path
+    hostName: "mariadb" # hostname:port OR path
     dbName: "koreserve"
     config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
@@ -51,7 +51,7 @@ databases:
     # mysql
     username: "gorm"
     password: "gorm"
-    hostName: "127.0.0.1:3306" # hostname:port OR path
+    hostName: "mariadb" # hostname:port OR path
     dbName: "koreserve"
     config: "charset=utf8&parseTime=True&loc=UTC"
     maxIdleConns: 10
@@ -64,13 +64,13 @@ IAM:
     username: "admin.koreserve"
     password: "koreserve"
     nickName: "super admin"
-    email: "koreserve.acornsoft@gmail.com"
+    email: "user@example.com"
     authorityID: "group:admin"
   defaultUser:
     username: "user.infinov"
     password: "infinov"
     nickName: "user of infinov"
-    email: "koreserve.acornsoft@gmail.com"
+    email: "user@example.com"
     authorityID: "group:default"
   registration:
     activationURL: "http://%s/api/v1/auths/registration/activate"
@@ -78,11 +78,6 @@ IAM:
   JWT:
     issuer: "KORESERVE"
     signingKey: "KORESERVE-SigningKey"
-  casbin:
-    modelPath: "casbin/casbin_rbac_rest_model.conf"
-    enforcers:
-      defaultEnforcerID: "default-casbin-enforcer"
-      systemEnforcerID: "system-casbin-enforcer"
 
 # Directory Locations
 dirLocations:
@@ -102,34 +97,34 @@ dirLocations:
 connectors:
   storages:
     minio:
-      endpoint: "192.168.88.151:30009"
+      endpoint: "minio"
       accessKeyID: "minioadmin"
       secretAccessKey: "minioadmin"
       useSSL: false
   driftServer:
-    endpoint: "http://192.168.88.151:30071"
+    endpoint: "http://drift-monitor"
   accuracyServer:
-    endpoint: "http://192.168.88.151:30072"
+    endpoint: "http://accuracy-monitor"
   serviceHealthServer:
-    endpoint: "http://192.168.88.151:30073"
+    endpoint: "http://service-monitor"
   graphServer:
-    endpoint: "http://192.168.88.151:30074"
+    endpoint: "http://graph-server"
   kafka:
-    endpoint: "192.168.88.151:32038"
+    endpoint: "kafka:"
     groupID: "monitor-group-t"
     autoOffsetReset: "latest"
   inferenceSvc:
-    kserveAPISvrEndPoint: "http://192.168.88.161:30070"
-    kserveHostName: "kserve.acornsoft.io"
-    kserveIngressEndPoint: "http://192.168.88.161:31000"
+    kserveAPISvrEndPoint: "http://kserve-api"
+    kserveHostName: "example.com"
+    kserveIngressEndPoint: "http://istio-ingress"
     inferenceNamespace: "koreserve"
 
 # SMTP Servers
 SMTPServers:
   defaultSMTP:
-    server: "smtp.gmail.com"
+    server: "smtp.example.com"
     port: "587"
-    username: "koreserve.acornsoft@gmail.com"
-    password: "coqaxngvrbrhzset"
-    senderEmail: "koreserve.acornsoft@gmail.com"
-    senderName: "KoreServe NoReply"
+    username: "user@example.com"
+    password: "password"
+    senderEmail: "user@example.com"
+    senderName: "User NoReply"

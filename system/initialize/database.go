@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	// "github.com/jinzhu/gorm"
 	// _ "github.com/jinzhu/gorm/dialects/mysql"
@@ -51,6 +52,7 @@ func LoadAllDatabaseConnection(h *handler.Handler) error {
 // LoadDatabaseConnection load Database Connection using GORM
 func LoadDatabaseConnection(dbConfig config.Database, h *handler.Handler) error {
 	fmt.Printf("dbConfig: %v\n", dbConfig)
+	var retries = 0
 	if h != nil {
 		connString := dbConfig.Username + ":" + dbConfig.Password + "@(" + dbConfig.HostName + ")/" + dbConfig.DBName + "?" + dbConfig.Config
 		if dbConfig.Driver == "sqlite3" {
@@ -58,11 +60,18 @@ func LoadDatabaseConnection(dbConfig config.Database, h *handler.Handler) error 
 		}
 
 		dbCon, err := openDBConnection(dbConfig.Driver, connString)
-		if err != nil {
-			// h.GetLogger().Errorf("%s startup exception: [%s]", dbConfig.Driver, err.Error())
-			// os.Exit(0)
-			return err
+
+		for err != nil {
+			// if logger != nil {
+			// 	logger(err, fmt.Sprintf("Failed to connect to database (%d)", retries))
+			// }
+			fmt.Sprintf("Failed to connect to database (%d)", retries)
+			time.Sleep(5 * time.Second)
+			dbCon, err = openDBConnection(dbConfig.Driver, connString)
+			continue
+
 		}
+
 		dbClient, err := dbCon.DB()
 		if err != nil {
 			return err

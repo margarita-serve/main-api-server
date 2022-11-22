@@ -12,3 +12,4 @@ docs/
 .vscode
 >>>>>>> e0af63f (Add:Dockerfile, Project Module)
 >>>>>>> 5e8c14f (Add:Dockerfile, Project Module)
+config_local.yaml
