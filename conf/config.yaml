@@ -64,7 +64,7 @@ IAM:
     username: "admin.koreserve"
     password: "koreserve"
     nickName: "super admin"
-    email: "user@example.com"
+    email: "admin@example.com"
     authorityID: "group:admin"
   defaultUser:
     username: "user.infinov"
